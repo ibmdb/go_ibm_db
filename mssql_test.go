@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/phiggins/db2cli/api"
+	"go-ibm_db/api"
 )
 
 var (

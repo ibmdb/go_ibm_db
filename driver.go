@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"bitbucket.org/phiggins/db2cli/api"
+	"go-ibm_db/api"
 )
 
 var drv Driver

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"bitbucket.org/phiggins/db2cli/api"
+	"go-ibm_db/api"
 )
 
 type Conn struct {

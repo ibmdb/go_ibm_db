@@ -5,7 +5,7 @@
 package db2cli
 
 import (
-	"bitbucket.org/phiggins/db2cli/api"
+	"go-ibm_db/api"
 	"database/sql/driver"
 	"errors"
 	"fmt"
