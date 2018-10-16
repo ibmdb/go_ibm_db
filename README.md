@@ -73,10 +73,10 @@ Most of the times though you will connect directly to DB2 and SQL statements wit
     func usage() {
         fmt.Fprintf(os.Stderr, `usage: %s [options]
 ```
-    %s connects to DB2 and executes a simple SQL statement a configurable
-    number of times.
+%s connects to DB2 and executes a simple SQL statement a configurable number of times.
 
-    Here is a sample connection string:
+Here is a sample connection string:
+
 ```
     DATABASE=MYDBNAME; HOSTNAME=localhost; PORT=60000; PROTOCOL=TCPIP; UID=username; PWD=password;
     , os.Args[0], os.Args[0])
@@ -139,9 +139,9 @@ Most of the times though you will connect directly to DB2 and SQL statements wit
 
 ## CONTRIBUTORS
 
-http://tip.golang.org/AUTHORS
-IBM
-Rocket Software
+* http://tip.golang.org/AUTHORS
+* [IBM](https://www.ibm.com)
+* [Rocket Software](https://www.rocketsoftware.com/)
 
 ## Contributing to the go-ibm_db
 
