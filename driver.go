@@ -21,7 +21,6 @@ type Driver struct {
 }
 
 func initDriver() error {
-	fmt.Println("initDriver --- driver.go")
 
 	//Allocate environment handle
 	var out api.SQLHANDLE
@@ -46,14 +45,12 @@ func initDriver() error {
 
 func (d *Driver) Close() error {
 	// TODO(brainman): who will call (*Driver).Close (to dispose all opened handles)?
-	fmt.Println("Close-----driver.go")
 	h := d.h
 	d.h = api.SQLHENV(api.SQL_NULL_HENV)
 	return releaseHandle(h)
 }
 
 func init() {
-	fmt.Println("init --- driver.go")
 	err := initDriver()
 	if err != nil {
 		panic(err)
