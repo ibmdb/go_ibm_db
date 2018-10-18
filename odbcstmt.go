@@ -93,7 +93,7 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value) error {
-    fmt.Println("ODBCStmt --- phiggins")
+    
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
 	}
