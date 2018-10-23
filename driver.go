@@ -8,7 +8,6 @@ package db2cli
 
 import (
 	"database/sql"
-	"fmt"
 
 	"go-ibm_db/api"
 )
