@@ -8,7 +8,7 @@
 2.	[.Prepare(sqlquery)](#PrepareApi)
 3.	[.Query(sqlquery)](#QueryApi)
 4.	[.Exec(sqlquery)](#ExecApi)
-5.	[.Begin()](#CloseApi)
+5.	[.Begin()](#BeginApi)
 6.	[.Close()](#CloseApi)
 7.	[.Commit()](#CommitApi)
 8.	[.Rollback()](#RollbackApi)
