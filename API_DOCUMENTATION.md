@@ -8,9 +8,9 @@
 2.	[.Prepare(sqlquery)](#PrepareApi)
 3.	[.Query(sqlquery)](#QueryApi)
 4.	[.Exec(sqlquery)](#ExecApi)
-5.	[.Commit()](#CommitApi)
+5.	[.Begin()](#CloseApi)
 6.	[.Close()](#CloseApi)
-7.	[.Begin()](#CloseApi)
+7.	[.Commit()](#CommitApi)
 8.	[.Rollback()](#RollbackApi)
 9.	[.QueryRow(sqlquery)](#QueryRowApi)
 10.	[.Columns()](#ColumnsApi)
@@ -108,24 +108,7 @@ return err
 }
 ```
 
-
-### <a name="CloseApi"></a> 5) .Close()
-
-Close the currently opened database.
-
-```javascript
-
-func dboper() error {
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-}
-```
-
-### <a name="BeginApi"></a> 6) .Begin()
+### <a name="BeginApi"></a> 5) .Begin()
 
 Begin a transaction.
 
@@ -144,6 +127,24 @@ if err !=nil{
 return err
 }
 return nil
+}
+```
+
+
+
+### <a name="CloseApi"></a> 6) .Close()
+
+Close the currently opened database.
+
+```javascript
+
+func dboper() error {
+fmt.Println("connecting to go-ibm_db");
+db, err:=sql.Open("go-ibm_db",*connStr);
+if err != nil{
+return err;
+}
+defer db.Close()
 }
 ```
 
