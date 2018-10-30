@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package db2cli
+package go_ibm_db
 
 import (
-	"go-ibm_db/api"
 	"database/sql/driver"
 	"errors"
 	"sync"
-	"fmt"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type Stmt struct {
@@ -44,11 +44,10 @@ func (s *Stmt) Close() error {
 }
 
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
-    fmt.Println("===============STMT")
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
-	
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.os.usedByRows {

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package db2cli
+package go_ibm_db
 
 import (
-	"go-ibm_db/api"
 	"database/sql/driver"
 	"errors"
-	"fmt"
-	
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type Tx struct {
@@ -26,7 +25,6 @@ func (c *Conn) setAutoCommitAttr(a uintptr) error {
 }
 
 func (c *Conn) Begin() (driver.Tx, error) {
-      fmt.Println("this is tx file")
 	if c.tx != nil {
 		return nil, errors.New("already in a transaction")
 	}

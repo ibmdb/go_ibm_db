@@ -4,12 +4,12 @@
 
 // Package odbc implements database/sql driver to access data via odbc interface.
 //
-package db2cli
+package go_ibm_db
 
 import (
 	"database/sql"
 
-	"go-ibm_db/api"
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 var drv Driver
@@ -55,6 +55,6 @@ func init() {
 		panic(err)
 	}
 	//go's to databse/sql/sql.go 43 line
-	sql.Register("db2-cli", &drv)
-	
+	sql.Register("go_ibm_db", &drv)
+
 }

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package db2cli
+package go_ibm_db
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"unsafe"
 
-	"go-ibm_db/api"
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type Conn struct {
@@ -18,7 +17,6 @@ type Conn struct {
 }
 
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
-	fmt.Println("Open -- conn.go")
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_DBC, api.SQLHANDLE(d.h), &out)
 	if IsError(ret) {
@@ -39,7 +37,6 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 }
 
 func (c *Conn) Close() error {
-    fmt.Println("Close-------conn.go");
 	ret := api.SQLDisconnect(c.h)
 	if IsError(ret) {
 		return NewError("SQLDisconnect", c.h)

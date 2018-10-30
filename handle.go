@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package db2cli
+package go_ibm_db
 
 import (
-	"go-ibm_db/api"
+	"github.com/ibmdb/go_ibm_db/api"
 	"fmt"
 )
 
