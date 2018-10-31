@@ -1,6 +1,6 @@
 # go-ibm_db API Documentation
 
-# Database APIs
+## Database APIs
 
 **Database APIs**
 
