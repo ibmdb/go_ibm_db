@@ -17,7 +17,7 @@
 11.	[.Next()](#NextApi)
 12.	[.Scan(options)](#ScanApi)
 
-
+'''
 ### <a name="OpenApi"></a> 1) .Open(drivername,ConnectionString)
 
 open a connection to database
