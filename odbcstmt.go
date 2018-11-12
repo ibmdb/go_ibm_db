@@ -5,13 +5,14 @@
 package go_ibm_db
 
 import (
-	"github.com/ibmdb/go_ibm_db/api"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 // TODO(brainman): see if I could use SQLExecDirect anywhere
@@ -93,7 +94,7 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value) error {
-    
+
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
 	}
