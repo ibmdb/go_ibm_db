@@ -68,7 +68,7 @@ func execQuery(st *sql.Stmt) error {
 
 func dbOperations() error {
     fmt.Println("function dbOperations")
-    db, err := sql.Open("db2-cli", *connStr)
+    db, err := sql.Open("go_ibm_db", *connStr)
     if err != nil {
         return err
     }
