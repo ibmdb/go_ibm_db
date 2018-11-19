@@ -86,6 +86,11 @@ func Unzip(src string, dest string) ([]string, error) {
 func main() {
 var cliFileName string
 var url string
+
+_,a :=os.LookupEnv("IBM_DB_DIR")
+_,b :=os.LookupEnv("IBM_DB_HOME")
+_,c :=os.LookupEnv("IBM_DB_LIB")
+ if(!(a && b && c)){
     if runtime.GOOS == "aix" {
       const wordsize = 32 << (^uint(0) >> 32 & 1)
 	  if wordsize==64 {
@@ -164,6 +169,7 @@ var url string
 	}
 	fileUrl:= "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
 	fmt.Println(url)
+	fmt.Println("Downloading...")
 	err:=DownloadFile(cliFileName,fileUrl)
 	if err!=nil{
 	fmt.Println(err)
@@ -176,6 +182,7 @@ var url string
     }
 
     fmt.Println("Unzipped:\n" + strings.Join(files, "\n"))
+}
 }	
 
 
