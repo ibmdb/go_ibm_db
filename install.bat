@@ -1,1 +1,0 @@
-setx ENV1 "C:\Go\programs"
