@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"archive/zip"
 	"archive/tar"
 	"compress/gzip"
@@ -118,6 +119,13 @@ func Untaring(sourcefile string) {
         }
     }
 }
+
+func linux_untar(clidriver string){
+ out, _:= exec.Command("tar","xvzf",clidriver).Output()
+fmt.Println(string(out[:]))
+}
+
+
 func main() {
     var cliFileName string
     var url string
@@ -127,6 +135,7 @@ func main() {
     _,c :=os.LookupEnv("IBM_DB_LIB")
     if(!(a && b && c)){
     if runtime.GOOS == "aix" {
+	    i=2
         const wordsize = 32 << (^uint(0) >> 32 & 1)
 	    if wordsize==64 {
         cliFileName = "aix64_odbc_cli.tar.gz"
@@ -136,6 +145,7 @@ func main() {
 	    fmt.Printf("aix\n")
 	    fmt.Printf(cliFileName)
 	}else if runtime.GOOS == "linux"{
+	       i=2
 	    if runtime.GOARCH == "ppc64le" {
 	        const wordsize = 32 << (^uint(0) >> 32 & 1)
 	        if wordsize==64{
@@ -183,6 +193,7 @@ func main() {
 	    fmt.Printf("darwin\n")
 	    fmt.Printf(cliFileName)
 	}else if runtime.GOOS =="sunos"{
+	    i=2
 	    if runtime.GOARCH == "i86pc"{
 	    const wordsize = 32 << (^uint(0) >> 32 & 1)
 	    if wordsize==64 {
@@ -214,7 +225,10 @@ func main() {
 	    }	
 	    if(i == 1){
 	        Unzipping(cliFileName)
-	    } else {
+	    }else if(i==2){
+		linux_untar(cliFileName)
+
+		}else {
 	        Untaring(cliFileName)
 		}
     }
