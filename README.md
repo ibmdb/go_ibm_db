@@ -106,7 +106,7 @@ How to run sample program
 
 Example 1:-
 ===========
-
+```
 package main
 
 import (
@@ -124,11 +124,11 @@ func main(){
 	}
 	db.Close()
 }
-
+```
 
 Example 2:-
 ===========
-
+```
 package main
 
 import (
@@ -150,14 +150,14 @@ func Create_Con(con string) *sql.DB{
 //creating a table
 
 func create(db *sql.DB) error{
-    _,err:=db.Exec("DROP table ROCKET")
+    _,err:=db.Exec("DROP table SAMPLE")
 	if(err!=nil){
-    _,err:=db.Exec("create table ROCKET(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
+    _,err:=db.Exec("create table SAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
     if err != nil{
         return err
     }
 	} else {
-    _,err:=db.Exec("create table ROCKET(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
+    _,err:=db.Exec("create table SAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
     if err != nil{
         return err
     }
@@ -169,7 +169,7 @@ func create(db *sql.DB) error{
 //inserting row
 
 func insert(db *sql.DB) error{
-    st, err:=db.Prepare("Insert into ROCKET(ID,NAME,LOCATION,POSITION) values('3242','mike','hyd','manager')")
+    st, err:=db.Prepare("Insert into SAMPLE(ID,NAME,LOCATION,POSITION) values('3242','mike','hyd','manager')")
     if err != nil{
         return err
     }
@@ -180,7 +180,7 @@ func insert(db *sql.DB) error{
 //this api selects the data from the table and prints it
 
 func display(db *sql.DB) error{
-    st, err:=db.Prepare("select * from ROCKET")
+    st, err:=db.Prepare("select * from SAMPLE")
     if err !=nil{
         return err
     }
@@ -231,11 +231,11 @@ func main(){
         fmt.Println(err)
     }
 }
-
+```
 
 Example 3:-(POOLING)
 ====================
-
+```
 package main
 
 import (
@@ -251,14 +251,14 @@ func main(){
 	
 	//SetConnMaxLifetime will atake the value in MINUTES
 	db:=pool.Open(con,"SetConnMaxLifetime=1","SetMaxOpenConns=3","SetMaxIdleConns=4")
-    st, err:=db.Prepare("Insert into ROCKET values('hi')")
+    st, err:=db.Prepare("Insert into SAMPLE values('hi')")
     if err != nil{
         fmt.Println(err)
     }
 	st.Query()
 	
 	db1:=pool.Open(con)
-    st1, err:=db1.Prepare("Insert into ROCKET values('hi1')")
+    st1, err:=db1.Prepare("Insert into SAMPLE values('hi1')")
     if err != nil{
         fmt.Println(err)
     }
@@ -270,7 +270,7 @@ func main(){
 	pool.Release()
 	pool.Display()
 }
-
+```
 Testing the driver
 ==================
 
