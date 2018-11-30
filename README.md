@@ -1,7 +1,7 @@
-go-ibm_db
+go_ibm_db
 ==========
 
-This driver helps to connect to IBM-LUW,iseries,z/OS Databases.
+This driver helps to connect to DB2 for LUW,DB2 for iseries,DB2 for z/OS Databases.
 
 API Documentation
 ==================
@@ -13,7 +13,6 @@ Prerequisite
 
 Golang should be installed in your system.
 
-
 How to Install
 =============
 
@@ -22,89 +21,49 @@ go get -d github.com/ibmdb/go_ibm_db
 go to installer folder in go_ibm_db (/home/Users/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go).
 
 
-
-How to build in Windows
+How to Install in Windows
 =======================
 ```
-1) Now set below env variables:
+go get -d github.com/ibmdb/go_ibm_db
 
-cond. 1: If you use the clidriver downloaded by the godriver
-{
-path=C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer\clidriver\bin
-}
+go to installer folder in go_ibm_db (C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer) and run setup.go file (go run setup.go).
 
-Else (If you use your cli driver){
+If you use the clidriver downloaded by the godriver then add the below path to your PATH env variable
+C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer\clidriver\bin
+
+Otherwise if you use your cli driver add path to your PATH env variable
 path=\Path\To\Clidriver\bin
-}
+
 ```
 
-
-How to build in Linux
-======================
+How to Install in Linux/Mac
+===========================
 ```
-1) Now set below env variables:
+go get -d github.com/ibmdb/go_ibm_db
 
-cond. 1: If you use the clidriver downloaded by the godriver
-{
+go to installer folder in go_ibm_db (/home/Users/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go).
+
+If you use the clidriver downloaded by the godriver then set the below env variables:
+
 export DB2HOME=/home/Users/go/src/github.com/imdb/go_ibm_db/installer/clidriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib
-export LD_LIBRARY_PATH=/home/Users/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
+(FOR LINUX)export LD_LIBRARY_PATH=/home/Users/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
+(FOR MACOS)export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/Users/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
 
-}
+Otherwise if you use your cli driver then set the below env variables:
 
-Else (If you use your cli driver){
 export DB2HOME=/Path/To/clidriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib 
-export LD_LIBRARY_PATH=/Path/To/clidriver/lib
-}
+(FOR LINUX)export LD_LIBRARY_PATH=/Path/To/clidriver/lib
+(FOR MACOS)export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Path/To/clidriver/lib
 ```
-
-How to build in MacOS
-======================
-```
-1) Now set below env variables:
-
-cond. 1: If you use the clidriver downloaded by the godriver
-{
-export DB2HOME=/home/Users/go/src/github.com/imdb/go_ibm_db/installer/clidriver
-export CGO_CFLAGS=-I$DB2HOME/include
-export CGO_LDFLAGS=-L$DB2HOME/lib
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/Users/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
-
-}
-
-Else(If you use your cli driver) {
-export DB2HOME=/Path/To/clidriver
-export CGO_CFLAGS=-I$DB2HOME/include
-export CGO_LDFLAGS=-L$DB2HOME/lib 
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Path/To/clidriver/lib
-}
-
-```
-
-Note
-====
-```
-On some DB2 instances (e.g. z/OS) you may have to connect to DB2-Connect which will forward connection requests to DB2.
-In theses cases you may run into something like:
-
-    SQLExecute: {42601} [IBM][CLI Driver][DB2] SQL0104N  An unexpected token " " was found following "". 
-    Expected tokens may include:  ". <IDENTIFIER> JOIN INNER LEFT RIGHT FULL CROSS , HAVING GROUP".  SQLSTATE=42601
-	
-Although not really obvious, this means that a terminator is missing for SQL statements.
-This may be due to a different parsing approach when DB2-Connect is involved.
-If you terminate your SQL statements with ';' you should be fine.
-Most of the times though you will connect directly to DB2 and SQL statements without ';' terminator work.
-```
-
-
 
 How to run sample program
 ==========================
 
-Example 1:-
+Example1.go:-
 ===========
 ```
 package main
@@ -124,6 +83,7 @@ func main(){
 	}
 	db.Close()
 }
+To run the sample:- go run example3.go
 ```
 
 Example 2:-
@@ -231,6 +191,7 @@ func main(){
         fmt.Println(err)
     }
 }
+To run the sample:- go run example2.go
 ```
 
 Example 3:-(POOLING)
@@ -250,7 +211,7 @@ func main(){
 	pool:=a.Pconnect()
 	
 	//SetConnMaxLifetime will atake the value in MINUTES
-	db:=pool.Open(con,"SetConnMaxLifetime=1","SetMaxOpenConns=3","SetMaxIdleConns=4")
+	db:=pool.Open(con,"SetConnMaxLifetime=1","PoolSize=100")
     st, err:=db.Prepare("Insert into SAMPLE values('hi')")
     if err != nil{
         fmt.Println(err)
@@ -270,9 +231,10 @@ func main(){
 	pool.Release()
 	pool.Display()
 }
+To run the sample:- go run example3.go
 ```
-Testing the driver
-==================
+For Running the Tests:
+======================
 
 1) Put your connection string in the main.go file in testdata folder
 

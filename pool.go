@@ -21,12 +21,12 @@ usedPool        map[string] []*DBP
 
 var b *Pool
 var n time.Duration
-var ConnMaxLifetime,MaxOpenConns,MaxIdleConns int
+var ConnMaxLifetime,PoolSize int
 //Pconnect will return the pool instance
 func Pconnect() (*Pool){
     p:=&Pool{
-	    availablePool: make(map[string] []*DBP,100),
-		usedPool     : make(map[string] []*DBP,100),
+	    availablePool: make(map[string] []*DBP),
+		usedPool     : make(map[string] []*DBP),
     }
 	b=p
     return p
@@ -39,59 +39,64 @@ var Psize int
 //If not opens a new connection and stores in the pool
 
 func (p *Pool) Open(Connstr string,options ...string)(*DBP){
+    count := len(options)
+    if count>1{
+        for i:=0;i<count;i++{
+		    opt:=strings.Split(options[i],"=")
+			if(opt[0] == "SetConnMaxLifetime"){
+			    ConnMaxLifetime,_=strconv.Atoi(opt[1])
+				n=time.Duration(ConnMaxLifetime) * time.Minute
+			}else if(opt[0] == "PoolSize") {
+			    PoolSize,_=strconv.Atoi(opt[1])
+			} else {
+			    fmt.Println("not a valid parameter")
+			}
+		}
+    } else if count == 1{
+	    opt:=strings.Split(options[0],"=")
+		if(opt[0] == "SetConnMaxLifetime"){
+			ConnMaxLifetime,_=strconv.Atoi(opt[1])
+			n=time.Duration(ConnMaxLifetime) * time.Minute
+			PoolSize=50
+		}else if(opt[0] == "PoolSize") {
+			PoolSize,_=strconv.Atoi(opt[1])
+			n=5*time.Minute
+		}
+	} else {
+		PoolSize=50
+        n=5*time.Minute
+    }
     if(Psize<100){
-	Psize=Psize+1;
-    if val,ok:=p.availablePool[Connstr];ok{
-	    if(len(val) > 1){
-	    dbpo:=val[0]
-        copy(val[0:],val[1:])
-		val[len(val)-1]=nil
-		val=val[:len(val)-1]
-		p.availablePool[Connstr]=val
-		p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
-		return dbpo
-		}else{
-		dbpo:=val[0]
-		p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
-		delete(p.availablePool,Connstr)
-		return dbpo
-		}
-    }else{
-	    dbb,err:=sql.Open("go_ibm_db",Connstr)
-		if err != nil{
-		    return nil
-		}
-		dbi:=&DBP{
-		    DB  :*dbb,
-			con :Connstr,
-		}
-		p.usedPool[Connstr]=append(p.usedPool[Connstr],dbi)
-		//p.usedPool[Connstr]=dbi;
-		db=dbi
-		count := len(options)
-		if count>=1 {
-		    for i:=0;i<count;i++{
-                opt:=strings.Split(options[i],"=")
-                if(opt[0] == "SetConnMaxLifetime"){
-                    ConnMaxLifetime,_=strconv.Atoi(opt[1])
-			        n=time.Duration(ConnMaxLifetime) * time.Minute
-			        dbb.SetConnMaxLifetime(n)
-                }else if(opt[0] == "SetMaxOpenConns") {
-                    MaxOpenConns,_=strconv.Atoi(opt[1])
-			        dbb.SetMaxOpenConns(MaxOpenConns)
-                }else if(opt[0] == "SetMaxIdleConns") {
-                    MaxIdleConns,_=strconv.Atoi(opt[1])
-			        dbb.SetMaxIdleConns(MaxIdleConns)
-                } else {
-                    fmt.Println("not a valid parameter")
-                }
-	        }  
-		} else {
-            n=5*time.Minute
-            dbb.SetConnMaxLifetime(n)
-        }			
-	}
-	return db
+	    Psize=Psize+1;
+        if val,ok:=p.availablePool[Connstr];ok{
+	        if(len(val) > 1){
+	            dbpo:=val[0]
+                copy(val[0:],val[1:])
+		        val[len(val)-1]=nil
+		        val=val[:len(val)-1]
+		        p.availablePool[Connstr]=val
+		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
+		        return dbpo
+		    }else{
+		        dbpo:=val[0]
+		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
+		        delete(p.availablePool,Connstr)
+		        return dbpo
+		    }
+        }else{
+	        dbb,err:=sql.Open("go_ibm_db",Connstr)
+		        if err != nil{
+		        return nil
+		    }
+		    dbi:=&DBP{
+		        DB  :*dbb,
+			    con :Connstr,
+		    }
+		    p.usedPool[Connstr]=append(p.usedPool[Connstr],dbi)
+		    //p.usedPool[Connstr]=dbi;
+		    db=dbi			
+	    }
+	    return db
 	} else {
 	    fmt.Println("Max Pool size Reached")
 		return nil
@@ -187,4 +192,5 @@ func (p *Pool) Release(){
 func (p *Pool) Display(){
 fmt.Println(p.availablePool)
 fmt.Println(p.usedPool)
+fmt.Println(PoolSize)
 }
