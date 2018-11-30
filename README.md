@@ -1,7 +1,7 @@
 go_ibm_db
 ==========
 
-This driver helps to connect to DB2 for LUW,DB2 for iseries,DB2 for z/OS Databases.
+This driver helps to connect to DB2 for LUW,DB2 for iseries,DB2 for z/OS.
 
 API Documentation
 ==================
@@ -12,14 +12,6 @@ Prerequisite
 =============
 
 Golang should be installed in your system.
-
-How to Install
-=============
-
-go get -d github.com/ibmdb/go_ibm_db
-
-go to installer folder in go_ibm_db (/home/Users/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go).
-
 
 How to Install in Windows
 =======================
@@ -86,7 +78,7 @@ func main(){
 To run the sample:- go run example3.go
 ```
 
-Example 2:-
+Example2.go:-
 ===========
 ```
 package main
@@ -194,7 +186,7 @@ func main(){
 To run the sample:- go run example2.go
 ```
 
-Example 3:-(POOLING)
+Example3.go:-(POOLING)
 ====================
 ```
 package main
