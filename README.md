@@ -25,7 +25,7 @@ go to installer folder in go_ibm_db (/home/Users/go/src/github.com/imdb/go_ibm_d
 
 How to build in Windows
 =======================
-
+```
 1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
@@ -36,12 +36,12 @@ path=C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer\clidriver\bin
 Else (If you use your cli driver){
 path=\Path\To\Clidriver\bin
 }
-
+```
 
 
 How to build in Linux
 ======================
-
+```
 1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
@@ -59,11 +59,11 @@ export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib 
 export LD_LIBRARY_PATH=/Path/To/clidriver/lib
 }
-
+```
 
 How to build in MacOS
 ======================
-
+```
 1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
@@ -82,11 +82,11 @@ export CGO_LDFLAGS=-L$DB2HOME/lib
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Path/To/clidriver/lib
 }
 
-
+```
 
 Note
 ====
-
+```
 On some DB2 instances (e.g. z/OS) you may have to connect to DB2-Connect which will forward connection requests to DB2.
 In theses cases you may run into something like:
 
@@ -97,7 +97,7 @@ Although not really obvious, this means that a terminator is missing for SQL sta
 This may be due to a different parsing approach when DB2-Connect is involved.
 If you terminate your SQL statements with ';' you should be fine.
 Most of the times though you will connect directly to DB2 and SQL statements without ';' terminator work.
-
+```
 
 
 
