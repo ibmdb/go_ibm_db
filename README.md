@@ -103,7 +103,7 @@ Most of the times though you will connect directly to DB2 and SQL statements wit
 
 How to run sample program
 ==========================
-```
+
 Example 1:-
 ===========
 
