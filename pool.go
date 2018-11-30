@@ -33,11 +33,14 @@ func Pconnect() (*Pool){
 } 
 
 var db *DBP
+var Psize int
 
 //Open will check for the connection in the pool
 //If not opens a new connection and stores in the pool
 
 func (p *Pool) Open(Connstr string,options ...string)(*DBP){
+    if(Psize<100){
+	Psize=Psize+1;
     if val,ok:=p.availablePool[Connstr];ok{
 	    if(len(val) > 1){
 	    dbpo:=val[0]
@@ -83,14 +86,22 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
                     fmt.Println("not a valid parameter")
                 }
 	        }  
-		} 
+		} else {
+            n=5*time.Minute
+            dbb.SetConnMaxLifetime(n)
+        }			
 	}
 	return db
+	} else {
+	    fmt.Println("Max Pool size Reached")
+		return nil
+	}
 }
 
 //Close will make the connection available for the next release
 
 func (d *DBP) Close(){
+    Psize=Psize-1
 	var pos int
 	i:=-1
 	if valc,okc:=b.usedPool[d.con];okc{
@@ -113,9 +124,7 @@ func (d *DBP) Close(){
 	        delete(b.usedPool,d.con)
 	    }
 	}
-	if(n!=0){
-	 go d.Timeout(d.con,n)
-	}
+	go d.Timeout(d.con,n)
 }
 
 //Timeout for closing the connection in pool

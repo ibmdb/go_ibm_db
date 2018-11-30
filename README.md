@@ -1,26 +1,32 @@
-Package go_ibm_db
-=================
+go-ibm_db
+==========
 
-The C API for DB2 is called CLI and is basically the same interface as
-ODBC. However, it can be used without configuring ODBC which
-simplifies usage for DB2-only projects.
+This driver helps to connect to IBM-LUW,iseries,z/OS Databases.
 
-This driver is based on code.google.com/p/odbc.
+API Documentation
+==================
 
-How to clone
+For complete list of go_ibm_db APIs and example, please check APIDocumentation.md
+
+Prerequisite
+=============
+
+Golang should be installed in your system.
+
+
+How to Install
 =============
 
 go get -d github.com/ibmdb/go_ibm_db
+
+go to installer folder in go_ibm_db (/home/Users/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go).
+
 
 
 How to build in Windows
 =======================
 
-1)To Download Clidriver
-
-go to installer folder in go_ibm_db and run setup.go file (go run setup.go) which will download the clidriver.
-
-2) Now set below env variables:
+1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
 {
@@ -36,12 +42,7 @@ path=\Path\To\Clidriver\bin
 How to build in Linux
 ======================
 
-1)To Download Clidriver
-
-go to installer folder in go_ibm_db and run setup.go file (go run setup.go) which will download the clidriver.
-
-
-2) Now set below env variables:
+1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
 {
@@ -63,12 +64,7 @@ export LD_LIBRARY_PATH=/Path/To/clidriver/lib
 How to build in MacOS
 ======================
 
-1)To Download Clidriver
-
-go to installer folder in go_ibm_db and run setup.go file (go run setup.go) which will download the clidriver.
-
-
-2) Now set below env variables:
+1) Now set below env variables:
 
 cond. 1: If you use the clidriver downloaded by the godriver
 {
@@ -86,13 +82,6 @@ export CGO_LDFLAGS=-L$DB2HOME/lib
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Path/To/clidriver/lib
 }
 
-
-Testing the driver
-==================
-
-1) Put your connection string in the main.go file in testdata folder
-
-2) Now run go test command (use go test -v command for details) 
 
 
 Note
@@ -115,6 +104,31 @@ Most of the times though you will connect directly to DB2 and SQL statements wit
 How to run sample program
 ==========================
 ```
+Example 1:-
+===========
+
+package main
+
+import (
+    _ "github.com/ibmdb/go_ibm_db"
+    "database/sql"
+    "fmt"
+)
+
+func main(){
+    con:="HOSTNAME=host;DATABASE=name;PORT=number;UID=username;PWD=password"
+ db, err:=sql.Open("go_ibm_db", con)
+    if err != nil{
+        
+		fmt.Println(err)
+	}
+	db.Close()
+}
+
+
+Example 2:-
+===========
+
 package main
 
 import (
@@ -219,8 +233,9 @@ func main(){
 }
 
 
-How to run sample program for Pool
-==================================
+Example 3:-(POOLING)
+====================
+
 package main
 
 import (
@@ -255,5 +270,12 @@ func main(){
 	pool.Release()
 	pool.Display()
 }
+
+Testing the driver
+==================
+
+1) Put your connection string in the main.go file in testdata folder
+
+2) Now run go test command (use go test -v command for details) 
 
 
