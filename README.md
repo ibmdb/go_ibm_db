@@ -164,7 +164,6 @@ func execquery(st *sql.Stmt) error{
     return nil
 }
 
-
 func main(){
     con:="HOSTNAME=host;DATABASE=name;PORT=number;UID=username;PWD=password"
 	type Db *sql.DB
