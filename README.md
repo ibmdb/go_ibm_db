@@ -6,7 +6,7 @@ Interface for Go to DB2 for LUW,DB2 for iseries and DB2 for z/OS.
 API Documentation
 ==================
 
-> For complete list of go_ibm_db APIs and example, please check [APIDocumentation.md] (https://github.com/ibmdb/go_ibm_db/blob/master/APIDocumentation.md)
+> For complete list of go_ibm_db APIs and example, please check [APIDocumentation.md](https://github.com/ibmdb/go_ibm_db/blob/master/APIDocumentation.md)
 
 Prerequisite
 =============
