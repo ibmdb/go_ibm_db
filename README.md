@@ -1,20 +1,16 @@
-go_ibm_db
-==========
+# go_ibm_db
 
 Interface for Go to DB2 for LUW,DB2 for iseries and DB2 for z/OS.
 
-API Documentation
-==================
+## API Documentation
 
-> For complete list of go_ibm_db APIs and example, please check [APIDocumentation.md](https://github.com/ibmdb/go_ibm_db/blob/master/APIDocumentation.md)
+> For complete list of go_ibm_db APIs and example, please check [APIDocumentation.md](https://github.com/ibmdb/go_ibm_db/blob/master/API_Documentation.md)
 
-Prerequisite
-=============
+## Prerequisite
 
 Golang should be installed in your system.
 
-How to Install in Windows
-=======================
+## How to Install in Windows
 ```
 go get -d github.com/ibmdb/go_ibm_db
 
@@ -33,8 +29,7 @@ Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
 
 ```
 
-How to Install in Linux/Mac
-===========================
+## How to Install in Linux/Mac
 ```
 go get -d github.com/ibmdb/go_ibm_db
 
@@ -60,11 +55,10 @@ MAC:- (example)
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 ```
 
-How to run sample program
-==========================
+## How to run sample program
 
 ### example1.go:-
-===========
+
 ```
 package main
 
@@ -87,7 +81,7 @@ To run the sample:- go run example1.go
 ```
 
 ### example2.go:-
-===========
+
 ```
 package main
 
@@ -194,7 +188,7 @@ To run the sample:- go run example2.go
 ```
 
 ### example3.go:-(POOLING)
-====================
+
 ```
 package main
 
