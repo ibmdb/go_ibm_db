@@ -1,10 +1,10 @@
 # go_ibm_db
 
-Interface for Go to DB2 for LUW,DB2 for iseries and DB2 for z/OS.
+Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## API Documentation
 
-> For complete list of go_ibm_db APIs and example, please check [APIDocumentation.md](https://github.com/ibmdb/go_ibm_db/blob/master/API_DOCUMENTATION.md)
+> For complete list of go_ibm_db APIs and examples please check [APIDocumentation.md](https://github.com/ibmdb/go_ibm_db/blob/master/API_DOCUMENTATION.md)
 
 ## Prerequisite
 
@@ -14,18 +14,19 @@ Golang should be installed in your system.
 ```
 go get -d github.com/ibmdb/go_ibm_db
 
-(HERE uname means username)
+If you already have a cli driver available in your system, add the path of the same to your Path windows environment variable
+Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
 
-go to installer folder where go_ibm_db is downloaded in your system (C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer) and run setup.go file (go run setup.go).
 
-This will download the clidriver.
+If you do not have a clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer) and run setup.go file (go run setup.go).
 
-If you use the clidriver downloaded by the godriver then add the path to your PATH env variable
-ex:- path = C:\Users\rakhil\go\src\github.com\ibmdb\go_ibm_db\installer\clidriver\bin
+where uname is the username
 
-Otherwise if you use your own cli driver add path to your PATH env variable
-example:-
-Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
+Above command will download clidriver.
+
+Add the path of the clidriver downloaded to your Path windows environment variable
+(Example: Path=C:\Users\rakhil\go\src\github.com\ibmdb\go_ibm_db\installer\clidriver\bin)
+
 
 ```
 
@@ -33,26 +34,33 @@ Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
 ```
 go get -d github.com/ibmdb/go_ibm_db
 
-go to installer folder where go_ibm_db is downloaded in your system (/home/uname/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go).
+If you already have a cli driver available in your system, set the below environment variables with the clidriver path
 
-If you use the clidriver downloaded by the godriver then set the below env variables:
+export DB2HOME=/home/rakhil/dsdriver
+export CGO_CFLAGS=-I$DB2HOME/include
+export CGO_LDFLAGS=-L$DB2HOME/lib 
+Linux:
+export LD_LIBRARY_PATH=/home/rakhil/dsdriver/lib
+Mac:
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
+
+If you do not have a clidriver available in your system
+go to installer folder where go_ibm_db is downloaded in your system (Example: /home/uname/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go)
+where uname is the username
+
+Above command will download clidriver.
+
+Set the below envronment variables with the path of the clidriver downloaded
+
 export DB2HOME=/home/uname/go/src/github.com/imdb/go_ibm_db/installer/clidriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib
-LINUX:-
+Linux:
 export LD_LIBRARY_PATH=/home/uname/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
-MAC:-
+Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver/lib
 
-Otherwise if you use your cli driver then set the below env variables:
 
-export DB2HOME=/home/smathai/dsdriver
-export CGO_CFLAGS=-I$DB2HOME/include
-export CGO_LDFLAGS=-L$DB2HOME/lib 
-LINUX:-(example)
-export LD_LIBRARY_PATH=/home/rakhil/dsdriver/lib
-MAC:- (example)
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 ```
 
 ## How to run sample program
