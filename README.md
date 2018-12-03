@@ -1,7 +1,7 @@
 go_ibm_db
 ==========
 
-This driver helps to connect to DB2 for LUW,DB2 for iseries,DB2 for z/OS.
+This driver helps to connect to DB2 for LUW,DB2 for iseries and DB2 for z/OS.
 
 API Documentation
 ==================
@@ -75,7 +75,7 @@ func main(){
 	}
 	db.Close()
 }
-To run the sample:- go run example3.go
+To run the sample:- go run example1.go
 ```
 
 Example2.go:-
