@@ -32,7 +32,7 @@ func Pconnect() (*Pool){
     return p
 } 
 
-var db *DBP
+//var db *DBP
 var Psize int
 
 //Open will check for the connection in the pool
@@ -57,16 +57,16 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		if(opt[0] == "SetConnMaxLifetime"){
 			ConnMaxLifetime,_=strconv.Atoi(opt[1])
 			n=time.Duration(ConnMaxLifetime) * time.Minute
-			PoolSize=50
+			PoolSize=100
 		}else if(opt[0] == "PoolSize") {
 			PoolSize,_=strconv.Atoi(opt[1])
 			n=5*time.Minute
 		}
 	} else {
-		PoolSize=50
+		PoolSize=100
         n=5*time.Minute
     }
-    if(Psize<100){
+    if(Psize<PoolSize){
 	    Psize=Psize+1;
         if val,ok:=p.availablePool[Connstr];ok{
 	        if(len(val) > 1){
@@ -76,30 +76,38 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		        val=val[:len(val)-1]
 		        p.availablePool[Connstr]=val
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
+				dbpo.SetConnMaxLifetime(n)
 		        return dbpo
 		    }else{
 		        dbpo:=val[0]
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
 		        delete(p.availablePool,Connstr)
+				dbpo.SetConnMaxLifetime(n)
 		        return dbpo
 		    }
         }else{
-	        dbb,err:=sql.Open("go_ibm_db",Connstr)
-		        if err != nil{
+	        db,err:=sql.Open("go_ibm_db",Connstr)
+		    if err != nil{
 		        return nil
 		    }
 		    dbi:=&DBP{
-		        DB  :*dbb,
+		        DB  :*db,
 			    con :Connstr,
 		    }
 		    p.usedPool[Connstr]=append(p.usedPool[Connstr],dbi)
-		    //p.usedPool[Connstr]=dbi;
-		    db=dbi			
-	    }
-	    return db
+            dbi.SetConnMaxLifetime(n)			
+            return dbi	    
+		}
 	} else {
-	    fmt.Println("Max Pool size Reached")
-		return nil
+	    db,err:=sql.Open("go_ibm_db",Connstr)
+		if err != nil{
+		    return nil
+		}
+		dbi:=&DBP{
+		    DB  :*db,
+			con :Connstr,
+		}
+		return dbi
 	}
 }
 
@@ -128,8 +136,10 @@ func (d *DBP) Close(){
             b.availablePool[d.con]=append(b.availablePool[d.con],dbpc)
 	        delete(b.usedPool,d.con)
 	    }
+		go d.Timeout(d.con,n)
+	} else {
+	    d.DB.Close()
 	}
-	go d.Timeout(d.con,n)
 }
 
 //Timeout for closing the connection in pool
