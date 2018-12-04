@@ -76,7 +76,7 @@ if err != nil{
 return err;
 }
 defer db.Close()
-rows,err :=db.Query(“select * from ak;”)
+rows,err :=db.Query(“select * from ak”)
 if err != nil{
 return err
 }
@@ -100,7 +100,7 @@ if err != nil{
 return err;
 }
 defer db.Close()
-_,err=db.Exec("create table ghh(a int, b float, c double,  d char, e varchar(30));")
+_,err=db.Exec("create table ghh(a int, b float, c double,  d char, e varchar(30))")
 if err != nil{
 return err
 }
@@ -166,7 +166,7 @@ bg, err:=db.Begin()
 if err !=nil{
 return err
 }
-_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30));")
+_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
 if err != nil{
 return err
 }
@@ -199,7 +199,7 @@ bg, err:=db.Begin()
 if err !=nil{
 return err
 }
-_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30));")
+_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
 if err != nil{
 return err
 }
