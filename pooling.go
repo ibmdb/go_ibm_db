@@ -11,6 +11,7 @@ import (
 type DBP struct{
 sql.DB
 con string
+n time.Duration
 }
 
 type Pool struct{
@@ -19,7 +20,7 @@ usedPool        map[string] []*DBP
 }
 
 var b *Pool
-var n time.Duration
+//var n time.Duration
 var ConnMaxLifetime,PoolSize int
 //Pconnect will return the pool instance
 func Pconnect() (*Pool){
@@ -37,13 +38,14 @@ var Psize int
 //If not opens a new connection and stores in the pool
 
 func (p *Pool) Open(Connstr string,options ...string)(*DBP){
+    var Time time.Duration
     count := len(options)
     if count>1{
         for i:=0;i<count;i++{
 		    opt:=strings.Split(options[i],"=")
 			if(opt[0] == "SetConnMaxLifetime"){
 			    ConnMaxLifetime,_=strconv.Atoi(opt[1])
-				n=time.Duration(ConnMaxLifetime) * time.Minute
+				Time=time.Duration(ConnMaxLifetime) * time.Second
 			}else if(opt[0] == "PoolSize") {
 			    PoolSize,_=strconv.Atoi(opt[1])
 			} else {
@@ -54,15 +56,15 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 	    opt:=strings.Split(options[0],"=")
 		if(opt[0] == "SetConnMaxLifetime"){
 			ConnMaxLifetime,_=strconv.Atoi(opt[1])
-			n=time.Duration(ConnMaxLifetime) * time.Minute
+			Time=time.Duration(ConnMaxLifetime) * time.Second
 			PoolSize=100
 		}else if(opt[0] == "PoolSize") {
 			PoolSize,_=strconv.Atoi(opt[1])
-			n=5*time.Minute
+			Time=30*time.Second
 		}
 	} else {
 		PoolSize=100
-        n=5*time.Minute
+        Time=30*time.Second
     }
     if(Psize<PoolSize){
 	    Psize=Psize+1;
@@ -74,13 +76,13 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		        val=val[:len(val)-1]
 		        p.availablePool[Connstr]=val
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
-				dbpo.SetConnMaxLifetime(n)
+				dbpo.SetConnMaxLifetime(Time)
 		        return dbpo
 		    }else{
 		        dbpo:=val[0]
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
 		        delete(p.availablePool,Connstr)
-				dbpo.SetConnMaxLifetime(n)
+				dbpo.SetConnMaxLifetime(Time)
 		        return dbpo
 		    }
         }else{
@@ -91,9 +93,10 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		    dbi:=&DBP{
 		        DB  :*db,
 			    con :Connstr,
+				n   :Time,
 		    }
 		    p.usedPool[Connstr]=append(p.usedPool[Connstr],dbi)
-            dbi.SetConnMaxLifetime(n)			
+            dbi.SetConnMaxLifetime(Time)			
             return dbi	    
 		}
 	} else {
@@ -134,7 +137,7 @@ func (d *DBP) Close(){
             b.availablePool[d.con]=append(b.availablePool[d.con],dbpc)
 	        delete(b.usedPool,d.con)
 	    }
-		go d.Timeout(d.con,n)
+		go d.Timeout()
 	} else {
 	    d.DB.Close()
 	}
@@ -142,12 +145,12 @@ func (d *DBP) Close(){
 
 //Timeout for closing the connection in pool
 
-func (d *DBP) Timeout(con string,n time.Duration){
+func (d *DBP) Timeout(){
     var pos int
 	i:=-1
 	select {
-	case <-time.After(n):
-	    if valt,okt:=b.availablePool[con];okt{
+	case <-time.After(d.n):
+	    if valt,okt:=b.availablePool[d.con];okt{
             if(len(valt) > 1){
 	            for _,b:=range valt{
 		            i=i+1
@@ -159,12 +162,12 @@ func (d *DBP) Timeout(con string,n time.Duration){
 		        copy(valt[pos:], valt[pos+1:])
 		        valt[len(valt)-1] = nil
 		        valt = valt[:len(valt)-1]
-				b.availablePool[con]=valt
+				b.availablePool[d.con]=valt
 			    dbpt.DB.Close()
 		    }else{
 		        dbpt:=valt[0]
 			    dbpt.DB.Close()
-		        delete(b.availablePool,con)
+		        delete(b.availablePool,d.con)
 		    }
         }
 	}
