@@ -17,18 +17,33 @@ n time.Duration
 type Pool struct{
 availablePool   map[string] []*DBP
 usedPool        map[string] []*DBP
+PoolSize        int
 }
 
 var b *Pool
-//var n time.Duration
 var ConnMaxLifetime,PoolSize int
+
 //Pconnect will return the pool instance
-func Pconnect() (*Pool){
+func Pconnect(PoolSize string) (*Pool){
+    var Size int
+    count:=len(PoolSize)
+	if count>0{
+        opt:=strings.Split(PoolSize,"=")
+	    if(opt[0] == "PoolSize"){    
+		    Size,_=strconv.Atoi(opt[1])
+	    }else{
+	        fmt.Println("Not a valid parameter")
+	    }
+	} else {
+	    Size=100
+	}
     p:=&Pool{
 	    availablePool: make(map[string] []*DBP),
 		usedPool     : make(map[string] []*DBP),
+		PoolSize     : Size,
     }
 	b=p
+	
     return p
 } 
 
@@ -40,33 +55,20 @@ var Psize int
 func (p *Pool) Open(Connstr string,options ...string)(*DBP){
     var Time time.Duration
     count := len(options)
-    if count>1{
+    if count>0{
         for i:=0;i<count;i++{
 		    opt:=strings.Split(options[i],"=")
 			if(opt[0] == "SetConnMaxLifetime"){
 			    ConnMaxLifetime,_=strconv.Atoi(opt[1])
 				Time=time.Duration(ConnMaxLifetime) * time.Second
-			}else if(opt[0] == "PoolSize") {
-			    PoolSize,_=strconv.Atoi(opt[1])
 			} else {
 			    fmt.Println("not a valid parameter")
 			}
 		}
-    } else if count == 1{
-	    opt:=strings.Split(options[0],"=")
-		if(opt[0] == "SetConnMaxLifetime"){
-			ConnMaxLifetime,_=strconv.Atoi(opt[1])
-			Time=time.Duration(ConnMaxLifetime) * time.Second
-			PoolSize=100
-		}else if(opt[0] == "PoolSize") {
-			PoolSize,_=strconv.Atoi(opt[1])
-			Time=30*time.Second
-		}
-	} else {
-		PoolSize=100
+    } else {
         Time=30*time.Second
     }
-    if(Psize<PoolSize){
+    if(Psize<p.PoolSize){
 	    Psize=Psize+1;
         if val,ok:=p.availablePool[Connstr];ok{
 	        if(len(val) > 1){
@@ -203,5 +205,5 @@ func (p *Pool) Release(){
 func (p *Pool) Display(){
 fmt.Println(p.availablePool)
 fmt.Println(p.usedPool)
-fmt.Println(PoolSize)
+fmt.Println(p.PoolSize)
 }
