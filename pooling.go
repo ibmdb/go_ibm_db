@@ -11,23 +11,39 @@ import (
 type DBP struct{
 sql.DB
 con string
+n time.Duration
 }
 
 type Pool struct{
 availablePool   map[string] []*DBP
 usedPool        map[string] []*DBP
+PoolSize        int
 }
 
 var b *Pool
-var n time.Duration
 var ConnMaxLifetime,PoolSize int
+
 //Pconnect will return the pool instance
-func Pconnect() (*Pool){
+func Pconnect(PoolSize string) (*Pool){
+    var Size int
+    count:=len(PoolSize)
+	if count>0{
+        opt:=strings.Split(PoolSize,"=")
+	    if(opt[0] == "PoolSize"){    
+		    Size,_=strconv.Atoi(opt[1])
+	    }else{
+	        fmt.Println("Not a valid parameter")
+	    }
+	} else {
+	    Size=100
+	}
     p:=&Pool{
 	    availablePool: make(map[string] []*DBP),
 		usedPool     : make(map[string] []*DBP),
+		PoolSize     : Size,
     }
 	b=p
+	
     return p
 } 
 
@@ -37,34 +53,22 @@ var Psize int
 //If not opens a new connection and stores in the pool
 
 func (p *Pool) Open(Connstr string,options ...string)(*DBP){
+    var Time time.Duration
     count := len(options)
-    if count>1{
+    if count>0{
         for i:=0;i<count;i++{
 		    opt:=strings.Split(options[i],"=")
 			if(opt[0] == "SetConnMaxLifetime"){
 			    ConnMaxLifetime,_=strconv.Atoi(opt[1])
-				n=time.Duration(ConnMaxLifetime) * time.Minute
-			}else if(opt[0] == "PoolSize") {
-			    PoolSize,_=strconv.Atoi(opt[1])
+				Time=time.Duration(ConnMaxLifetime) * time.Second
 			} else {
 			    fmt.Println("not a valid parameter")
 			}
 		}
-    } else if count == 1{
-	    opt:=strings.Split(options[0],"=")
-		if(opt[0] == "SetConnMaxLifetime"){
-			ConnMaxLifetime,_=strconv.Atoi(opt[1])
-			n=time.Duration(ConnMaxLifetime) * time.Minute
-			PoolSize=100
-		}else if(opt[0] == "PoolSize") {
-			PoolSize,_=strconv.Atoi(opt[1])
-			n=5*time.Minute
-		}
-	} else {
-		PoolSize=100
-        n=5*time.Minute
+    } else {
+        Time=30*time.Second
     }
-    if(Psize<PoolSize){
+    if(Psize<p.PoolSize){
 	    Psize=Psize+1;
         if val,ok:=p.availablePool[Connstr];ok{
 	        if(len(val) > 1){
@@ -74,13 +78,13 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		        val=val[:len(val)-1]
 		        p.availablePool[Connstr]=val
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
-				dbpo.SetConnMaxLifetime(n)
+				dbpo.SetConnMaxLifetime(Time)
 		        return dbpo
 		    }else{
 		        dbpo:=val[0]
 		        p.usedPool[Connstr]=append(p.usedPool[Connstr],dbpo)
 		        delete(p.availablePool,Connstr)
-				dbpo.SetConnMaxLifetime(n)
+				dbpo.SetConnMaxLifetime(Time)
 		        return dbpo
 		    }
         }else{
@@ -91,9 +95,10 @@ func (p *Pool) Open(Connstr string,options ...string)(*DBP){
 		    dbi:=&DBP{
 		        DB  :*db,
 			    con :Connstr,
+				n   :Time,
 		    }
 		    p.usedPool[Connstr]=append(p.usedPool[Connstr],dbi)
-            dbi.SetConnMaxLifetime(n)			
+            dbi.SetConnMaxLifetime(Time)			
             return dbi	    
 		}
 	} else {
@@ -134,7 +139,7 @@ func (d *DBP) Close(){
             b.availablePool[d.con]=append(b.availablePool[d.con],dbpc)
 	        delete(b.usedPool,d.con)
 	    }
-		go d.Timeout(d.con,n)
+		go d.Timeout()
 	} else {
 	    d.DB.Close()
 	}
@@ -142,12 +147,12 @@ func (d *DBP) Close(){
 
 //Timeout for closing the connection in pool
 
-func (d *DBP) Timeout(con string,n time.Duration){
+func (d *DBP) Timeout(){
     var pos int
 	i:=-1
 	select {
-	case <-time.After(n):
-	    if valt,okt:=b.availablePool[con];okt{
+	case <-time.After(d.n):
+	    if valt,okt:=b.availablePool[d.con];okt{
             if(len(valt) > 1){
 	            for _,b:=range valt{
 		            i=i+1
@@ -159,12 +164,12 @@ func (d *DBP) Timeout(con string,n time.Duration){
 		        copy(valt[pos:], valt[pos+1:])
 		        valt[len(valt)-1] = nil
 		        valt = valt[:len(valt)-1]
-				b.availablePool[con]=valt
+				b.availablePool[d.con]=valt
 			    dbpt.DB.Close()
 		    }else{
 		        dbpt:=valt[0]
 			    dbpt.DB.Close()
-		        delete(b.availablePool,con)
+		        delete(b.availablePool,d.con)
 		    }
         }
 	}
@@ -176,9 +181,7 @@ func (p *Pool) Release(){
     if(p.availablePool != nil){
 	    for _,vala := range p.availablePool{
 		    for _,dbpr := range vala{
-			    
-			        dbpr.DB.Close()
-				
+			    dbpr.DB.Close()
 			}
 		}
 		p.availablePool=nil
@@ -186,9 +189,7 @@ func (p *Pool) Release(){
 	if(p.usedPool != nil){
 	    for _,valu := range p.usedPool{
 		    for _,dbpr := range valu{
-			  
-			        dbpr.DB.Close()
-				
+			    dbpr.DB.Close()				
 			}
 		}
 		p.usedPool=nil
@@ -198,7 +199,7 @@ func (p *Pool) Release(){
 // Display will print the  values in the map 
 
 func (p *Pool) Display(){
-fmt.Println(p.availablePool)
-fmt.Println(p.usedPool)
-fmt.Println(PoolSize)
+    fmt.Println(p.availablePool)
+    fmt.Println(p.usedPool)
+    fmt.Println(p.PoolSize)
 }

@@ -208,11 +208,11 @@ import (
 
 func main(){
     con:="HOSTNAME=host;PORT=number;DATABASE=name;UID=username;PWD=password";
-	pool:=a.Pconnect()
+	pool:=a.Pconnect("PoolSize=100")
 	
 	//SetConnMaxLifetime will atake the value in SECONDS
-	db:=pool.Open(con,"SetConnMaxLifetime=30","PoolSize=100")
-    st, err:=db.Prepare("Insert into SAMPLE values('hi','hi','hi','hi')")
+	db:=pool.Open(con,"SetConnMaxLifetime=30")
+    st, err:=db.Prepare("Insert into SAMPLE values('hi')")
     if err != nil{
         fmt.Println(err)
     }
@@ -220,7 +220,7 @@ func main(){
 	
 	//Here the the time out is default.
 	db1:=pool.Open(con)
-    st1, err:=db1.Prepare("Insert into SAMPLE values('hi1','hi1','hi1','hi1')")
+    st1, err:=db1.Prepare("Insert into SAMPLE values('hi1')")
     if err != nil{
         fmt.Println(err)
     }
