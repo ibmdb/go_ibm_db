@@ -181,9 +181,7 @@ func (p *Pool) Release(){
     if(p.availablePool != nil){
 	    for _,vala := range p.availablePool{
 		    for _,dbpr := range vala{
-			    
-			        dbpr.DB.Close()
-				
+			    dbpr.DB.Close()
 			}
 		}
 		p.availablePool=nil
@@ -191,9 +189,7 @@ func (p *Pool) Release(){
 	if(p.usedPool != nil){
 	    for _,valu := range p.usedPool{
 		    for _,dbpr := range valu{
-			  
-			        dbpr.DB.Close()
-				
+			    dbpr.DB.Close()				
 			}
 		}
 		p.usedPool=nil
@@ -203,7 +199,7 @@ func (p *Pool) Release(){
 // Display will print the  values in the map 
 
 func (p *Pool) Display(){
-fmt.Println(p.availablePool)
-fmt.Println(p.usedPool)
-fmt.Println(p.PoolSize)
+    fmt.Println(p.availablePool)
+    fmt.Println(p.usedPool)
+    fmt.Println(p.PoolSize)
 }
