@@ -212,7 +212,7 @@ func main(){
 	
 	//SetConnMaxLifetime will atake the value in SECONDS
 	db:=pool.Open(con,"SetConnMaxLifetime=30")
-    st, err:=db.Prepare("Insert into SAMPLE values('hi')")
+    st, err:=db.Prepare("Insert into SAMPLE values('hi','hi','hi','hi')")
     if err != nil{
         fmt.Println(err)
     }
@@ -220,7 +220,7 @@ func main(){
 	
 	//Here the the time out is default.
 	db1:=pool.Open(con)
-    st1, err:=db1.Prepare("Insert into SAMPLE values('hi1')")
+    st1, err:=db1.Prepare("Insert into SAMPLE values('hi1','hi1','hi1','hi1')")
     if err != nil{
         fmt.Println(err)
     }
