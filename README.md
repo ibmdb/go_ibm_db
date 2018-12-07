@@ -211,7 +211,10 @@ func main(){
 	pool:=a.Pconnect("PoolSize=100")
 	
 	//SetConnMaxLifetime will atake the value in SECONDS
-	db:=pool.Open(con,"SetConnMaxLifetime=30")
+	db,err:=pool.Open(con,"SetConnMaxLifetime=30")
+	if err != nil{
+        fmt.Println(err)
+    }
     st, err:=db.Prepare("Insert into SAMPLE values('hi','hi','hi','hi')")
     if err != nil{
         fmt.Println(err)
@@ -219,7 +222,10 @@ func main(){
 	st.Query()
 	
 	//Here the the time out is default.
-	db1:=pool.Open(con)
+	db1,err:=pool.Open(con)
+	if err != nil{
+        fmt.Println(err)
+    }
     st1, err:=db1.Prepare("Insert into SAMPLE values('hi1','hi1','hi1','hi1')")
     if err != nil{
         fmt.Println(err)

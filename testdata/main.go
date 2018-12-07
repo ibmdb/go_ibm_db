@@ -148,9 +148,9 @@ func Close()(error){
 	}
 
 func PoolOpen() (int){
-    pool:=a.Pconnect()
-    db:=pool.Open(con)
-    if(db == nil){
+    pool:=a.Pconnect("PoolSize=100")
+    _,err:=pool.Open(con)
+    if(err != nil){
         return 0
     }else {
         return 1
