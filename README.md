@@ -45,14 +45,14 @@ Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 
 If you do not have a clidriver available in your system
-go to installer folder where go_ibm_db is downloaded in your system (Example: /home/uname/go/src/github.com/imdb/go_ibm_db/installer) and run setup.go file (go run setup.go)
+go to installer folder where go_ibm_db is downloaded in your system (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer) and run setup.go file (go run setup.go)
 where uname is the username
 
 Above command will download clidriver.
 
 Set the below envronment variables with the path of the clidriver downloaded
 
-export DB2HOME=/home/uname/go/src/github.com/imdb/go_ibm_db/installer/clidriver
+export DB2HOME=/home/uname/go/src/github.com/ibmdb/go_ibm_db/installer/clidriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib
 Linux:
