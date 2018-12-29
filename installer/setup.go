@@ -129,6 +129,11 @@ fmt.Println(string(out[:]))
 func main() {
     var cliFileName string
     var url string
+	
+    if len(os.Args) > 1 {
+        os.Chdir(os.Args[1])
+    }
+
     i:=0
     _,a :=os.LookupEnv("IBM_DB_DIR")
     _,b :=os.LookupEnv("IBM_DB_HOME")
