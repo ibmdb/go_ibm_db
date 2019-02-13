@@ -75,7 +75,7 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 			break
 		}
 	}
-	return &Result{rowCount: int64(c)}, nil
+	return &Result{rowCount: sumRowCount}, nil
 }
 
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
