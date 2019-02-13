@@ -121,3 +121,8 @@ func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldI
 	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(ColumnNumber), C.SQLUSMALLINT(FieldIdentifier), C.SQLPOINTER(CharacterAttributePtr), C.SQLSMALLINT(BufferLength), (*C.SQLSMALLINT)(unsafe.Pointer(StringLengthPtr)), (C.SQLPOINTER)(NumericAttributePtr))
 	return SQLRETURN(r)
 }
+
+func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
+	r := C.SQLMoreResults(C.SQLHSTMT(statementHandle))
+	return SQLRETURN(r)
+}
