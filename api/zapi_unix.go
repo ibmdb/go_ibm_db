@@ -23,7 +23,7 @@ func SQLAllocHandle(handleType SQLSMALLINT, inputHandle SQLHANDLE, outputHandle 
 }
 
 func SQLBindCol(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, targetType SQLSMALLINT, targetValuePtr []byte, bufferLength SQLLEN, vallen *SQLLEN) (ret SQLRETURN) {
-	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLSMALLINT(targetType), C.SQLPOINTER(unsafe.Pointer(&targetValuePtr[0]), C.SQLLEN(bufferLength), (*C.SQLLEN)(vallen))
+	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLSMALLINT(targetType), C.SQLPOINTER(unsafe.Pointer(&targetValuePtr[0])), C.SQLLEN(bufferLength), (*C.SQLLEN)(vallen))
 	return SQLRETURN(r)
 }
 
