@@ -161,8 +161,8 @@ func SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr 
 	return
 }
 
-func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLSMALLINT, FieldIdentifier SQLSMALLINT, CharacterAttributePtr SQLPOINTER, BufferLength SQLSMALLINT, StringLengthPtr *SQLSMALLINT, NumericAttributePtr *SQLLEN) (ret SQLRETURN) {
-	r0, _, _ := syscall.Syscall9(procSQLColAttribute.Addr(), 7, uintptr(statementHandle), uintptr(ColumnNumber), uintptr(FieldIdentifier), uintptr(CharacterAttributePtr), uintptr(BufferLength), uintptr(unsafe.Pointer(StringLengthPtr)), uintptr(unsafe.Pointer(NumericAttributePtr)), 0, 0)
+func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldIdentifier SQLUSMALLINT, CharacterAttributePtr SQLPOINTER, BufferLength SQLSMALLINT, StringLengthPtr *SQLSMALLINT, NumericAttributePtr SQLPOINTER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall9(procSQLColAttribute.Addr(), 7, uintptr(statementHandle), uintptr(ColumnNumber), uintptr(FieldIdentifier), uintptr(CharacterAttributePtr), uintptr(BufferLength), uintptr(unsafe.Pointer(StringLengthPtr)), uintptr(NumericAttributePtr), 0, 0)
 	ret = SQLRETURN(r0)
 	return
 }
