@@ -6,8 +6,8 @@ import (
 	"database/sql"
 	)
 	
-var con ="HOSTNAME=host;PORT=number;DATABASE=name;UID=username;PWD=password"
-	
+var con ="HOSTNAME=host;PORT=number;DATABASE=name;UID=username;PWD=password"	
+
 func Createconnection()(db *sql.DB){
     db,_=sql.Open("go_ibm_db",con)
     return db
