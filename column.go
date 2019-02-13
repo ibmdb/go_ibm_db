@@ -29,7 +29,7 @@ func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf 
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
 	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
-		buf, api.SQLLEN(len(buf)),
+		api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLLEN(len(buf)),
 		(*api.SQLLEN)(l))
 }
 
