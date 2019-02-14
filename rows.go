@@ -105,6 +105,10 @@ func (r *Rows) Next(dest []driver.Value) error {
 	return nil
 }
 
+func (r *Rows) HasNextResultSet() bool {
+	return true
+}
+
 func (r *Rows) NextResultSet() error {
 	ret := api.SQLMoreResults(r.os.h)
 	if ret == api.SQL_NO_DATA {
