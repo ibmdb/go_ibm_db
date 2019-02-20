@@ -12,7 +12,36 @@ import (
 	"compress/gzip"
 	"path/filepath"
 	"strings"
+	"math"
 )
+
+type WriteCounter struct {
+	Total uint64
+}
+
+func Convert(bytes uint64) string {
+	n := float64(bytes)
+	for _, unit := range []string{"", "Ki", "Mi", "Gi"} {
+		if math.Abs(n) < 1024.0 {
+			return fmt.Sprintf("%3.1f%sB", n, unit)
+		}
+		n /= 1024.0
+	}
+	return fmt.Sprintf("%.1fTiB", n)
+}
+
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Total += uint64(n)
+	wc.PrintProgress()
+	return n, nil
+}
+
+func (wc WriteCounter) PrintProgress() {
+	fmt.Printf("\r%s", strings.Repeat(" ", 35))
+	fmt.Printf("\rDownloading... %s complete", Convert(wc.Total))
+}
+
 //func to Download
 func DownloadFile(filepath string, url string) error {
     out, err := os.Create(filepath)
@@ -25,7 +54,8 @@ func DownloadFile(filepath string, url string) error {
         return err
     }
     defer resp.Body.Close()
-    _, err = io.Copy(out, resp.Body)
+	counter := &WriteCounter{}
+    _, err = io.Copy(out, io.TeeReader(resp.Body,counter))
     if err != nil {
         return err
     }
@@ -145,7 +175,7 @@ func main() {
 	    fmt.Printf("aix\n")
 	    fmt.Printf(cliFileName)
 	}else if runtime.GOOS == "linux"{
-	       i=2
+	    i=2
 	    if runtime.GOARCH == "ppc64le" {
 	        const wordsize = 32 << (^uint(0) >> 32 & 1)
 	        if wordsize==64{
@@ -216,7 +246,6 @@ func main() {
 	    }
 	    fileUrl:= "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
 	    fmt.Println(url)
-	    fmt.Println("Downloading...")
 	    err:=DownloadFile(cliFileName,fileUrl)
 	    if err!=nil{
 	        fmt.Println(err)
