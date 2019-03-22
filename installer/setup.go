@@ -112,7 +112,9 @@ func Untaring(sourcefile string) {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-                err = os.Chmod(filename, os.FileMode(header.Mode))
+				fileMode := os.FileMode(header.Mode)
+				fileMode = fileMode | 0600
+				err = os.Chmod(filename, os.FileMode(fileMode))
                 if err != nil {
                     fmt.Println(err)
                     os.Exit(1)
