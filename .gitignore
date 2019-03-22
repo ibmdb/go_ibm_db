@@ -3,3 +3,6 @@ syntax:glob
 *.orig
 
 syntax:regexp
+
+installer/*.gz
+installer/clidriver
