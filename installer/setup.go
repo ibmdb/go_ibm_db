@@ -107,7 +107,7 @@ func Untaring(sourcefile string) {
                     fmt.Println(err)
                     os.Exit(1)
                 }
-				_, err = io.Copy(writer, tarBallReader)
+                _, err = io.Copy(writer, tarBallReader)
                 if err != nil {
                     fmt.Println(err)
                     os.Exit(1)
