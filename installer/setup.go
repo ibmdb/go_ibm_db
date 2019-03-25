@@ -30,7 +30,7 @@ func downloadFile(filepath string, url string) error {
 	return nil
 }
 
-func unzipping(sourcefile string) {
+func unzipping(sourcefile string, targetDirectory string) {
 	reader, err := zip.OpenReader(sourcefile)
 	if err != nil {
 		fmt.Println(err)
@@ -44,9 +44,13 @@ func unzipping(sourcefile string) {
 			os.Exit(1)
 		}
 		defer zipped.Close()
-		path := filepath.Join("./", f.Name)
+		path := filepath.Join(targetDirectory, f.Name)
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
+			err = os.MkdirAll(path, f.Mode())
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 			fmt.Println("Creating directory", path)
 		} else {
 			writer, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, f.Mode())
