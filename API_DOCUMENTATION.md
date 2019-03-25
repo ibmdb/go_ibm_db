@@ -23,15 +23,16 @@ open a connection to database
 * **connectionString** - The connection string for your database.
 * For distributed platforms, the connection string is typically defined   as: `DATABASE=dbname;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=passwd`
 
-```javascript
+```go
 var connStr = flag.String("conn", "HOSTNAME=hostname;PORT=port;DATABASE=dbname;UID=uid;PWD=Pass", "connection string")
 func dboper() error {
-fmt.Println("connecting to driver");
-db, err:=sql.Open("drivername",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
+    fmt.Println("connecting to driver");
+    db, err := sql.Open("drivername",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
 }
 ```
 ### <a name="PrepareApi"></a> 2) .Prepare(sqlquery)
@@ -41,23 +42,27 @@ Prepare a statement for execution
 
 Returns a ‘statement’ object
 
-```javascript
-func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-imb_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-st, err:=db.Prepare("select * from ak")
-if err !=nil{
-return err
-}
-rows,err :=st.Query()
-if err != nil{
-return err
-}
-defer rows.Close()
+```go
+func oper() error {
+    fmt.Println("connecting to go-ibm_db");
+    db, err:=sql.Open("go-imb_db",*connStr);
+    if err != nil {
+        return err;
+    }
+    
+    defer db.Close()
+
+    st, err := db.Prepare("select * from ak")
+    if err !=nil {
+        return err
+    }
+
+    rows,err := st.Query()
+    if err != nil {
+        return err
+    }
+
+    defer rows.Close()
 }
 ```
 
@@ -67,20 +72,23 @@ Issue a SQL query to the database
 
 If the query is executed then it will return the rows or it will return error
 
-```javascript
+```go
 
-func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-rows,err :=db.Query(“select * from ak”)
-if err != nil{
-return err
-}
-defer rows.Close()
+func oper() error {
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+    
+    rows,err := db.Query(“select * from ak”)
+    if err != nil {
+        return err
+    }
+    
+    defer rows.Close()
 }
 ```
 
@@ -91,19 +99,21 @@ Execute a prepared statement.
 
 Only DML commands are performed. No data is returned back.
 
-```javascript
+```go
 
-func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-_,err=db.Exec("create table ghh(a int, b float, c double,  d char, e varchar(30))")
-if err != nil{
-return err
-}
+func oper() error {
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+
+    _,err = db.Exec("create table ghh(a int, b float, c double,  d char, e varchar(30))")
+    if err != nil {
+        return err
+    }
 }
 ```
 
@@ -111,21 +121,24 @@ return err
 
 Begin a transaction.
 
-```javascript
+```go
 
 
-func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-bg, err:=db.Begin()
-if err !=nil{
-return err
-}
-return nil
+func oper() error {
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+    
+    bg, err := db.Begin()
+    if err !=nil {
+        return err
+    }
+
+    return nil
 }
 ```
 
@@ -135,15 +148,16 @@ return nil
 
 Close the currently opened database.
 
-```javascript
+```go
 
 func dboper() error {
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+    
+    defer db.Close()
 }
 ```
 
@@ -153,28 +167,34 @@ defer db.Close()
 
 Commit a transaction.
 
-```javascript
+```go
 
 func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-bg, err:=db.Begin()
-if err !=nil{
-return err
-}
-_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
-if err != nil{
-return err
-}
-err=bg.Commit()
-if err != nil{
-return err
-}
-return nil
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil{
+        return err;
+    }
+    
+
+    defer db.Close()
+
+    bg, err := db.Begin()
+    if err != nil {
+        return err
+    }
+    
+    _,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
+    if err != nil {
+        return err
+    }
+    
+    err = bg.Commit()
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 ```
 
@@ -185,29 +205,33 @@ return nil
 
 Rollback a transaction.
 
-```javascript
+```go
 
 
 func oper() error{
-fmt.Println("connecting to go-ibm_db");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-bg, err:=db.Begin()
-if err !=nil{
-return err
-}
-_,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
-if err != nil{
-return err
-}
-err=bg.Rollback()
-if err != nil{
-return err
-}
-return nil
+    fmt.Println("connecting to go-ibm_db");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+    bg, err := db.Begin()
+    if err !=nil {
+        return err
+    }
+
+    _,err=bg.Exec("create table ghh(a int,b float,c double,d char,e varchar(30))")
+    if err != nil {
+        return err
+    }
+
+    err = bg.Rollback()
+    if err != nil {
+        return err
+    }
+    
+    return nil
 }
 ```
 
@@ -216,17 +240,18 @@ return nil
 QueryRow executes a query that is expected to return at most one row.
 If there are more rows then it will scan first and discards the rest.
  
-```javascript
+```go
 
-func oper()  error{
-id := 123
-var username string
-err := db.QueryRow("SELECT name FROM ak WHERE id=?", id).Scan(&username)
- if err != nil {
- return err
-}
-fmt.Printf("Username is %s\n", username)
-return nil
+func oper()  error {
+    id := 123
+    var username string
+    err := db.QueryRow("SELECT name FROM ak WHERE id=?", id).Scan(&username)
+    if err != nil {
+        return err
+    }
+
+    fmt.Printf("Username is %s\n", username)
+    return nil
 }
 
 ```
@@ -237,28 +262,32 @@ Returns the column names.
 
 Returns error if the rows are closed.
 
-```javascript
+```go
 
-func oper() error{
-fmt.Println("connecting to databse");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-st, err:=db.Prepare("select * from ak")
-if err !=nil{
-return err
-}
-rows,err :=st.Query()
-if err != nil{
-return err
-}
-defer rows.Close()
-name11 := make([]string,1)
-name11,err = rows.Columns()
-fmt.Printf("%v",name11);
-return nil
+func oper() error {
+    fmt.Println("connecting to databse");
+    db, err := sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+
+    st, err := db.Prepare("select * from ak")
+    if err !=nil {
+    return err
+    }
+    
+    rows,err :=st.Query()
+    if err != nil {
+        return err
+    }
+    
+    defer rows.Close()
+    name11 := make([]string,1)
+    name11, err = rows.Columns()
+    fmt.Printf("%v",name11);
+    return nil
 }
 ```
 
@@ -266,30 +295,34 @@ return nil
 
 Prepares the next result row for reading with the scan api.
 
-```javascript
+```go
 
-func oper() error{
-fmt.Println("connecting to database");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-rows,err :=db.Query()
-if err != nil{
-return err
-}
-defer rows.Close()
-for rows.Next(){
-var t string
-var x string
-err = rows.Scan(&t,&x)
-if err != nil{
-return err
-}
-fmt.Printf("%v %v\n",t,x)
-}
-return nil
+func oper() error {
+    fmt.Println("connecting to database");
+    db, err:=sql.Open("go-ibm_db",*connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+    rows,err := db.Query()
+    if err != nil {
+        return err
+    }
+    
+    defer rows.Close()
+    for rows.Next() {
+        var t string
+        var x string
+        err = rows.Scan(&t, &x)
+        if err != nil {
+            return err
+        }
+
+        fmt.Printf("%v %v\n",t,x)
+    }
+    
+    return nil
 }
 ```
 
@@ -297,39 +330,34 @@ return nil
 
 copies the columns in the current row into the values pointed.
 
-```javascript
+```go
 
-func oper() error{
-fmt.Println("connecting to database");
-db, err:=sql.Open("go-ibm_db",*connStr);
-if err != nil{
-return err;
-}
-defer db.Close()
-rows,err :=db.Query()
-if err != nil{
-return err
-}
-defer rows.Close()
-for rows.Next(){
-var t string
-var x string
-err = rows.Scan(&t,&x)
-if err != nil{
-return err
-}
-fmt.Printf("%v %v\n",t,x)
-}
-return nil
+func oper() error {
+    fmt.Println("connecting to database");
+    db, err := sql.Open("go-ibm_db", *connStr);
+    if err != nil {
+        return err;
+    }
+
+    defer db.Close()
+
+    rows,err := db.Query()
+    if err != nil {
+        return err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var t string
+        var x string
+        err = rows.Scan(&t, &x)
+        if err != nil {
+            return err
+        }
+
+        fmt.Printf("%v %v\n",t,x)
+    }
+    return nil
 }
 ```
-
-
-
-
-
-
-
-
-
 
