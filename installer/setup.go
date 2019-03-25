@@ -64,9 +64,17 @@ func unzipping(sourcefile string) {
 	}
 }
 
-func linux_untar(clidriver string) {
-	out, _ := exec.Command("tar", "xvzf", clidriver).Output()
-	fmt.Println(string(out[:]))
+func linux_untar(clidriver string, targetDirectory string) error {
+	fmt.Printf("Extracting with tar -xvzf %s -C %s\n", clidriver, targetDirectory)
+	out, err := exec.Command("tar", "xvzf", clidriver, "-C", targetDirectory).Output()
+
+	fmt.Println(string(out))
+	if err != nil {
+		fmt.Println("Error while running tar: " + err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func main() {
