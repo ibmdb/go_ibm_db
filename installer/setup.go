@@ -197,6 +197,7 @@ func main() {
 	    fmt.Printf("windows\n")
 	    fmt.Printf(cliFileName)
 	}else if  runtime.GOOS=="darwin"{
+		i=2
 	    const wordsize = 32 << (^uint(0) >> 32 & 1)
 	    if wordsize==64 {
             cliFileName = "macos64_odbc_cli.tar.gz"
