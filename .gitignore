@@ -1,7 +1,5 @@
 syntax:glob
 *.exe
 *.orig
-*.gz
-*.zip
 
 syntax:regexp
