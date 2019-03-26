@@ -208,7 +208,7 @@ func main() {
 	}
 
 	if unpackageType == 1 {
-		unzipping(cliFileName)
+		unzipping(cliFileName, path)
 	} else {
 		linux_untar(cliFileName, path)
 	}
