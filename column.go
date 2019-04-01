@@ -84,7 +84,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
-	case api.SQL_BINARY, api.SQL_VARBINARY:
+	case api.SQL_BINARY, api.SQL_VARBINARY,api.SQL_BLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, size), nil
 	case api.SQL_LONGVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, 0), nil

@@ -48,6 +48,7 @@ const (
 	SQL_TYPE_DATE       = 91
 	SQL_TYPE_TIME       = 92
 	SQL_TYPE_TIMESTAMP  = 93
+	SQL_NEED_DATA       = 99
 	SQL_TIMESTAMP       = 11
 	SQL_LONGVARCHAR     = -1
 	SQL_BINARY          = -2
@@ -62,6 +63,10 @@ const (
 	SQL_GUID            = -11
 	SQL_SIGNED_OFFSET   = -20
 	SQL_UNSIGNED_OFFSET = -22
+	SQL_GRAPHIC         = -95
+	SQL_BLOB            = -98
+	SQL_CLOB            = -99
+	SQL_DBCLOB          = -350
 	SQL_SS_XML          = -152
 
 	SQL_C_CHAR           = SQL_CHAR
@@ -77,10 +82,13 @@ const (
 	SQL_C_BINARY         = SQL_BINARY
 	SQL_C_BIT            = SQL_BIT
 	SQL_C_WCHAR          = SQL_WCHAR
+	SQL_C_DBCHAR         = SQL_DBCLOB
 	SQL_C_DEFAULT        = 99
 	SQL_C_SBIGINT        = SQL_BIGINT + SQL_SIGNED_OFFSET
 	SQL_C_UBIGINT        = SQL_BIGINT + SQL_UNSIGNED_OFFSET
 	SQL_C_GUID           = SQL_GUID
+	SQL_C_TYPE_DATE      = SQL_TYPE_DATE
+	SQL_C_TYPE_TIME      = SQL_TYPE_TIME
 
 	SQL_COMMIT   = 0
 	SQL_ROLLBACK = 1
@@ -102,6 +110,18 @@ const (
 	SQL_CP_DEFAULT              = SQL_CP_OFF
 	SQL_CP_STRICT_MATCH         = 0
 	SQL_CP_RELAXED_MATCH        = 1
+	SQL_DESC_PRECISION          = 1005
+	SQL_DESC_SCALE              = 1006
+	SQL_DESC_LENGTH             = 1003
+	SQL_DESC_CONCISE_TYPE       = SQL_COLUMN_TYPE
+	SQL_DESC_TYPE_NAME          = SQL_COLUMN_TYPE_NAME
+	SQL_COLUMN_TYPE             = 2
+	SQL_COLUMN_TYPE_NAME        = 14
+	MAX_FIELD_SIZE              = 1024
+	SQL_DESC_NULLABLE           = 1008
+	SQL_NULLABLE                = 1
+	SQL_NO_NULLS                = 0
+	SQL_DECFLOAT                = -360
 )
 
 type (
