@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 )
 
 func downloadFile(filepath string, url string) error {
@@ -30,7 +29,7 @@ func downloadFile(filepath string, url string) error {
 	return nil
 }
 
-func unzipping(sourcefile string, targetDirectory string) {
+func Unzipping(sourcefile string, targetDirectory string) {
 	reader, err := zip.OpenReader(sourcefile)
 	if err != nil {
 		fmt.Println(err)
@@ -46,11 +45,7 @@ func unzipping(sourcefile string, targetDirectory string) {
 		defer zipped.Close()
 		path := filepath.Join(targetDirectory, f.Name)
 		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(path, f.Mode())
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			os.MkdirAll(path, f.Mode())
 			fmt.Println("Creating directory", path)
 		} else {
 			writer, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, f.Mode())
@@ -82,7 +77,7 @@ func linux_untar(clidriver string, targetDirectory string) error {
 }
 
 func main() {
-	var cliFileName string
+	var target, cliFileName string
 	var unpackageType int
 	_, errDir := os.LookupEnv("IBM_DB_DIR")
 	_, errHome := os.LookupEnv("IBM_DB_HOME")
@@ -92,25 +87,19 @@ func main() {
 		fmt.Printf("Failed to fetch environment variables.")
 		os.Exit(1)
 	}
-
-	out, _ := exec.Command("go", "env", "GOPATH").Output()
-	str := strings.TrimSpace(string(out))
-	path := filepath.Join(str, "/src/github.com/ibmdb/go_ibm_db/installer")
-	queryPath := filepath.Join(path, "clidriver")
-	_, err := os.Stat(queryPath)
-	if err == nil || !os.IsNotExist(err) {
-		fmt.Printf("Directory already exists: %s\n", queryPath)
-		os.Exit(1)
+	if len(os.Args) == 2 {
+		target = os.Args[1]
+	} else {
+		target = "./"
 	}
 
-	if !os.IsNotExist(err) {
-		fmt.Printf("Error while checking for directory: %s\n", queryPath)
-		os.Exit(1)
+	if _, err := os.Stat(target + "/clidriver"); !os.IsNotExist(err) {
+		fmt.Println("clidriver folder exists in the path")
+		os.Exit(2)
 	}
-
 	if runtime.GOOS == "windows" {
 		unpackageType = 1
-		const wordsize= 32 << (^uint(0) >> 32 & 1)
+		const wordsize = 32 << (^uint(0) >> 32 & 1)
 		if wordsize == 64 {
 			cliFileName = "ntx64_odbc_cli.zip"
 		} else {
@@ -121,26 +110,26 @@ func main() {
 	} else if runtime.GOOS == "linux" {
 		unpackageType = 2
 		if runtime.GOARCH == "ppc64le" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "ppc64le_odbc_cli.tar.gz"
 			}
 		} else if runtime.GOARCH == "ppc" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "ppc64_odbc_cli.tar.gz"
 			} else {
 				cliFileName = "ppc32_odbc_cli.tar.gz"
 			}
 		} else if runtime.GOARCH == "amd64" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "linuxx64_odbc_cli.tar.gz"
 			} else {
 				cliFileName = "linuxia32_odbc_cli.tar.gz"
 			}
 		} else if runtime.GOARCH == "390" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "s390x64_odbc_cli.tar.gz"
 			} else {
@@ -151,7 +140,7 @@ func main() {
 		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "aix" {
 		unpackageType = 2
-		const wordsize= 32 << (^uint(0) >> 32 & 1)
+		const wordsize = 32 << (^uint(0) >> 32 & 1)
 		if wordsize == 64 {
 			cliFileName = "aix64_odbc_cli.tar.gz"
 		} else {
@@ -162,14 +151,14 @@ func main() {
 	} else if runtime.GOOS == "sunos" {
 		unpackageType = 2
 		if runtime.GOARCH == "i86pc" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "sunamd64_odbc_cli.tar.gz"
 			} else {
 				cliFileName = "sunamd32_odbc_cli.tar.gz"
 			}
 		} else if runtime.GOARCH == "SUNW" {
-			const wordsize= 32 << (^uint(0) >> 32 & 1)
+			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "sun64_odbc_cli.tar.gz"
 			} else {
@@ -187,29 +176,20 @@ func main() {
 		fmt.Println("darwin")
 	} else {
 		fmt.Println("not known platform")
-		os.Exit(1)
+		os.Exit(3)
 	}
-
 	fileUrl := "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
 	fmt.Println("Downloading " + fileUrl)
-	err = downloadFile(cliFileName, fileUrl)
+	err := downloadFile(cliFileName, fileUrl)
 	if err != nil {
 		fmt.Println("Error while downloading file: " + err.Error())
-		os.Exit(1)
+		os.Exit(4)
 	}
-
 	fmt.Println("download successful")
 
-	// Create the directory. As there is a check above that it doesn't exist, we just create
-	err = os.MkdirAll(path, os.ModePerm);
-	if err != nil {
-		fmt.Printf("Could not create directory %s: %s", path, err.Error())
-		os.Exit(1)
-	}
-
 	if unpackageType == 1 {
-		unzipping(cliFileName, path)
+		Unzipping(cliFileName, target)
 	} else {
-		linux_untar(cliFileName, path)
+		linux_untar(cliFileName, target)
 	}
 }
