@@ -64,7 +64,7 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 		return nil, err
 	}
 	var sumRowCount int64
-	for{
+	for {
 		var c api.SQLLEN
 		ret := api.SQLRowCount(s.os.h, &c)
 		if IsError(ret) {

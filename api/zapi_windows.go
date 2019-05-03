@@ -32,6 +32,8 @@ var (
 	procSQLSetConnectAttrW = mododbc32.NewProc("SQLSetConnectAttrW")
 	procSQLColAttribute    = mododbc32.NewProc("SQLColAttribute")
 	procSQLMoreResults     = mododbc32.NewProc("SQLMoreResults")
+	procSQLParamData       = mododbc32.NewProc("SQLParamData")
+	procSQLPutData         = mododbc32.NewProc("SQLPutData")
 )
 
 func GetDllName() string {
@@ -170,6 +172,18 @@ func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldI
 
 func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
 	r0, _, _ := syscall.Syscall(procSQLMoreResults.Addr(), 1, uintptr(statementHandle), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLParamData(statementHandle SQLHSTMT, ValuePtrPtr *SQLPOINTER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall(procSQLParamData.Addr(), 2, uintptr(statementHandle), uintptr(unsafe.Pointer(ValuePtrPtr)), 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLPutData(statementHandle SQLHSTMT, DataPtr SQLPOINTER, StrLen_or_Ind SQLLEN) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall(procSQLPutData.Addr(), 3, uintptr(statementHandle), uintptr(DataPtr), uintptr(StrLen_or_Ind))
 	ret = SQLRETURN(r0)
 	return
 }

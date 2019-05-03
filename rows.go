@@ -112,15 +112,15 @@ func (r *Rows) HasNextResultSet() bool {
 func (r *Rows) NextResultSet() error {
 	ret := api.SQLMoreResults(r.os.h)
 	if ret == api.SQL_NO_DATA {
-	return io.EOF
+		return io.EOF
 	}
 	if IsError(ret) {
-	return NewError("SQLMoreResults", r.os.h)
+		return NewError("SQLMoreResults", r.os.h)
 	}
 
 	err := r.os.BindColumns()
 	if err != nil {
-	return err
+		return err
 	}
 	return nil
 }

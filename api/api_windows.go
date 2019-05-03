@@ -48,6 +48,7 @@ const (
 	SQL_TYPE_DATE       = 91
 	SQL_TYPE_TIME       = 92
 	SQL_TYPE_TIMESTAMP  = 93
+	SQL_NEED_DATA       = 99
 	SQL_TIMESTAMP       = 11
 	SQL_LONGVARCHAR     = -1
 	SQL_BINARY          = -2
