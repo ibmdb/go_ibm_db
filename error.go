@@ -5,11 +5,12 @@
 package go_ibm_db
 
 import (
-	"github.com/ibmdb/go_ibm_db/api"
 	"database/sql/driver"
 	"fmt"
 	"strings"
 	"unsafe"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 func IsError(ret api.SQLRETURN) bool {

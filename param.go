@@ -5,11 +5,12 @@
 package go_ibm_db
 
 import (
-	"github.com/ibmdb/go_ibm_db/api"
 	"database/sql/driver"
 	"fmt"
 	"time"
 	"unsafe"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type Parameter struct {
@@ -76,14 +77,14 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		sqltype = api.SQL_BIGINT
 		size = 8
 	case bool:
-		var b byte
+		var b int
 		if d {
 			b = 1
 		}
-		ctype = api.SQL_C_BIT
+		ctype = api.SQL_C_SBIGINT
 		p.Data = &b
 		buf = unsafe.Pointer(&b)
-		sqltype = api.SQL_BIT
+		sqltype = api.SQL_BIGINT
 		size = 1
 	case float64:
 		ctype = api.SQL_C_DOUBLE
