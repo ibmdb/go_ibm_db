@@ -5,18 +5,19 @@
 package go_ibm_db
 
 import (
-	"github.com/ibmdb/go_ibm_db/api"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 	"time"
 	"unsafe"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type BufferLen api.SQLLEN
 
 func (l *BufferLen) IsNull() bool {
-	return *l == api.SQL_NULL_DATA
+	return int16(*l) == api.SQL_NULL_DATA
 }
 
 func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
@@ -26,7 +27,7 @@ func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf 
 }
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
-	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype, buf, api.SQLLEN(len(buf)),(*api.SQLLEN)(l))
+	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype, buf, api.SQLLEN(len(buf)), (*api.SQLLEN)(l))
 }
 
 // Column provides access to row columns.
@@ -80,11 +81,11 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_TYPE_DATE:
 		var v api.SQL_DATE_STRUCT
 		return NewBindableColumn(b, api.SQL_C_DATE, int(unsafe.Sizeof(v))), nil
-	case api.SQL_CHAR, api.SQL_VARCHAR:
+	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
-	case api.SQL_BINARY, api.SQL_VARBINARY,api.SQL_BLOB:
+	case api.SQL_BINARY, api.SQL_VARBINARY, api.SQL_BLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, size), nil
 	case api.SQL_LONGVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, 0), nil
