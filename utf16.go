@@ -53,3 +53,17 @@ func utf16toutf8(s []uint16) []byte {
 	}
 	return buf
 }
+
+//This func takes []uint8 array and then removes the null
+//and then returns []uint8
+func removeNulls(s []uint8) []uint8 {
+	buf := make([]uint8, len(s)/2)
+	ind := 0
+	for _, v := range s {
+		if v != 0 {
+			buf[ind] = v
+			ind++
+		}
+	}
+	return buf
+}

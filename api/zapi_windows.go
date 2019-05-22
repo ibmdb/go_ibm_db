@@ -30,6 +30,8 @@ var (
 	procSQLRowCount        = mododbc32.NewProc("SQLRowCount")
 	procSQLSetEnvAttr      = mododbc32.NewProc("SQLSetEnvAttr")
 	procSQLSetConnectAttrW = mododbc32.NewProc("SQLSetConnectAttrW")
+	procSQLColAttribute    = mododbc32.NewProc("SQLColAttribute")
+	procSQLMoreResults     = mododbc32.NewProc("SQLMoreResults")
 )
 
 func GetDllName() string {
@@ -156,6 +158,18 @@ func SQLSetEnvAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr SQL
 
 func SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
 	r0, _, _ := syscall.Syscall6(procSQLSetConnectAttrW.Addr(), 4, uintptr(connectionHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldIdentifier SQLUSMALLINT, CharacterAttributePtr SQLPOINTER, BufferLength SQLSMALLINT, StringLengthPtr *SQLSMALLINT, NumericAttributePtr SQLPOINTER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall9(procSQLColAttribute.Addr(), 7, uintptr(statementHandle), uintptr(ColumnNumber), uintptr(FieldIdentifier), uintptr(CharacterAttributePtr), uintptr(BufferLength), uintptr(unsafe.Pointer(StringLengthPtr)), uintptr(NumericAttributePtr), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall(procSQLMoreResults.Addr(), 1, uintptr(statementHandle), 0, 0)
 	ret = SQLRETURN(r0)
 	return
 }

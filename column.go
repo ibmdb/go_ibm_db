@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 	"unsafe"
 
@@ -27,12 +28,15 @@ func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf 
 }
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
-	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype, buf, api.SQLLEN(len(buf)), (*api.SQLLEN)(l))
+	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
+		buf, api.SQLLEN(len(buf)),
+		(*api.SQLLEN)(l))
 }
 
 // Column provides access to row columns.
 type Column interface {
 	Name() string
+	TypeScan() reflect.Type
 	Bind(h api.SQLHSTMT, idx int) (bool, error)
 	Value(h api.SQLHSTMT, idx int) (driver.Value, error)
 }
@@ -64,7 +68,8 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return nil, errors.New("Failed to allocate column name buffer")
 	}
 	b := &BaseColumn{
-		name: api.UTF16ToString(namebuf[:namelen]),
+		name:  api.UTF16ToString(namebuf[:namelen]),
+		SType: sqltype,
 	}
 	switch sqltype {
 	case api.SQL_BIT:
@@ -93,6 +98,8 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, 0), nil
 	case api.SQL_LONGVARBINARY:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0), nil
+	case api.SQL_DBCLOB:
+		return NewVariableWidthColumn(b, api.SQL_C_DBCHAR, size), nil
 	default:
 		return nil, fmt.Errorf("unsupported column type %d", sqltype)
 	}
@@ -103,10 +110,37 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 type BaseColumn struct {
 	name  string
 	CType api.SQLSMALLINT
+	SType api.SQLSMALLINT
 }
 
 func (c *BaseColumn) Name() string {
 	return c.name
+}
+
+func (c *BaseColumn) TypeScan() reflect.Type {
+	//TODO(Akhil):This will return the golang type of a variable
+	switch c.CType {
+	case api.SQL_C_BIT:
+		return reflect.TypeOf(false)
+	case api.SQL_C_LONG:
+		return reflect.TypeOf(int32(0))
+	case api.SQL_C_SBIGINT:
+		return reflect.TypeOf(int64(0))
+	case api.SQL_C_DOUBLE:
+		return reflect.TypeOf(float64(0.0))
+	case api.SQL_C_CHAR, api.SQL_C_WCHAR:
+		if c.SType == api.SQL_DECFLOAT {
+			return reflect.TypeOf(float64(0.0))
+		}
+		return reflect.TypeOf(string(""))
+	case api.SQL_C_TYPE_DATE, api.SQL_C_TYPE_TIME, api.SQL_C_TYPE_TIMESTAMP:
+		return reflect.TypeOf(time.Time{})
+	case api.SQL_C_BINARY:
+		return reflect.TypeOf([]byte(nil))
+	default:
+		return reflect.TypeOf(new(interface{}))
+	}
+	return reflect.TypeOf(new(interface{}))
 }
 
 func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
@@ -131,6 +165,12 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		}
 		s := (*[1 << 20]uint16)(p)[:len(buf)/2]
 		return utf16toutf8(s), nil
+	case api.SQL_C_DBCHAR:
+		if p == nil {
+			return nil, nil
+		}
+		s := (*[1 << 20]uint8)(p)[:len(buf)]
+		return removeNulls(s), nil
 	case api.SQL_C_TYPE_TIMESTAMP:
 		t := (*api.SQL_TIMESTAMP_STRUCT)(p)
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
@@ -182,7 +222,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 	}
 	l := int(colWidth)
 	switch ctype {
-	case api.SQL_C_WCHAR:
+	case api.SQL_C_WCHAR, api.SQL_C_DBCHAR:
 		l += 1 // room for null-termination character
 		l *= 2 // wchars take 2 bytes each
 	case api.SQL_C_CHAR:
@@ -256,7 +296,7 @@ loop:
 			}
 			i := len(b)
 			switch c.CType {
-			case api.SQL_C_WCHAR:
+			case api.SQL_C_WCHAR, api.SQL_C_DBCHAR:
 				i -= 2 // remove wchar (2 bytes) null-termination character
 			case api.SQL_C_CHAR:
 				i-- // remove null-termination character
