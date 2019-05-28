@@ -79,14 +79,7 @@ func linux_untar(clidriver string, targetDirectory string) error {
 func main() {
 	var target, cliFileName string
 	var unpackageType int
-	_, errDir := os.LookupEnv("IBM_DB_DIR")
-	_, errHome := os.LookupEnv("IBM_DB_HOME")
-	_, errLib := os.LookupEnv("IBM_DB_LIB")
-
-	if errDir || errHome || errLib {
-		fmt.Printf("Failed to fetch environment variables.")
-		os.Exit(1)
-	}
+	
 	if len(os.Args) == 2 {
 		target = os.Args[1]
 	} else {
