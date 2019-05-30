@@ -228,9 +228,8 @@ func main(){
 	
 	db1.Close()
 	db.Close()
-	pool.Display()
 	pool.Release()
-	pool.Display()
+	fmt.println("success")
 }
 To run the sample:- go run example3.go
 ```
