@@ -238,7 +238,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 		l += 1 // room for null-termination character
 		l *= 2 // wchars take 2 bytes each
 	case api.SQL_C_CHAR:
-		//l += 1 // room for null-termination character
+		l += 1 // room for null-termination character
 	case api.SQL_C_BINARY:
 		// nothing to do
 	default:
