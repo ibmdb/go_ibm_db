@@ -85,7 +85,10 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP, int(unsafe.Sizeof(v))), nil
 	case api.SQL_TYPE_DATE:
 		var v api.SQL_DATE_STRUCT
-		return NewBindableColumn(b, api.SQL_C_DATE, int(unsafe.Sizeof(v))), nil
+		return NewBindableColumn(b, api.SQL_C_TYPE_DATE, int(unsafe.Sizeof(v))), nil
+	case api.SQL_TYPE_TIME:
+		var v api.SQL_TIME_STRUCT
+		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v))), nil
 	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
@@ -177,10 +180,19 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
 			time.Local)
 		return r, nil
-	case api.SQL_C_DATE:
+	case api.SQL_C_TYPE_DATE:
 		t := (*api.SQL_DATE_STRUCT)(p)
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			0, 0, 0, 0, time.Local)
+		return r, nil
+	case api.SQL_C_TYPE_TIME:
+		t := (*api.SQL_TIME_STRUCT)(p)
+		r := time.Date(0, 0, 0,
+			int(t.Hour),
+			int(t.Minute),
+			int(t.Second),
+			0,
+			time.Local)
 		return r, nil
 	case api.SQL_C_BINARY:
 		return buf, nil
@@ -226,7 +238,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 		l += 1 // room for null-termination character
 		l *= 2 // wchars take 2 bytes each
 	case api.SQL_C_CHAR:
-		l += 1 // room for null-termination character
+		//l += 1 // room for null-termination character
 	case api.SQL_C_BINARY:
 		// nothing to do
 	default:

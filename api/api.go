@@ -24,6 +24,11 @@ type (
 		Second   SQLUSMALLINT
 		Fraction SQLUINTEGER
 	}
+	SQL_TIME_STRUCT struct {
+		Hour   SQLUSMALLINT
+		Minute SQLUSMALLINT
+		Second SQLUSMALLINT
+	}
 )
 
 //sys	SQLAllocHandle(handleType SQLSMALLINT, inputHandle SQLHANDLE, outputHandle *SQLHANDLE) (ret SQLRETURN) = odbc32.SQLAllocHandle

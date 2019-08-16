@@ -126,7 +126,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		size = api.SQLULEN(len(b))
 		sqltype = api.SQL_BINARY
 	default:
-		panic(fmt.Errorf("unsupported type %T", v))
+		panic(fmt.Errorf("unsupported bind param type %T", v))
 	}
 	ret := api.SQLBindParameter(h, api.SQLUSMALLINT(idx+1),
 		api.SQL_PARAM_INPUT, ctype, sqltype, size, decimal,
