@@ -27,7 +27,8 @@ const (
 	SQL_NULL_HDBC          = 0
 	SQL_NULL_HSTMT         = 0
 
-	SQL_PARAM_INPUT = 1
+	SQL_PARAM_INPUT  = 1
+	SQL_PARAM_OUTPUT = 4
 
 	SQL_NULL_DATA    = -1
 	SQL_DATA_AT_EXEC = -2

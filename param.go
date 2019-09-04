@@ -5,6 +5,7 @@
 package go_ibm_db
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -22,6 +23,7 @@ type Parameter struct {
 	// The fields keep data alive and away from gc.
 	Data             interface{}
 	StrLen_or_IndPtr api.SQLLEN
+	Outs             []*Out
 }
 
 // StoreStrLen_or_IndPtr stores v into StrLen_or_IndPtr field of p
@@ -40,6 +42,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 	var buflen api.SQLLEN
 	var plen *api.SQLLEN
 	var buf unsafe.Pointer
+	var iotype api.SQLSMALLINT = api.SQL_PARAM_INPUT
 	switch d := v.(type) {
 	case nil:
 		ctype = api.SQL_C_WCHAR
@@ -125,11 +128,37 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		plen = p.StoreStrLen_or_IndPtr(buflen)
 		size = api.SQLULEN(len(b))
 		sqltype = api.SQL_BINARY
+	case sql.Out:
+		var dataType, decimalDigits, nullable api.SQLSMALLINT
+		var parameterSize api.SQLULEN
+		ret := api.SQLDescribeParam(h, api.SQLUSMALLINT(idx+1), &dataType, &parameterSize, &decimalDigits, &nullable)
+		if IsError(ret) {
+			return NewError("SQLDescribeParam for sql.Out", h)
+		}
+		iotype = api.SQL_PARAM_OUTPUT
+		sqltype = p.SQLType
+		ctype = SqltoCtype(sqltype)
+		size = parameterSize
+		decimal = decimalDigits
+		b := make([]byte, parameterSize)
+		if len(b) > 0 {
+			buf = unsafe.Pointer(&b[0])
+		}
+		buflen = api.SQLLEN(len(b))
+		plen = &buflen
+		p.Outs = append(p.Outs, &Out{
+			sqlOut:  &d,
+			idx:     idx + 1,
+			data:    b,
+			ctype:   ctype,
+			sqltype: sqltype,
+			len:     buflen,
+		})
 	default:
 		panic(fmt.Errorf("unsupported bind param type %T", v))
 	}
 	ret := api.SQLBindParameter(h, api.SQLUSMALLINT(idx+1),
-		api.SQL_PARAM_INPUT, ctype, sqltype, size, decimal,
+		iotype, ctype, sqltype, size, decimal,
 		api.SQLPOINTER(buf), buflen, plen)
 	if IsError(ret) {
 		return NewError("SQLBindParameter", h)
@@ -137,6 +166,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 	return nil
 }
 
+// ExtractParameters will describe all the parameters
 func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 	// count parameters
 	var n, nullable api.SQLSMALLINT
@@ -163,4 +193,34 @@ func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 		p.isDescribed = true
 	}
 	return ps, nil
+}
+
+//SqltoCtype function will convert the sql type to c type
+func SqltoCtype(sqltype api.SQLSMALLINT) api.SQLSMALLINT {
+	switch sqltype {
+	case api.SQL_BIT:
+		return api.SQL_C_BIT
+	case api.SQL_TINYINT, api.SQL_SMALLINT, api.SQL_INTEGER:
+		return api.SQL_C_LONG
+	case api.SQL_BIGINT:
+		return api.SQL_C_SBIGINT
+	case api.SQL_NUMERIC, api.SQL_DECIMAL, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE:
+		return api.SQL_C_DOUBLE
+	case api.SQL_TYPE_TIMESTAMP:
+		return api.SQL_C_TYPE_TIMESTAMP
+	case api.SQL_TYPE_DATE:
+		return api.SQL_C_TYPE_DATE
+	case api.SQL_TYPE_TIME:
+		return api.SQL_C_TYPE_TIME
+	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB, api.SQL_LONGVARCHAR:
+		return api.SQL_C_CHAR
+	case api.SQL_WCHAR, api.SQL_WVARCHAR, api.SQL_WLONGVARCHAR, api.SQL_SS_XML:
+		return api.SQL_C_WCHAR
+	case api.SQL_BINARY, api.SQL_VARBINARY, api.SQL_BLOB, api.SQL_LONGVARBINARY:
+		return api.SQL_C_BINARY
+	case api.SQL_DBCLOB:
+		return api.SQL_C_DBCHAR
+	default:
+		panic(fmt.Errorf("unsupported param type %v at sql.out", sqltype))
+	}
 }

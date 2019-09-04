@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	a "github.com/ibmdb/go_ibm_db"
 )
@@ -155,6 +156,20 @@ func PoolOpen() int {
 	}
 }
 
+func StoredProcedure() error {
+	var (
+		snapTime   time.Time
+		dbsize     int64
+		dbcapacity int64
+	)
+	db, _ := sql.Open("go_ibm_db", con)
+	_, err := db.Exec("call sysproc.get_dbsize_info(?, ?, ?,0)", sql.Out{Dest: &snapTime}, sql.Out{Dest: &dbsize}, sql.Out{Dest: &dbcapacity})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
 	result := Createconnection()
 	if result != nil {
@@ -241,6 +256,12 @@ func main() {
 	}
 	result13 := PoolOpen()
 	if result13 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("fail")
+	}
+	result14 := StoredProcedure()
+	if result14 == nil {
 		fmt.Println("Pass")
 	} else {
 		fmt.Println("fail")

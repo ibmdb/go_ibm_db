@@ -5,6 +5,7 @@
 package go_ibm_db
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"sync"
@@ -103,4 +104,15 @@ func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
 	}
 	s.os.usedByRows = true // now both Stmt and Rows refer to it
 	return &Rows{os: s.os}, nil
+}
+
+// CheckNamedValue implementes driver.NamedValueChecker.
+func (s *Stmt) CheckNamedValue(nv *driver.NamedValue) (err error) {
+	switch nv.Value.(type) {
+	case sql.Out:
+		err = nil
+	default:
+		nv.Value, err = driver.DefaultParameterConverter.ConvertValue(nv.Value)
+	}
+	return err
 }

@@ -115,6 +115,13 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 	if IsError(ret) {
 		return NewError("SQLExecute", s.h)
 	}
+	for _, p := range s.Parameters {
+		for _, o := range p.Outs {
+			if err := o.ConvertAssign(); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
