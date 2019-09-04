@@ -1,6 +1,7 @@
 package go_ibm_db
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"errors"
@@ -40,6 +41,7 @@ func (o *Out) Value() (driver.Value, error) {
 	case api.SQL_C_DOUBLE:
 		return *((*float64)(p)), nil
 	case api.SQL_C_CHAR:
+		buf = bytes.Trim(buf, "\x00")
 		return buf, nil
 	case api.SQL_C_WCHAR:
 		if p == nil {
@@ -98,7 +100,6 @@ func (o *Out) ConvertAssign() error {
 	if err != nil {
 		return err
 	}
-
 	return ConvertAssign(o.sqlOut.Dest, dv)
 }
 
