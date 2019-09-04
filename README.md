@@ -8,7 +8,8 @@ Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## Prerequisite
 
-Golang should be installed in your system.
+Golang and git should be installed in your system.
+For non-windows users, GCC and tar should be installed in your system.
 
 ## How to Install in Windows
 ```
