@@ -79,13 +79,17 @@ func linux_untar(clidriver string, targetDirectory string) error {
 func main() {
 	var target, cliFileName string
 	var unpackageType int
-	_, errDir := os.LookupEnv("IBM_DB_DIR")
-	_, errHome := os.LookupEnv("IBM_DB_HOME")
-	_, errLib := os.LookupEnv("IBM_DB_LIB")
-
-	if errDir || errHome || errLib {
-		fmt.Printf("Failed to fetch environment variables.")
-		os.Exit(1)
+	value, errDir := os.LookupEnv("DB2HOME")
+	if errDir {
+		if runtime.GOOS == "windows" {
+			fmt.Println("clidriver is already present in this path ", value)
+			fmt.Println("Please add this path to PATH environment variable")
+			os.Exit(1)
+		} else {
+			fmt.Println("clidriver is already present in this path ", value)
+			fmt.Println("Please set CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables")
+			os.Exit(1)
+		}
 	}
 	if len(os.Args) == 2 {
 		target = os.Args[1]

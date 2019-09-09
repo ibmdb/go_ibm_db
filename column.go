@@ -28,8 +28,13 @@ func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf 
 }
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
+	if len(buf) <= 2147483647 {
+		return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
+			buf, api.SQLLEN(len(buf)),
+			(*api.SQLLEN)(l))
+	}
 	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
-		buf, api.SQLLEN(len(buf)),
+		buf, api.SQLLEN(len(buf)-1),
 		(*api.SQLLEN)(l))
 }
 
@@ -235,10 +240,10 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 	l := int(colWidth)
 	switch ctype {
 	case api.SQL_C_WCHAR, api.SQL_C_DBCHAR:
-		//l += 1 // room for null-termination character
+		l++    // room for null-termination character
 		l *= 2 // wchars take 2 bytes each
 	case api.SQL_C_CHAR:
-		//l += 1 // room for null-termination character
+		l++ // room for null-termination character
 	case api.SQL_C_BINARY:
 		// nothing to do
 	default:
