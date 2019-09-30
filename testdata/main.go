@@ -8,7 +8,7 @@ import (
 	a "github.com/ibmdb/go_ibm_db"
 )
 
-var con = "HOSTNAME=localhost;PORT=45050;DATABASE=go;UID=rakhil;PWD=Pranu134##"
+var con = "HOSTNAME=localhost;PORT=45050;DATABASE=go;UID=uname;PWD=pass"
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
