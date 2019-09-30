@@ -9,6 +9,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/ibmdb/go_ibm_db/api"
 )
@@ -35,6 +36,7 @@ func (s *Stmt) NumInput() int {
 	return len(s.os.Parameters)
 }
 
+// Close closes the opened statement
 func (s *Stmt) Close() error {
 	if s.os == nil {
 		return errors.New("Stmt is already closed")
@@ -44,6 +46,7 @@ func (s *Stmt) Close() error {
 	return ret
 }
 
+// Exec executes the the sql but does not return the rows
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
@@ -79,6 +82,7 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 	return &Result{rowCount: sumRowCount}, nil
 }
 
+// Query function executes the sql and return rows if rows are present
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
@@ -108,8 +112,53 @@ func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
 
 // CheckNamedValue implementes driver.NamedValueChecker.
 func (s *Stmt) CheckNamedValue(nv *driver.NamedValue) (err error) {
-	switch nv.Value.(type) {
+	switch d := nv.Value.(type) {
 	case sql.Out:
+		err = nil
+	case []int:
+		temp := make([]int64, len(d))
+		for i := 0; i < len(d); i++ {
+			temp[i] = int64(d[i])
+		}
+		nv.Value = temp
+		err = nil
+	case []int8:
+		temp := make([]int64, len(d))
+		for i := 0; i < len(d); i++ {
+			temp[i] = int64(d[i])
+		}
+		nv.Value = temp
+		err = nil
+	case []int16:
+		temp := make([]int64, len(d))
+		for i := 0; i < len(d); i++ {
+			temp[i] = int64(d[i])
+		}
+		nv.Value = temp
+		err = nil
+	case []int32:
+		temp := make([]int64, len(d))
+		for i := 0; i < len(d); i++ {
+			temp[i] = int64(d[i])
+		}
+		nv.Value = temp
+		err = nil
+	case []int64:
+		err = nil
+	case []string:
+		err = nil
+	case []bool:
+		err = nil
+	case []float64:
+		err = nil
+	case []float32:
+		temp := make([]float64, len(d))
+		for i := 0; i < len(d); i++ {
+			temp[i] = float64(d[i])
+		}
+		nv.Value = temp
+		err = nil
+	case []time.Time:
 		err = nil
 	default:
 		nv.Value, err = driver.DefaultParameterConverter.ConvertValue(nv.Value)

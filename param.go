@@ -129,31 +129,118 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		size = api.SQLULEN(len(b))
 		sqltype = api.SQL_BINARY
 	case sql.Out:
-		var dataType, decimalDigits, nullable api.SQLSMALLINT
-		var parameterSize api.SQLULEN
-		ret := api.SQLDescribeParam(h, api.SQLUSMALLINT(idx+1), &dataType, &parameterSize, &decimalDigits, &nullable)
-		if IsError(ret) {
-			return NewError("SQLDescribeParam for sql.Out", h)
+		o, err := newOut(h, &d, idx)
+		if err != nil {
+			return err
 		}
-		iotype = api.SQL_PARAM_OUTPUT
-		sqltype = p.SQLType
-		ctype = SqltoCtype(sqltype)
-		size = parameterSize
-		decimal = decimalDigits
-		b := make([]byte, parameterSize)
+		iotype = o.inputOutputType
+		sqltype = o.sqltype
+		ctype = o.ctype
+		size = o.parameterSize
+		decimal = o.decimalDigits
+		b := o.data
 		if len(b) > 0 {
 			buf = unsafe.Pointer(&b[0])
 		}
+		buflen = o.buflen
+		plen = o.plen
+		p.Outs = append(p.Outs, o)
+	case []int64:
+		ctype = api.SQL_C_SBIGINT
+		b := make([]int64, len(d))
+		copy(b, d)
+		p.Data = b
+		buf = unsafe.Pointer(&b[0])
 		buflen = api.SQLLEN(len(b))
-		plen = &buflen
-		p.Outs = append(p.Outs, &Out{
-			sqlOut:  &d,
-			idx:     idx + 1,
-			data:    b,
-			ctype:   ctype,
-			sqltype: sqltype,
-			len:     buflen,
-		})
+		plen = p.StoreStrLen_or_IndPtr(buflen)
+		size = api.SQLULEN(len(b))
+		sqltype = api.SQL_BIGINT
+	case []string:
+		ctype = api.SQL_C_WCHAR
+		maxlen := len(d[0]) + 1
+		for i := 0; i < len(d); i++ {
+			if maxlen <= len(d[i]) {
+				maxlen = len(d[i]) + 1
+			}
+		}
+		b := []uint16{}
+		for i := 0; i < len(d); i++ {
+			temp := api.StringToUTF16(d[i])
+			if len(temp) < maxlen {
+				diff := maxlen - len(temp)
+				for i := 0; i < diff; i++ {
+					temp = append(temp, 0)
+				}
+			}
+			b = append(b, temp...)
+		}
+		l := maxlen
+		p.Data = b
+		buf = unsafe.Pointer(&b[0])
+		size = api.SQLULEN(l)
+		if size < 1 {
+			// size cannot be less then 1 even for empty fields
+			size = 1
+		}
+		l *= 2 // every char takes 2 bytes
+		buflen = api.SQLLEN(l)
+		plen = nil
+		if p.isDescribed {
+			// only so we can handle very long (>4000 chars) parameters
+			sqltype = p.SQLType
+		} else {
+			sqltype = api.SQL_WCHAR
+		}
+	case []bool:
+		b := make([]int64, len(d))
+		for i := 0; i < len(d); i++ {
+			if d[i] {
+				b[i] = 1
+			}
+		}
+		p.Data = b
+		ctype = api.SQL_C_SBIGINT
+		sqltype = api.SQL_BIGINT
+		size = api.SQLULEN(len(b))
+		buf = unsafe.Pointer(&b[0])
+		buflen = api.SQLLEN(len(b))
+		plen = p.StoreStrLen_or_IndPtr(buflen)
+	case []float64:
+		ctype = api.SQL_C_DOUBLE
+		b := make([]float64, len(d))
+		copy(b, d)
+		p.Data = b
+		buf = unsafe.Pointer(&b[0])
+		buflen = api.SQLLEN(len(b))
+		plen = p.StoreStrLen_or_IndPtr(buflen)
+		size = api.SQLULEN(len(b))
+		sqltype = api.SQL_DOUBLE
+	case []time.Time:
+		ctype = api.SQL_C_TYPE_TIMESTAMP
+		b := make([]api.SQL_TIMESTAMP_STRUCT, len(d))
+		for i := 0; i < len(d); i++ {
+			y, m, day := d[i].Date()
+			b[i] = api.SQL_TIMESTAMP_STRUCT{
+				Year:     api.SQLSMALLINT(y),
+				Month:    api.SQLUSMALLINT(m),
+				Day:      api.SQLUSMALLINT(day),
+				Hour:     api.SQLUSMALLINT(d[i].Hour()),
+				Minute:   api.SQLUSMALLINT(d[i].Minute()),
+				Second:   api.SQLUSMALLINT(d[i].Second()),
+				Fraction: api.SQLUINTEGER(d[i].Nanosecond()),
+			}
+		}
+		p.Data = b
+		buf = unsafe.Pointer(&b[0])
+		sqltype = api.SQL_TYPE_TIMESTAMP
+		if p.isDescribed && p.SQLType == api.SQL_TYPE_TIMESTAMP {
+			decimal = p.Decimal
+		}
+		if decimal <= 0 {
+			// represented as yyyy-mm-dd hh:mm:ss.fff format in ms sql server
+			decimal = 3
+		}
+		size = 20 + api.SQLULEN(decimal)
 	default:
 		panic(fmt.Errorf("unsupported bind param type %T", v))
 	}
@@ -179,7 +266,7 @@ func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 		return nil, nil
 	}
 	ps := make([]Parameter, n)
-	// fetch param descriptions
+	//fetch param descriptions
 	for i := range ps {
 		p := &ps[i]
 		ret = api.SQLDescribeParam(h, api.SQLUSMALLINT(i+1),

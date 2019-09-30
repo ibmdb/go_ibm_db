@@ -93,6 +93,8 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value) error {
+	ArrayCheck := 0
+	ArrayLength := 0
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
 	}
@@ -107,6 +109,80 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 	if testingIssue5 {
 		time.Sleep(10 * time.Microsecond)
 	}
+
+	for _, a := range args {
+		if ArrayLength == 0 {
+			switch d := a.(type) {
+			case []int64:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []string:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []bool:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []float64:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []time.Time:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			}
+		} else {
+			switch d := a.(type) {
+			case []int64:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []string:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []bool:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []float64:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []time.Time:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			}
+		}
+	}
+
+	if ArrayCheck == 1 {
+		ret := api.SQLSetStmtAttr(s.h, api.SQL_ATTR_PARAMSET_SIZE,
+			(api.SQLPOINTER)(uintptr(ArrayLength)), api.SQL_IS_INTEGER)
+		if IsError(ret) {
+			return NewError("SQLSetStmtAttr", s.h)
+		}
+	}
+
 	ret := api.SQLExecute(s.h)
 	if ret == api.SQL_NO_DATA {
 		// success but no data to report

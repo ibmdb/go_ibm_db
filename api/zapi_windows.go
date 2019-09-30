@@ -3,9 +3,11 @@
 
 package api
 
-import "unsafe"
-import "syscall"
-import "os"
+import (
+	"os"
+	"syscall"
+	"unsafe"
+)
 
 var (
 	mododbc32 = syscall.NewLazyDLL(GetDllName())
@@ -32,6 +34,7 @@ var (
 	procSQLSetConnectAttrW = mododbc32.NewProc("SQLSetConnectAttrW")
 	procSQLColAttribute    = mododbc32.NewProc("SQLColAttribute")
 	procSQLMoreResults     = mododbc32.NewProc("SQLMoreResults")
+	procSQLSetStmtAttrW    = mododbc32.NewProc("SQLSetStmtAttrW")
 )
 
 func GetDllName() string {
@@ -170,6 +173,12 @@ func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldI
 
 func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
 	r0, _, _ := syscall.Syscall(procSQLMoreResults.Addr(), 1, uintptr(statementHandle), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall6(procSQLSetStmtAttrW.Addr(), 4, uintptr(statementHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
 	ret = SQLRETURN(r0)
 	return
 }

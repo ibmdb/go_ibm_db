@@ -126,3 +126,8 @@ func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
 	r := C.SQLMoreResults(C.SQLHSTMT(statementHandle))
 	return SQLRETURN(r)
 }
+
+func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
+	r := C.SQLSetStmtAttrW(C.SQLHSTMT(statementHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
+	return SQLRETURN(r)
+}

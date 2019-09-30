@@ -5,9 +5,10 @@
 package go_ibm_db
 
 import (
-	"github.com/ibmdb/go_ibm_db/api"
 	"fmt"
 	"sync"
+
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 type Stats struct {

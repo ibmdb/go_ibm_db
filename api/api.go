@@ -6,6 +6,7 @@ package api
 
 import (
 	"unicode/utf16"
+	"unsafe"
 )
 
 type (
@@ -71,3 +72,21 @@ func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.
 func StringToUTF16Ptr(s string) *uint16 { return &StringToUTF16(s)[0] }
+
+// ExtractUTF16Str uses unsafe package to copy UTF16 string to a byte slice.
+func ExtractUTF16Str(s []uint16) []byte {
+	var out []byte
+	for i := range s {
+		b := Extract(unsafe.Pointer(&s[i]), unsafe.Sizeof(s[i]))
+		out = append(out, b...)
+	}
+	return out
+}
+
+func Extract(ptr unsafe.Pointer, size uintptr) []byte {
+	out := make([]byte, size)
+	for i := range out {
+		out[i] = *((*byte)(unsafe.Pointer(uintptr(ptr) + uintptr(i))))
+	}
+	return out
+}

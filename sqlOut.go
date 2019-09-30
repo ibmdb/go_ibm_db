@@ -16,12 +16,141 @@ import (
 
 // Out struct is used to store the value of a OUT parameter in Stored Procedure
 type Out struct {
-	sqlOut  *sql.Out
-	idx     int
-	data    []byte
-	ctype   api.SQLSMALLINT
-	sqltype api.SQLSMALLINT
-	len     api.SQLLEN
+	sqlOut          *sql.Out
+	idx             int
+	data            []byte
+	ctype           api.SQLSMALLINT
+	sqltype         api.SQLSMALLINT
+	decimalDigits   api.SQLSMALLINT
+	nullable        api.SQLSMALLINT
+	inputOutputType api.SQLSMALLINT
+	parameterSize   api.SQLULEN
+	buflen          api.SQLLEN
+	plen            *api.SQLLEN
+}
+
+func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
+	var ctype, sqltype, decimalDigits, nullable, inputOutputType api.SQLSMALLINT
+	var parameterSize api.SQLULEN
+	var buflen api.SQLLEN
+	var plen *api.SQLLEN
+	var data []byte
+	if sqlOut.In {
+		inputOutputType = api.SQL_PARAM_INPUT_OUTPUT
+		//convert sql.Out.Dest to a driver.Value so the number of possible type is limited.
+		dv, err := driver.DefaultParameterConverter.ConvertValue(sqlOut.Dest)
+		if err != nil {
+			return nil, fmt.Errorf("%v : failed to convert Dest in sql.Out to driver.Value", err)
+		}
+		// use case with one type only. Otherwise d will turn into some other type and extract
+		// will give incorrect result
+		switch d := dv.(type) {
+		case nil:
+			var ind api.SQLLEN = api.SQL_NULL_DATA
+			// nil has no type, so use SQLDescribeParam
+			ret := api.SQLDescribeParam(hstmt, api.SQLUSMALLINT(idx+1),
+				&sqltype, &parameterSize, &decimalDigits, &nullable)
+			if IsError(ret) {
+				return nil, NewError("SQLDescribeParam", hstmt)
+			}
+			// input value might be nil but the output value may not be so allocate buffer for output
+			data = make([]byte, parameterSize)
+			ctype = SqltoCtype(sqltype)
+			buflen = api.SQLLEN(len(data))
+			plen = &ind
+		case string:
+			var ind api.SQLLEN = api.SQL_NTS
+			// string output buffer cannot be same as input, so use SQLDescribeParam
+			ret := api.SQLDescribeParam(hstmt, api.SQLUSMALLINT(idx+1),
+				&sqltype, &parameterSize, &decimalDigits, &nullable)
+			if IsError(ret) {
+				return nil, NewError("SQLDescribeParam", hstmt)
+			}
+			ctype = api.SQL_C_WCHAR
+			sqltype = api.SQL_WCHAR
+			s16 := api.StringToUTF16(d)
+			b := api.ExtractUTF16Str(s16)
+			data = make([]byte, (parameterSize*2)+2)
+			if len(b) > len(data) {
+				return nil,
+					fmt.Errorf("At param. index %d INOUT string size is greater than the allocated OUT buffer size", idx+1)
+			}
+			copy(data, b)
+			buflen = api.SQLLEN(len(data))
+			// use SQL_NTS to indicate that the string null terminated
+			plen = &ind
+		case int64:
+			ctype = api.SQL_C_SBIGINT
+			sqltype = api.SQL_BIGINT
+			data = api.Extract(unsafe.Pointer(&d), unsafe.Sizeof(d))
+			parameterSize = 8
+		case float64:
+			ctype = api.SQL_C_DOUBLE
+			sqltype = api.SQL_DOUBLE
+			data = api.Extract(unsafe.Pointer(&d), unsafe.Sizeof(d))
+			parameterSize = 8
+		case bool:
+			var b byte
+			if d {
+				b = 1
+			}
+			ctype = api.SQL_C_BIT
+			sqltype = api.SQL_BIT
+			data = api.Extract(unsafe.Pointer(&b), unsafe.Sizeof(b))
+			parameterSize = 1
+		case time.Time:
+			ctype = api.SQL_C_TYPE_TIMESTAMP
+			sqltype = api.SQL_TYPE_TIMESTAMP
+			y, m, day := d.Date()
+			t := api.SQL_TIMESTAMP_STRUCT{
+				Year:     api.SQLSMALLINT(y),
+				Month:    api.SQLUSMALLINT(m),
+				Day:      api.SQLUSMALLINT(day),
+				Hour:     api.SQLUSMALLINT(d.Hour()),
+				Minute:   api.SQLUSMALLINT(d.Minute()),
+				Second:   api.SQLUSMALLINT(d.Second()),
+				Fraction: api.SQLUINTEGER(d.Nanosecond()),
+			}
+			data = api.Extract(unsafe.Pointer(&t), unsafe.Sizeof(t))
+			decimalDigits = 3
+			parameterSize = 20 + api.SQLULEN(decimalDigits)
+		case []byte:
+			ctype = api.SQL_C_BINARY
+			sqltype = api.SQL_BINARY
+			data = make([]byte, len(d))
+			copy(data, d)
+			buflen = api.SQLLEN(len(data))
+			plen = &buflen
+			parameterSize = api.SQLULEN(len(data))
+		default:
+			panic(fmt.Errorf("unsupported sql.Out.Dest type %T", d))
+		}
+	} else {
+		inputOutputType = api.SQL_PARAM_OUTPUT
+		ret := api.SQLDescribeParam(hstmt, api.SQLUSMALLINT(idx+1),
+			&sqltype, &parameterSize, &decimalDigits, &nullable)
+		if IsError(ret) {
+			return nil, NewError("SQLDescribeParam", hstmt)
+		}
+		data = make([]byte, parameterSize)
+		ctype = SqltoCtype(sqltype)
+		buflen = api.SQLLEN(len(data))
+		plen = &buflen
+	}
+
+	return &Out{
+		sqlOut:          sqlOut,
+		idx:             idx + 1,
+		ctype:           ctype,
+		sqltype:         sqltype,
+		decimalDigits:   decimalDigits,
+		nullable:        nullable,
+		inputOutputType: inputOutputType,
+		parameterSize:   parameterSize,
+		data:            data,
+		buflen:          buflen,
+		plen:            plen,
+	}, nil
 }
 
 // Value function converts the database value to driver.value
