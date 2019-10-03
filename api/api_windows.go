@@ -70,6 +70,7 @@ const (
 	SQL_CLOB            = -99
 	SQL_DBCLOB          = -350
 	SQL_SS_XML          = -152
+	SQL_BOOLEAN         = 16
 
 	SQL_C_CHAR           = SQL_CHAR
 	SQL_C_LONG           = SQL_INTEGER

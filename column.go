@@ -77,7 +77,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		SType: sqltype,
 	}
 	switch sqltype {
-	case api.SQL_BIT:
+	case api.SQL_BIT, api.SQL_BOOLEAN:
 		return NewBindableColumn(b, api.SQL_C_BIT, 1), nil
 	case api.SQL_TINYINT, api.SQL_SMALLINT, api.SQL_INTEGER:
 		return NewBindableColumn(b, api.SQL_C_LONG, 4), nil
