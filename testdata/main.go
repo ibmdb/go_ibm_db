@@ -8,7 +8,8 @@ import (
 	a "github.com/ibmdb/go_ibm_db"
 )
 
-var con = "HOSTNAME=localhost;PORT=45050;DATABASE=go;UID=uname;PWD=pass"
+var con = "PROTOCOL=tcpip;HOSTNAME=localhost;PORT=50000;DATABASE=go;UID=uname;PWD=pwd"
+var conDB = "PROTOCOL=tcpip;HOSTNAME=localhost;PORT=50000;UID=uname;PWD=pwd"
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
@@ -789,6 +790,24 @@ func NullValueTime() error {
 	return nil
 }
 
+//CreateDB create database
+func CreateDB() bool {
+	res, err := a.CreateDb("Goo", conDB)
+	if err != nil {
+		return false
+	}
+	return res
+}
+
+//DropDB will drop database
+func DropDB() bool {
+	res, err := a.DropDb("Goo", conDB)
+	if err != nil {
+		return false
+	}
+	return res
+}
+
 func main() {
 	result := Createconnection()
 	if result != nil {
@@ -973,6 +992,20 @@ func main() {
 
 	result26 := StoredProcedureInOut()
 	if result26 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result27 := CreateDB()
+	if result27 == true {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result28 := DropDB()
+	if result28 == true {
 		fmt.Println("Pass")
 	} else {
 		fmt.Println("Fail")

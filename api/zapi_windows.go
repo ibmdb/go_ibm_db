@@ -35,6 +35,8 @@ var (
 	procSQLColAttribute    = mododbc32.NewProc("SQLColAttribute")
 	procSQLMoreResults     = mododbc32.NewProc("SQLMoreResults")
 	procSQLSetStmtAttrW    = mododbc32.NewProc("SQLSetStmtAttrW")
+	procSQLCreateDb        = mododbc32.NewProc("SQLCreateDbW")
+	procSQLDropDb          = mododbc32.NewProc("SQLDropDbW")
 )
 
 func GetDllName() string {
@@ -179,6 +181,18 @@ func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
 
 func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
 	r0, _, _ := syscall.Syscall6(procSQLSetStmtAttrW.Addr(), 4, uintptr(statementHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLCreateDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEGER, codeSetPtr *SQLWCHAR, codeSetLen SQLINTEGER, modePtr *SQLWCHAR, modeLen SQLINTEGER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall9(procSQLCreateDb.Addr(), 7, uintptr(connectionHandle), uintptr(unsafe.Pointer(dbnamePtr)), uintptr(dbnameLen), uintptr(unsafe.Pointer(codeSetPtr)), uintptr(codeSetLen), uintptr(unsafe.Pointer(modePtr)), uintptr(modeLen), 0, 0)
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLDropDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEGER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall(procSQLDropDb.Addr(), 3, uintptr(connectionHandle), uintptr(unsafe.Pointer(dbnamePtr)), uintptr(dbnameLen))
 	ret = SQLRETURN(r0)
 	return
 }
