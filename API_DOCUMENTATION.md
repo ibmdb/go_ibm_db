@@ -2,6 +2,11 @@
 
 ## Database APIs
 
+**APIs for creating and dropping Database using Go application**
+
+* [.CreateDb(dbName,connectionString,options...)](#CreateDb)
+* [.DropDb(dbName,connectionString)](#DropDb)
+
 **Database APIs**
 
 1.	[.Open(drivername,ConnectionString)](#OpenApi)
@@ -361,3 +366,71 @@ func oper() error {
 }
 ```
 
+## Create and Drop Database APIs
+
+### <a name="CreateDb"></a> .CreateDb(dbName, connectionString, options...)
+
+To create a database (dbName) through Go application.
+
+* **dbName** - The database name.
+* **connectionString** - The connection string for your database instance.
+* **options** - _OPTIONAL_ - string type
+    * codeSet - Database code set information.
+    * mode    - Database logging mode (applicable only to "IDS data servers").
+
+```go
+package main
+
+import(
+    "github.com/ibmdb/go_ibm_db"
+    "database/sql"
+    "fmt"
+)
+
+func main(){
+    var conStr = "HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=password";
+    var dbName = "Goo";
+	res, err := go_ibm_db.CreateDb(dbName, conStr)
+	if err != nil {
+		fmt.Println("Error while creating database ", err)
+    }
+    if res {
+        fmt.Println("Database created successfully.")
+        conStr = conStr + ";" + "DATABASE=" + dbName
+        db,err := sql.Open("go_ibm_db",conStr)
+        if err = db.Ping(); err != nil {
+		    fmt.Println("Ping Error: ", err)
+	    }
+	    defer db.Close()
+	    fmt.Println("Connected: ok")
+    }
+}
+```
+
+### <a name="DropDb"></a> .DropDb(dbName, connectionString)
+
+To drop a database (dbName) through Go application.
+
+* **dbName** - The database name.
+* **connectionString** - The connection string for your database instance.
+
+```go
+package main
+
+import(
+    "github.com/ibmdb/go_ibm_db"
+    "fmt"
+)
+
+func main(){
+    var conStr = "HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=password";
+    var dbName = "Goo";
+	res, err := go_ibm_db.DropDb(dbName, conStr)
+	if err != nil {
+		fmt.Println("Error while dropping database ",err)
+    }
+    if res {
+        fmt.Println("Database dropped successfully.")
+    }
+}
+```
