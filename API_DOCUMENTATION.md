@@ -375,7 +375,7 @@ To create a database (dbName) through Go application.
 * **dbName** - The database name.
 * **connectionString** - The connection string for your database instance.
 * **options** - _OPTIONAL_ - string type
-    * codeSet - Database code set information.
+    * codeset - Database code set information.
     * mode    - Database logging mode (applicable only to "IDS data servers").
 
 ```go
@@ -390,7 +390,9 @@ import(
 func main(){
     var conStr = "HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=password";
     var dbName = "Goo";
-	res, err := go_ibm_db.CreateDb(dbName, conStr)
+    res, err := go_ibm_db.CreateDb(dbName, conStr)
+    // CreateDb with options
+    //go_ibm_db.CreateDb(dbName, conStr, "codeset=value","mode=value")
 	if err != nil {
 		fmt.Println("Error while creating database ", err)
     }
