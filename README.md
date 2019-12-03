@@ -95,7 +95,7 @@ func main(){
 To run the sample:- go run example1.go
 ```
 
-For complete list of connection parameters please check [this].(https://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.swg.im.dbclient.config.doc/doc/c0054698.html)
+For complete list of connection parameters please check [this.](https://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.swg.im.dbclient.config.doc/doc/c0054698.html)
 
 ### example2.go:-
 
