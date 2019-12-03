@@ -392,7 +392,7 @@ func main(){
     var dbName = "Goo";
     res, err := go_ibm_db.CreateDb(dbName, conStr)
     // CreateDb with options
-    //go_ibm_db.CreateDb(dbName, conStr, "codeset=value","mode=value")
+    //go_ibm_db.CreateDb(dbName, conStr, "codeset=UTF-8","mode=value")
 	if err != nil {
 		fmt.Println("Error while creating database ", err)
     }
