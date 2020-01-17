@@ -14,9 +14,10 @@ assignees: ''
 - cli-driver Version:
 - Db2 Server Version:
 - go Version:
-- go env:
-```
-```
+<details><summary><code>go env</code> Output:</summary><br><pre>
+$ go env
+
+</pre></details>
 
 Steps to Reproduce:
 
