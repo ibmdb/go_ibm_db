@@ -8,6 +8,7 @@ package go_ibm_db
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/ibmdb/go_ibm_db/api"
 )
@@ -50,6 +51,14 @@ func (d *Driver) Close() error {
 }
 
 func init() {
+	
+	// Recover from panic to avoid stop an application when can't get the db2 cli
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(fmt.Sprintf("%s\nThe go_ibm_db driver cannot be registered", err))
+		}
+	}()
+	
 	err := initDriver()
 	if err != nil {
 		panic(err)
