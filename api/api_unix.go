@@ -75,7 +75,7 @@ const (
 	SQL_SIGNED_OFFSET   = C.SQL_SIGNED_OFFSET
 	SQL_UNSIGNED_OFFSET = C.SQL_UNSIGNED_OFFSET
 	SQL_DBCLOB          = C.SQL_DBCLOB
-	SQL_BOOLEAN			= C.SQL_BOOLEAN 
+	SQL_BOOLEAN         = C.SQL_BOOLEAN
 
 	// TODO(lukemauldin): Not defined in sqlext.h. Using windows value, but it is not supported.
 	SQL_SS_XML = -152
@@ -99,7 +99,8 @@ const (
 	SQL_C_GUID           = C.SQL_C_GUID
 	SQL_C_DBCHAR         = C.SQL_C_DBCHAR
 	SQL_C_TYPE_DATE      = C.SQL_C_TYPE_DATE
-	SQL_C_TYPE_TIME      = C.SQL_C_TYPE_TIME 
+	SQL_C_TYPE_TIME      = C.SQL_C_TYPE_TIME
+	SQL_C_DECFLOAT       = C.SQL_DECFLOAT
 
 	SQL_COMMIT   = C.SQL_COMMIT
 	SQL_ROLLBACK = C.SQL_ROLLBACK
