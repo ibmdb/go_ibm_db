@@ -94,7 +94,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_TYPE_TIME:
 		var v api.SQL_TIME_STRUCT
 		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v))), nil
-	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB, api.SQL_XML:
+	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
@@ -108,6 +108,8 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0), nil
 	case api.SQL_DBCLOB:
 		return NewVariableWidthColumn(b, api.SQL_C_DBCHAR, size), nil
+	case api.SQL_XML:
+		return NewVariableWidthColumn(b, api.SQL_C_CHAR, 31457280), nil
 	default:
 		return nil, fmt.Errorf("unsupported column type %d", sqltype)
 	}
