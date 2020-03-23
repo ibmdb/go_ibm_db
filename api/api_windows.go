@@ -71,6 +71,7 @@ const (
 	SQL_DBCLOB          = -350
 	SQL_SS_XML          = -152
 	SQL_BOOLEAN         = 16
+	SQL_DECFLOAT        = -360
 
 	SQL_C_CHAR           = SQL_CHAR
 	SQL_C_LONG           = SQL_INTEGER
@@ -92,6 +93,7 @@ const (
 	SQL_C_GUID           = SQL_GUID
 	SQL_C_TYPE_DATE      = SQL_TYPE_DATE
 	SQL_C_TYPE_TIME      = SQL_TYPE_TIME
+	SQL_C_DECFLOAT       = SQL_DECFLOAT
 
 	SQL_COMMIT   = 0
 	SQL_ROLLBACK = 1
@@ -126,7 +128,6 @@ const (
 	SQL_DESC_NULLABLE           = 1008
 	SQL_NULLABLE                = 1
 	SQL_NO_NULLS                = 0
-	SQL_DECFLOAT                = -360
 )
 
 type (
