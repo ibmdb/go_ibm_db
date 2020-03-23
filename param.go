@@ -119,14 +119,17 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		}
 		size = 20 + api.SQLULEN(decimal)
 	case []byte:
+		lenD := len(d)
 		ctype = api.SQL_C_BINARY
-		b := make([]byte, len(d))
+		b := make([]byte, lenD)
 		copy(b, d)
 		p.Data = b
-		buf = unsafe.Pointer(&b[0])
-		buflen = api.SQLLEN(len(b))
+		if lenD > 0 {
+			buf = unsafe.Pointer(&b[0])
+		}
+		buflen = api.SQLLEN(lenD)
 		plen = p.StoreStrLen_or_IndPtr(buflen)
-		size = api.SQLULEN(len(b))
+		size = api.SQLULEN(lenD)
 		sqltype = api.SQL_BINARY
 	case sql.Out:
 		o, err := newOut(h, &d, idx)
