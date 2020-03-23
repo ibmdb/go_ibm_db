@@ -83,7 +83,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewBindableColumn(b, api.SQL_C_LONG, 4), nil
 	case api.SQL_BIGINT:
 		return NewBindableColumn(b, api.SQL_C_SBIGINT, 8), nil
-	case api.SQL_NUMERIC, api.SQL_DECIMAL, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE, api.SQL_DECFLOAT:
+	case api.SQL_NUMERIC, api.SQL_DECIMAL, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE:
 		return NewBindableColumn(b, api.SQL_C_DOUBLE, 8), nil
 	case api.SQL_TYPE_TIMESTAMP:
 		var v api.SQL_TIMESTAMP_STRUCT
@@ -94,7 +94,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_TYPE_TIME:
 		var v api.SQL_TIME_STRUCT
 		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v))), nil
-	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB:
+	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB, api.SQL_DECFLOAT:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
