@@ -194,7 +194,7 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		return r, nil
 	case api.SQL_C_TYPE_TIME:
 		t := (*api.SQL_TIME_STRUCT)(p)
-		r := time.Date(0, 0, 0,
+		r := time.Date(1, 1, 1,
 			int(t.Hour),
 			int(t.Minute),
 			int(t.Second),
