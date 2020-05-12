@@ -45,13 +45,18 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 	var iotype api.SQLSMALLINT = api.SQL_PARAM_INPUT
 	switch d := v.(type) {
 	case nil:
-		ctype = api.SQL_C_WCHAR
+		if p.SQLType == api.SQL_BLOB || p.SQLType == api.SQL_VARBINARY || p.SQLType == api.SQL_BINARY {
+			ctype = api.SQL_C_BINARY
+			sqltype = api.SQL_BINARY
+		} else {
+			ctype = api.SQL_C_WCHAR
+			sqltype = api.SQL_WCHAR
+		}
 		p.Data = nil
 		buf = nil
 		size = 1
 		buflen = 0
 		plen = p.StoreStrLen_or_IndPtr(api.SQL_NULL_DATA)
-		sqltype = api.SQL_WCHAR
 	case string:
 		ctype = api.SQL_C_WCHAR
 		b := api.StringToUTF16(d)
