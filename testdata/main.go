@@ -121,7 +121,11 @@ func Queryrow() error {
 	a := 1
 	var uname int
 	db, err := sql.Open("go_ibm_db", con)
-	err = db.QueryRow("select a from rocket where a=?", a).Scan(&uname)
+	st,err := db.Prepare("select a from rocket where a=?")
+	if err != nil {
+		return err
+	}
+	err = st.QueryRow(a).Scan(&uname)
 	if err != nil {
 		return err
 	}

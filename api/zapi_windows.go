@@ -29,6 +29,7 @@ var (
 	procSQLNumParams       = mododbc32.NewProc("SQLNumParams")
 	procSQLNumResultCols   = mododbc32.NewProc("SQLNumResultCols")
 	procSQLPrepareW        = mododbc32.NewProc("SQLPrepareW")
+	procSQLExecDirectW     = mododbc32.NewProc("SQLExecDirectW")
 	procSQLRowCount        = mododbc32.NewProc("SQLRowCount")
 	procSQLSetEnvAttr      = mododbc32.NewProc("SQLSetEnvAttr")
 	procSQLSetConnectAttrW = mododbc32.NewProc("SQLSetConnectAttrW")
@@ -193,6 +194,12 @@ func SQLCreateDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINT
 
 func SQLDropDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEGER) (ret SQLRETURN) {
 	r0, _, _ := syscall.Syscall(procSQLDropDb.Addr(), 3, uintptr(connectionHandle), uintptr(unsafe.Pointer(dbnamePtr)), uintptr(dbnameLen))
+	ret = SQLRETURN(r0)
+	return
+}
+
+func SQLExecDirect(statementHandle SQLHSTMT, statementText *SQLWCHAR, textLength SQLINTEGER) (ret SQLRETURN) {
+	r0, _, _ := syscall.Syscall(procSQLExecDirectW.Addr(), 3, uintptr(statementHandle), uintptr(unsafe.Pointer(statementText)), uintptr(textLength))
 	ret = SQLRETURN(r0)
 	return
 }
