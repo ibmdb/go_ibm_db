@@ -70,6 +70,16 @@ func Query() error {
 	return nil
 }
 
+//ExecDirect will execute the query without prepare
+func ExecDirect() error {
+	db, _ := sql.Open("go_ibm_db", con)
+	_, err := db.Query("select * from rocket")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //Scan will Scan the data in the rows
 func Scan() error {
 	db, _ := sql.Open("go_ibm_db", con)
@@ -1010,6 +1020,13 @@ func main() {
 
 	result28 := DropDB()
 	if result28 == true {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result29 := ExecDirect()
+	if result29 == nil {
 		fmt.Println("Pass")
 	} else {
 		fmt.Println("Fail")
