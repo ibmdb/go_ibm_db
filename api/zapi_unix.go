@@ -5,7 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin linux
+// +build aix darwin linux
 // +build cgo
 
 package api
@@ -14,6 +14,7 @@ import (
 	"unsafe"
 )
 
+// #cgo aix LDFLAGS: -ldb2
 // #cgo darwin LDFLAGS: -ldb2
 // #cgo linux LDFLAGS: -ldb2
 // #include <sqlcli1.h>
