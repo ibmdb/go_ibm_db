@@ -48,22 +48,10 @@ func (c *Conn) Close() error {
 
 //Query method executes the statement directly if no params present, or as prepared statement
 func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
-	if len(args) == 0 {
-		// Going to original implementation
-		return c.noParamsQuery(query)
-	} else {
-		// This part is implemented as the original Query method did not use the provided args
-		stmt, err := c.Prepare(query)
-		if err != nil {
-			return nil, err
-		}
-		defer stmt.Close()
-		return stmt.Query(args)
+	if len(args) > 0 {
+		// Not implemented for queries with parameters
+		return nil, driver.ErrSkip
 	}
-}
-
-//noParamsQuery method executes the statement without prepare
-func (c *Conn) noParamsQuery(query string) (driver.Rows, error) {
 	var out api.SQLHANDLE
 	var os *ODBCStmt
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
