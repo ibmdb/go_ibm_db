@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 func downloadFile(filepath string, url string) error {
@@ -68,6 +69,30 @@ func linux_untar(clidriver string, targetDirectory string) error {
 	out, err := exec.Command("tar", "xvzf", clidriver, "-C", targetDirectory).Output()
 
 	fmt.Println(string(out))
+	if err != nil {
+		fmt.Println("Error while running tar: " + err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func aix_untar(clidriver string, targetDirectory string) error {
+	fmt.Printf("Extracting with gunzip %s \n", clidriver)
+	gunzipOut, err := exec.Command("gunzip", clidriver).Output()
+
+	fmt.Println(string(gunzipOut))
+	if err != nil {
+		fmt.Println("Error while running gunzip: " + err.Error())
+		return err
+	}
+	
+	clidriver = strings.TrimRight(clidriver, ".gz")
+
+	fmt.Printf("Extracting with tar -xvf %s -C %s\n", clidriver, targetDirectory)
+	tarOut, err := exec.Command("tar", "xvf", clidriver, "-C", targetDirectory).Output()
+
+	fmt.Println(string(tarOut))
 	if err != nil {
 		fmt.Println("Error while running tar: " + err.Error())
 		return err
@@ -143,7 +168,7 @@ func main() {
 		fmt.Printf("linux\n")
 		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "aix" {
-		unpackageType = 2
+		unpackageType = 3
 		const wordsize = 32 << (^uint(0) >> 32 & 1)
 		if wordsize == 64 {
 			cliFileName = "aix64_odbc_cli.tar.gz"
@@ -151,7 +176,7 @@ func main() {
 			cliFileName = "aix32_odbc_cli.tar.gz"
 		}
 		fmt.Printf("aix\n")
-		fmt.Printf(cliFileName)
+		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "sunos" {
 		unpackageType = 2
 		if runtime.GOARCH == "i86pc" {
@@ -193,6 +218,8 @@ func main() {
 
 	if unpackageType == 1 {
 		Unzipping(cliFileName, target)
+	} else if unpackageType == 3 {
+		aix_untar(cliFileName, target)
 	} else {
 		linux_untar(cliFileName, target)
 	}
