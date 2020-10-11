@@ -51,7 +51,7 @@ Returns a ‘statement’ object
 ```go
 func oper() error {
 	fmt.Println("connecting to go-ibm_db")
-	db, err := sql.Open("go-imb_db", *connStr)
+	db, err := sql.Open("go-ibm_db", *connStr)
 	if err != nil {
 		return err
 	}
