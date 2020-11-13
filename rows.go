@@ -28,7 +28,17 @@ func (r *Rows) Columns() []string {
 
 func (r *Rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok bool) {
 	//TODO(Akhil):This functions retuns the precision and scale of column.
-	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_PRECISION, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), (api.SQLPOINTER)(unsafe.Pointer(&precision)))
+	ok = false;
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_TYPE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), (api.SQLPOINTER)(unsafe.Pointer(nil)))
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return 0, 0, false
+	}
+	dbtype := string(namebuf[:namelen])
+	ret = api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_PRECISION, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), (api.SQLPOINTER)(unsafe.Pointer(&precision)))
 	if IsError(ret) {
 		fmt.Println(ret)
 		return 0, 0, false
@@ -38,7 +48,15 @@ func (r *Rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok b
 		fmt.Println(ret)
 		return 0, 0, false
 	}
-	return precision, scale, scale > 0
+	fmt.Println(dbtype);
+	if dbtype == "DECIMAL" {
+		ok = true;
+	} else if dbtype == "NUMERIC" {
+		ok = true;
+	} else if dbtype == "TIMESTAMP" {
+		ok = true;
+	}
+	return precision, scale, ok
 }
 
 func (r *Rows) ColumnTypeLength(index int) (length int64, ok bool) {
