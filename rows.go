@@ -48,7 +48,6 @@ func (r *Rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok b
 		fmt.Println(ret)
 		return 0, 0, false
 	}
-	fmt.Println(dbtype);
 	if dbtype == "DECIMAL" {
 		ok = true;
 	} else if dbtype == "NUMERIC" {
