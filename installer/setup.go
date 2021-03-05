@@ -13,7 +13,7 @@ import (
 )
 
 func downloadFile(filepath string, url string) error {
-	out, err := os.Create(filepath)
+	out, err := os.Create("../../" + filepath)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func downloadFile(filepath string, url string) error {
 }
 
 func Unzipping(sourcefile string, targetDirectory string) {
-	reader, err := zip.OpenReader(sourcefile)
+	reader, err := zip.OpenReader("./../../" + sourcefile)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -66,7 +66,7 @@ func Unzipping(sourcefile string, targetDirectory string) {
 
 func linux_untar(clidriver string, targetDirectory string) error {
 	fmt.Printf("Extracting with tar -xvzf %s -C %s\n", clidriver, targetDirectory)
-	out, err := exec.Command("tar", "xvzf", clidriver, "-C", targetDirectory).Output()
+	out, err := exec.Command("tar", "xvzf", "./../../"+clidriver, "-C", targetDirectory).Output()
 
 	fmt.Println(string(out))
 	if err != nil {
@@ -79,18 +79,18 @@ func linux_untar(clidriver string, targetDirectory string) error {
 
 func aix_untar(clidriver string, targetDirectory string) error {
 	fmt.Printf("Extracting with gunzip %s \n", clidriver)
-	gunzipOut, err := exec.Command("gunzip", clidriver).Output()
+	gunzipOut, err := exec.Command("gunzip", "./../../"+clidriver).Output()
 
 	fmt.Println(string(gunzipOut))
 	if err != nil {
 		fmt.Println("Error while running gunzip: " + err.Error())
 		return err
 	}
-	
+
 	clidriver = strings.TrimRight(clidriver, ".gz")
 
 	fmt.Printf("Extracting with tar -xvf %s -C %s\n", clidriver, targetDirectory)
-	tarOut, err := exec.Command("tar", "xvf", clidriver, "-C", targetDirectory).Output()
+	tarOut, err := exec.Command("tar", "xvf", "./../../"+clidriver, "-C", targetDirectory).Output()
 
 	fmt.Println(string(tarOut))
 	if err != nil {
@@ -119,7 +119,7 @@ func main() {
 	if len(os.Args) == 2 {
 		target = os.Args[1]
 	} else {
-		target = "./"
+		target = "./../.."
 	}
 
 	if _, err := os.Stat(target + "/clidriver"); !os.IsNotExist(err) {
