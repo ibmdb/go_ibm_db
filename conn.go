@@ -46,8 +46,12 @@ func (c *Conn) Close() error {
 	return releaseHandle(h)
 }
 
-//Query method executes the stament with out prepare
+//Query method executes the statement with out prepare if no args provided, and a driver.ErrSkip otherwise (handled by sql.go to execute usual preparedStmt)
 func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
+	if len(args) > 0 {
+		// Not implemented for queries with parameters
+		return nil, driver.ErrSkip
+	}
 	var out api.SQLHANDLE
 	var os *ODBCStmt
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
