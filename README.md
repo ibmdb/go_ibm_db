@@ -8,7 +8,7 @@ Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## Prerequisite
 
-Golang should be installed(Golang version should be >=1.12.x and <= 1.14.X)
+Golang should be installed(Golang version should be >=1.12.x and <= 1.16.X)
 
 Git should be installed in your system.
 
@@ -27,7 +27,7 @@ If you already have a cli driver available in your system, add the path of the s
 Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
 
 
-If you do not have a clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer) and run setup.go file (go run setup.go).
+If you do not have a clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer ) and run setup.go file (go run setup.go).
 
 where uname is the username
 
@@ -54,7 +54,7 @@ Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 
 If you do not have a clidriver available in your system
-go to installer folder where go_ibm_db is downloaded in your system (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer) and run setup.go file (go run setup.go)
+go to installer folder where go_ibm_db is downloaded in your system (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/go/pkg/mod/github.com/ibmdb/go_ibm_db/installer) and run setup.go file (go run setup.go)
 where uname is the username
 
 Above command will download clidriver.
