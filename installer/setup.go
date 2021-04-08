@@ -157,7 +157,7 @@ func main() {
 			} else {
 				cliFileName = "linuxia32_odbc_cli.tar.gz"
 			}
-		} else if runtime.GOARCH == "390" {
+		} else if runtime.GOARCH == "s390x" {
 			const wordsize = 32 << (^uint(0) >> 32 & 1)
 			if wordsize == 64 {
 				cliFileName = "s390x64_odbc_cli.tar.gz"
