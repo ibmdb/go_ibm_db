@@ -209,7 +209,7 @@ func (s *ODBCStmt) BindColumns() error {
 		return NewError("SQLNumResultCols", s.h)
 	}
 	if n < 1 {
-		return errors.New("Stmt did not create a result set")
+		return errors.New("Query executed successfully but did not create a result set")
 	}
 	// fetch column descriptions
 	s.Cols = make([]Column, n)

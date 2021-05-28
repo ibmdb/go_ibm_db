@@ -131,7 +131,7 @@ func Queryrow() error {
 	a := 1
 	var uname int
 	db, err := sql.Open("go_ibm_db", con)
-	st,err := db.Prepare("select a from rocket where a=?")
+	st, err := db.Prepare("select a from rocket where a=?")
 	if err != nil {
 		return err
 	}
@@ -241,27 +241,27 @@ func IntArray() error {
 		return err
 	}
 	_, err = st.Query(a)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []int")
 		return err
 	}
 	_, err = st.Query(b)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []int8")
 		return err
 	}
 	_, err = st.Query(c)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []int16")
 		return err
 	}
 	_, err = st.Query(d)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []int32")
 		return err
 	}
 	_, err = st.Query(e)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []int64")
 		return err
 	}
@@ -285,7 +285,7 @@ func StringArray() error {
 		return err
 	}
 	_, err = st.Query(a, b)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []string")
 		return err
 	}
@@ -309,7 +309,7 @@ func BoolArray() error {
 		return err
 	}
 	_, err = st.Query(a, b)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []bool")
 		return err
 	}
@@ -333,12 +333,12 @@ func FloatArray() error {
 		return err
 	}
 	_, err = st.Query(a)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []float32")
 		return err
 	}
 	_, err = st.Query(b)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []float64")
 		return err
 	}
@@ -362,7 +362,7 @@ func CharArray() error {
 		return err
 	}
 	_, err = st.Query(a, b)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []character")
 		return err
 	}
@@ -389,7 +389,7 @@ func TimeStampArray() error {
 		return err
 	}
 	_, err = st.Query(a, a, a)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting []timestamp")
 		return err
 	}
@@ -421,7 +421,7 @@ func NullValueCharacter() error {
 		return err
 	}
 	_, err = st.Query(c2, c3, c4, c5, c6)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueCharacter")
 		return err
 	}
@@ -489,7 +489,7 @@ func NullValueString() error {
 		return err
 	}
 	_, err = st.Query(c1, c3, c4, c5, c6)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueString")
 		return err
 	}
@@ -557,7 +557,7 @@ func NullValueInteger() error {
 		return err
 	}
 	_, err = st.Query(c1, c2, c4, c5, c6)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueInteger")
 		return err
 	}
@@ -625,7 +625,7 @@ func NullValueBool() error {
 		return err
 	}
 	_, err = st.Query(c1, c2, c3, c5, c6)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueInteger")
 		return err
 	}
@@ -693,7 +693,7 @@ func NullValueFloat() error {
 		return err
 	}
 	_, err = st.Query(c1, c2, c3, c4, c6)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueFloat")
 		return err
 	}
@@ -761,7 +761,7 @@ func NullValueTime() error {
 		return err
 	}
 	_, err = st.Query(c1, c2, c3, c4, c5)
-	if err.Error() != "Stmt did not create a result set" {
+	if err.Error() != "Query executed successfully but did not create a result set" {
 		fmt.Println("Error while inserting NullValueString")
 		return err
 	}
