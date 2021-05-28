@@ -246,7 +246,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 		l *= 2 // wchars take 2 bytes each
 	case api.SQL_C_CHAR:
 		if b.SType == api.SQL_DECIMAL {
-			l = l+2 // adding 2 as decimal has '.' which takes 1 byte
+			l = l + 2 // adding 2 as decimal has '.' which takes 1 byte
 		} else {
 			l++ // room for null-termination character
 		}
@@ -283,7 +283,13 @@ func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
 	if !c.IsVariableWidth && int(c.Len) != c.Size {
 		panic(fmt.Errorf("wrong column #%d length %d returned, %d expected", idx, c.Len, c.Size))
 	}
-	return c.BaseColumn.Value(c.Buffer[:c.Len])
+	// check buffer len
+	bufferLen := int(c.Len)
+	if len(c.Buffer) < bufferLen {
+		bufferLen = len(c.Buffer)
+	}
+
+	return c.BaseColumn.Value(c.Buffer[:bufferLen])
 }
 
 // NonBindableColumn provide access to columns, that can't be bound.
