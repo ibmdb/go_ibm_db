@@ -49,7 +49,9 @@ export DB2HOME=/home/rakhil/dsdriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib 
 Linux:
-export LD_LIBRARY_PATH=/home/rakhil/dsdriver/lib
+export LD_LIBRARY_PATH=/home/uname/dsdriver/lib
+or
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 
