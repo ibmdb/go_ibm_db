@@ -34,7 +34,7 @@ where uname is the username
 Above command will download clidriver.
 
 Add the path of the clidriver downloaded to your Path windows environment variable
-(Example: Path=C:\Users\rakhil\go\src\github.com\ibmdb\clidriver\bin)
+(Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin)
 
 
 ```
@@ -45,11 +45,13 @@ go get -d github.com/ibmdb/go_ibm_db
 
 If you already have a cli driver available in your system, set the below environment variables with the clidriver path
 
-export DB2HOME=/home/rakhil/dsdriver
+export DB2HOME=/home/uname/dsdriver
 export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib 
 Linux:
-export LD_LIBRARY_PATH=/home/rakhil/dsdriver/lib
+export LD_LIBRARY_PATH=/home/uname/dsdriver/lib
+or
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 
@@ -66,6 +68,8 @@ export CGO_CFLAGS=-I$DB2HOME/include
 export CGO_LDFLAGS=-L$DB2HOME/lib
 Linux:
 export LD_LIBRARY_PATH=/home/uname/go/src/github.com/ibmdb/clidriver/lib
+or
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
 
