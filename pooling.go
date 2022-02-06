@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
+    "time"
+    "sync"
 )
 
 //DBP struct type contains the timeout, dbinstance and connection string
@@ -20,6 +21,7 @@ type Pool struct {
 	availablePool map[string][]*DBP
 	usedPool      map[string][]*DBP
 	PoolSize      int
+    m sync.Mutex
 }
 
 var b *Pool
@@ -72,6 +74,7 @@ func (p *Pool) Open(Connstr string, options ...string) *DBP {
 	}
 	if Psize < p.PoolSize {
 		Psize = Psize + 1
+        p.m.Lock()
 		if val, ok := p.availablePool[Connstr]; ok {
 			if len(val) > 1 {
 				dbpo := val[0]
@@ -80,12 +83,14 @@ func (p *Pool) Open(Connstr string, options ...string) *DBP {
 				val = val[:len(val)-1]
 				p.availablePool[Connstr] = val
 				p.usedPool[Connstr] = append(p.usedPool[Connstr], dbpo)
+                p.m.Unlock()
 				dbpo.SetConnMaxLifetime(Time)
 				return dbpo
 			} else {
 				dbpo := val[0]
 				p.usedPool[Connstr] = append(p.usedPool[Connstr], dbpo)
 				delete(p.availablePool, Connstr)
+                p.m.Unlock()
 				dbpo.SetConnMaxLifetime(Time)
 				return dbpo
 			}
@@ -100,6 +105,7 @@ func (p *Pool) Open(Connstr string, options ...string) *DBP {
 				n:   Time,
 			}
 			p.usedPool[Connstr] = append(p.usedPool[Connstr], dbi)
+            p.m.Unlock()
 			dbi.SetConnMaxLifetime(Time)
 			return dbi
 		}
@@ -121,6 +127,7 @@ func (d *DBP) Close() {
 	Psize = Psize - 1
 	var pos int
 	i := -1
+    b.m.Lock()
 	if valc, okc := b.usedPool[d.con]; okc {
 		if len(valc) > 1 {
 			for _, b := range valc {
@@ -144,6 +151,7 @@ func (d *DBP) Close() {
 	} else {
 		d.DB.Close()
 	}
+    b.m.Unlock()
 }
 
 //Timeout for closing the connection in pool
@@ -152,6 +160,7 @@ func (d *DBP) Timeout() {
 	i := -1
 	select {
 	case <-time.After(d.n):
+        b.m.Lock()
 		if valt, okt := b.availablePool[d.con]; okt {
 			if len(valt) > 1 {
 				for _, b := range valt {
@@ -172,6 +181,7 @@ func (d *DBP) Timeout() {
 				delete(b.availablePool, d.con)
 			}
 		}
+        b.m.Unlock()
 	}
 }
 
