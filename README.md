@@ -8,7 +8,7 @@ Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## Prerequisite
 
-Golang should be installed(Golang version should be >=1.12.x and <= 1.16.X)
+Golang should be installed(Golang version should be >=1.12.x and <= 1.17.X)
 
 Git should be installed in your system.
 
@@ -72,6 +72,8 @@ or
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
+or
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$DB2HOME/lib
 
 
 ```
