@@ -37,6 +37,10 @@ Add the path of the clidriver downloaded to your Path windows environment variab
 (Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin)
 
 
+Script file to set environment variable 
+cd .../go_ibm_db/installer
+setenvwin.bat
+
 ```
 
 ## How to Install in Linux/Mac
@@ -75,6 +79,10 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/
 or
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$DB2HOME/lib
 
+
+Script file to set environment variables in Linux/Mac 
+cd .../go_ibm_db/installer
+source setenv.sh
 
 ```
 
