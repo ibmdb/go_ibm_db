@@ -21,7 +21,7 @@ yum install go git tar libpam
 
 ## How to Install in Windows
 ```
-You may download go_ibm_db using either of below commands
+You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@0.4.1
@@ -47,7 +47,7 @@ setenvwin.bat
 
 ## How to Install in Linux/Mac
 ```
-You may download go_ibm_db using either of below commands
+You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@0.4.1
@@ -89,7 +89,7 @@ Script file to set environment variables in Linux/Mac
 cd .../go_ibm_db/installer
 source setenv.sh
 
-For **Docker Linux Container**, use below commands
+For Docker Linux Container, use below commands
 yum install -y gcc python python-devel git go wget pam tar xz php php-devel make gcc-c++ php-pear python3 python3-devel
 cd /root
 wget -c https://bootstrap.pypa.io/get-pip.py
@@ -101,8 +101,10 @@ cd /root
 curl -OL https://golang.org/dl/go1.17.X.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.17.X.linux-amd64.tar.gz
 
-rm /usr/bin/go*
-cp /usr/local/go/* /usr/bin
+rm /usr/bin/go
+rm /usr/bin/gofmt
+cp /usr/local/go/bin/go /usr/bin/
+cp /usr/local/go/bin/gofmt /usr/bin/
 
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.1
 or 
