@@ -90,13 +90,7 @@ cd .../go_ibm_db/installer
 source setenv.sh
 
 For Docker Linux Container, use below commands
-yum install -y gcc python python-devel git go wget pam tar xz php php-devel make gcc-c++ php-pear python3 python3-devel
-cd /root
-wget -c https://bootstrap.pypa.io/get-pip.py
-python get-pip.py
-pip3 install ibm_db_sa
-pip3 install ibm_db
-pip3 install --upgrade pip
+yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
 curl -OL https://golang.org/dl/go1.17.X.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.17.X.linux-amd64.tar.gz
