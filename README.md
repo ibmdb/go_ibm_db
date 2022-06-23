@@ -8,7 +8,7 @@ Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## Prerequisite
 
-Golang should be installed(Golang version should be >=1.12.x and <= 1.17.X)
+Golang should be installed(Golang version should be >=1.12.x and <= 1.18.X)
 
 Git should be installed in your system.
 
