@@ -10,6 +10,7 @@ import (
 	"errors"
 	"sync"
 	"time"
+    "context"
 
 	"github.com/ibmdb/go_ibm_db/api"
 )
@@ -21,11 +22,22 @@ type Stmt struct {
 	mu    sync.Mutex
 }
 
-func (c *Conn) Prepare(query string) (driver.Stmt, error) {
+func (c *Conn) Prepare( query string) (driver.Stmt, error) {
+    return c.PrepareContext(context.Background(), query)
+}
+
+func (c *Conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	os, err := c.PrepareODBCStmt(query)
 	if err != nil {
 		return nil, err
 	}
+
+    select {
+    default:
+    case <-ctx.Done():
+         return nil, ctx.Err()
+    }
+
 	return &Stmt{c: c, os: os, query: query}, nil
 }
 
@@ -48,6 +60,10 @@ func (s *Stmt) Close() error {
 
 // Exec executes the the sql but does not return the rows
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
+    return s.ExecContext(context.Background(), args)
+}
+
+func (s *Stmt) ExecContext(ctx context.Context, args []driver.Value) (driver.Result, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -79,11 +95,22 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 			break
 		}
 	}
+
+    select {
+    default:
+    case <-ctx.Done():
+         return nil, ctx.Err()
+    }
+
 	return &Result{rowCount: sumRowCount}, nil
 }
 
 // Query function executes the sql and return rows if rows are present
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
+    return s.QueryContext(context.Background(), args)
+}
+
+func (s *Stmt) QueryContext(ctx context.Context, args []driver.Value) (driver.Rows, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -107,6 +134,13 @@ func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
 		return nil, err
 	}
 	s.os.usedByRows = true // now both Stmt and Rows refer to it
+
+    select {
+    default:
+    case <-ctx.Done():
+         return nil, ctx.Err()
+    }
+
 	return &Rows{os: s.os}, nil
 }
 
