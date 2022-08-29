@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+    "context"
 
 	a "github.com/ibmdb/go_ibm_db"
 )
+
+var ctx = context.Background()
 
 var con = "PROTOCOL=tcpip;HOSTNAME=localhost;PORT=50000;DATABASE=go;UID=uname;PWD=pwd"
 var conDB = "PROTOCOL=tcpip;HOSTNAME=localhost;PORT=50000;UID=uname;PWD=pwd"
@@ -23,6 +26,22 @@ func Createtable() error {
 	db.Exec("DROP table rocket")
 	_, err = db.Exec("create table rocket(a int)")
 	_, err = db.Exec("create table rocket1(a int)")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//Createtable will create the tables
+func Createtable_ExecContext() error {
+	db, err := sql.Open("go_ibm_db", con)
+	db.ExecContext(ctx, "DROP table rocket2")
+	_, err = db.ExecContext(ctx, "create table rocket2(a int)")
+	if err != nil {
+		return err
+	}
+
+	_, err = db.ExecContext(ctx, "drop table rocket2")
 	if err != nil {
 		return err
 	}
@@ -59,6 +78,16 @@ func Prepare() error {
 	return nil
 }
 
+//PrepareContext will prepare the statement
+func PrepareContext() error {
+	db, _ := sql.Open("go_ibm_db", con)
+	_, err := db.PrepareContext(ctx, "select * from rocket")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //Query will execute the prepared statement
 func Query() error {
 	db, _ := sql.Open("go_ibm_db", con)
@@ -70,6 +99,16 @@ func Query() error {
 	return nil
 }
 
+//QueryContext will execute the prepared statement
+func QueryContext() error {
+	db, _ := sql.Open("go_ibm_db", con)
+	st, _ := db.PrepareContext(ctx, "select * from rocket")
+	_, err := st.QueryContext(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 //ExecDirect will execute the query without prepare
 func ExecDirect() error {
 	db, _ := sql.Open("go_ibm_db", con)
@@ -1027,6 +1066,27 @@ func main() {
 
 	result29 := ExecDirect()
 	if result29 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result30 := PrepareContext()
+	if result30 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result31 := QueryContext()
+	if result31 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail")
+	}
+
+	result32 := Createtable_ExecContext()
+	if result32 == nil {
 		fmt.Println("Pass")
 	} else {
 		fmt.Println("Fail")
