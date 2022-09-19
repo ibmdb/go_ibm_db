@@ -26,6 +26,7 @@ type Pool struct {
 
 var b *Pool
 var ConnMaxLifetime, PoolSize int
+const defaultMaxIdleConns = 2
 
 //Pconnect will return the pool instance
 func Pconnect(PoolSize string) *Pool {
@@ -35,11 +36,14 @@ func Pconnect(PoolSize string) *Pool {
 		opt := strings.Split(PoolSize, "=")
 		if opt[0] == "PoolSize" {
 			Size, _ = strconv.Atoi(opt[1])
+			if Size <= 0 {
+				Size = defaultMaxIdleConns
+			}
 		} else {
 			fmt.Println("Not a valid parameter")
 		}
 	} else {
-		Size = 100
+		Size = defaultMaxIdleConns
 	}
 	p := &Pool{
 		availablePool: make(map[string][]*DBP),
