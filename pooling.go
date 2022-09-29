@@ -122,9 +122,10 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
         } else {
 		pSize = pSize + 1
 
-		for i:=0; i < connMaxLifetime; i=i+3{
+		for i:=0; i < connMaxLifetime; i++{
 			if len(p.availablePool) <= 0 {
 				time.Sleep(3 * time.Second)
+				i = i + 2
 			} else {
 				if val, ok := p.availablePool[connStr]; ok {
 					if len(val) > 1 {
