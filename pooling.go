@@ -78,7 +78,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 			}
 		}
 	} else {
-		Time = 30 * time.Second
+		Time = defaultConnMaxLifetime * time.Second
 	}
 	if pSize < p.poolSize {
 		pSize = pSize + 1
@@ -122,7 +122,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
         } else {
 		pSize = pSize + 1
 
-		for i:=0; i < connMaxLifetime; i++{
+		for i := 0; i < connMaxLifetime; i++ {
 			if len(p.availablePool) <= 0 {
 				time.Sleep(3 * time.Second)
 				i = i + 2
@@ -150,6 +150,28 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 		return nil
 	}
 	return nil
+}
+
+func (p *Pool) Init(numConn int, connStr string) bool{
+	var Time time.Duration
+	Time = defaultConnMaxLifetime * time.Second
+
+	for i := 0; i < numConn; i++ {
+		db, err := sql.Open("go_ibm_db", connStr)
+		if err != nil {
+			return false
+		}
+		dbi := &DBP{
+			DB:  *db,
+			con: connStr,
+			n:   Time,
+		}
+		p.mu.Lock()
+		p.availablePool[connStr] = append(p.availablePool[connStr], dbi)
+		dbi.SetConnMaxLifetime(Time)
+		p.mu.Unlock()
+	}
+	return true
 }
 
 //Close will make the connection available for the next release
