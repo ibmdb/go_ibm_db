@@ -5,6 +5,6 @@ import (
 )
 func TestConnectionPool(t *testing.T){
     if(ConnectionPool() == 0){
-        t.Error("Errot in Connection pool")
+        t.Error("Error in Connection pool")
     }
 }

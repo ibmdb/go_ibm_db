@@ -78,7 +78,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 			}
 		}
 	} else {
-		Time = defaultConnMaxLifetime * time.Second
+		Time = time.Duration(defaultConnMaxLifetime) * time.Second
 	}
 	if pSize < p.poolSize {
 		pSize = pSize + 1
@@ -146,7 +146,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 				}
 			}
 		}
-		fmt.Println("Maximum connection timeout")
+		fmt.Println("Connection timeout")
 		return nil
 	}
 	return nil
@@ -154,7 +154,12 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 
 func (p *Pool) Init(numConn int, connStr string) bool{
 	var Time time.Duration
-	Time = defaultConnMaxLifetime * time.Second
+
+	if  connMaxLifetime  <= 0 {
+		Time = time.Duration(defaultConnMaxLifetime) * time.Second
+	} else {
+		Time = time.Duration(connMaxLifetime) * time.Second
+	}
 
 	for i := 0; i < numConn; i++ {
 		db, err := sql.Open("go_ibm_db", connStr)
@@ -255,6 +260,11 @@ func (p *Pool) Release() {
 		}
 		p.usedPool = nil
 	}
+}
+
+//Set the connMaxLifetime
+func (p *Pool) SetConnMaxLifetime(num int) {
+	connMaxLifetime = num
 }
 
 // Display will print the  values in the map

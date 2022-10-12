@@ -882,6 +882,11 @@ func ConnectionPool() int {
         flag = 0
         pool := a.Pconnect("PoolSize=5")
 
+        ret := pool.Init(5, con)
+        if ret != true {
+		return 0
+        }
+
         for i:=0; i<20; i++ {
                 db := pool.Open(con, "SetConnMaxLifetime=10")
                 if db != nil {
@@ -900,6 +905,46 @@ func ConnectionPool() int {
                 }
         }
         time.Sleep(10*time.Second)
+        pool.Release()
+
+        if flag == 1 {
+                return 0
+        }
+        return 1
+}
+
+//Connection pool with Timeout
+func ConnectionPoolWithTimeout() int {
+        var flag int
+        flag = 0
+        pool := a.Pconnect("PoolSize=3")
+
+	pool.SetConnMaxLifetime(10)
+        ret := pool.Init(3, con)
+        if ret != true {
+		return 0
+        }
+
+        for i:=0; i<20; i++ {
+                db := pool.Open(con, "SetConnMaxLifetime=10")
+                if db != nil {
+                        st, err := db.Prepare("select * from rocket")
+                        if err != nil {
+                                return 0
+                        } else {
+                                go func() {
+                                        err := ExecQuery(st)
+                                        if  err != nil && flag == 0{
+                                             flag = 1
+                                        }
+                                        db.Close()
+                                }()
+                        }
+                }
+        }
+        time.Sleep(30*time.Second)
+	pool.SetConnMaxLifetime(0)
+
         pool.Release()
 
         if flag == 1 {
@@ -1146,4 +1191,10 @@ func main() {
                 fmt.Println("Fail")
         }
 
+	result34 := ConnectionPoolWithTimeout()
+        if result34 == 1 {
+                fmt.Println("Pass")
+        } else {
+                fmt.Println("Fail")
+        }
 }
