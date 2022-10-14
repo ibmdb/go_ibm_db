@@ -21,6 +21,8 @@
 10.	[.Columns()](#ColumnsApi)
 11.	[.Next()](#NextApi)
 12.	[.Scan(options)](#ScanApi)
+13.	[.Init(N,connStr)](#InitApi)
+14.	[.SetConnMaxLifetime(N)] (#SetConnMaxLifetimeApi)
 
 ### <a name="OpenApi"></a> 1) .Open(drivername,ConnectionString)
 
@@ -347,6 +349,76 @@ func oper() error {
 		fmt.Printf("%v %v\n", t, x)
 	}
 	return nil
+}
+```
+
+### <a name="InitApi"></a> 13) .Init(N,connStr)
+
+Initialize Pool with N no of active connections using supplied connection string. It is a synchronous API. We do not need an asynchronous version of this API.
+* **N** - No of connections to be initialized.
+* **connStr** - The connection string for your database
+```go
+func oper() error {
+        fmt.Println("connecting to database")
+
+	var ret = pool.init(5, connStr)
+	if ret != true {
+		fmt.Println(ret)
+	}
+
+        db := pool.Open(connStr, "SetConnMaxLifetime=10")
+	for i:=0; i<20; i++ {
+		db := pool.Open(con, "SetConnMaxLifetime=10")
+                if db != nil {
+                        st, err := db.Prepare("select * from SAMPLE")
+                        if err != nil {
+                                fmt.Println("Error: ", err)
+                        } else {
+                                go func() {
+                                        ExecQuery(st)
+                                        db.Close()
+                                }()
+                        }
+                }
+        }
+
+        time.Sleep(30*time.Second)
+        pool.Release()
+        return nil
+}
+func ExecQuery(st *sql.Stmt) error {
+        res, err := st5.Query()
+        if err != nil {
+             fmt.Println(err)
+        }
+        cols, _ := res.Columns()
+
+        fmt.Printf("%s    %s   %s     %s\n", cols[0], cols[1], cols[2], cols[3])
+        defer res.Close()
+        for res.Next() {
+                    var t, x, m, n string
+                    err = res.Scan(&t, &x, &m, &n)
+                    fmt.Printf("%v  %v   %v  %v\n", t, x, m, n)
+        }
+        return nil
+}
+```
+
+### <a name="SetConnMaxLifetime"></a> 14) .SetConnMaxLifetime(T)
+
+Set the maximum length of time a connection can held open before it is closed.
+* **T** - Maximum lenght of time the connection can held open.
+
+```go
+func oper() error {
+        fmt.Println("connecting to database")a
+
+  	pool.SetConnMaxLifetime(10)
+        ret := pool.Init(3, con)
+        if ret != true {
+		fmt.Println(ret)
+        }
+        return nil
 }
 ```
 
