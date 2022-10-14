@@ -22,7 +22,7 @@
 11.	[.Next()](#NextApi)
 12.	[.Scan(options)](#ScanApi)
 13.	[.Init(N,connStr)](#InitApi)
-14.	[.SetConnMaxLifetime(N)] (#SetConnMaxLifetimeApi)
+14.	[.SetConnMaxLifetime(N)](#SetConnMaxLifetimeApi)
 
 ### <a name="OpenApi"></a> 1) .Open(drivername,ConnectionString)
 
