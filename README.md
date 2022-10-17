@@ -19,6 +19,9 @@ For Docker Linux Container(Ex: Amazon Linux2), use below commands:
 yum install go git tar libpam
 ```
 
+## Note:
+ Environment variable DB2HOME name is changed to IBM_DB2_HOME.
+
 ## How to Install in Windows
 ```
 You may install go_ibm_db using either of below commands
@@ -55,13 +58,13 @@ go install github.com/ibmdb/go_ibm_db/installer@0.4.1
 
 If you already have a cli driver available in your system, set the below environment variables with the clidriver path
 
-export DB2HOME=/home/uname/dsdriver
-export CGO_CFLAGS=-I$DB2HOME/include
-export CGO_LDFLAGS=-L$DB2HOME/lib 
+export IBM_DB_HOME=/home/uname/dsdriver
+export CGO_CFLAGS=-I$IBM_DB_HOME/include
+export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
 Linux:
 export LD_LIBRARY_PATH=/home/uname/dsdriver/lib
 or
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
 
@@ -72,17 +75,17 @@ where uname is the username) and run setup.go file (go run setup.go)
 
 Set the below envronment variables with the path of the clidriver downloaded
 
-export DB2HOME=/home/uname/go/src/github.com/ibmdb/clidriver
-export CGO_CFLAGS=-I$DB2HOME/include
-export CGO_LDFLAGS=-L$DB2HOME/lib
+export IBM_DB_HOME=/home/uname/go/src/github.com/ibmdb/clidriver
+export CGO_CFLAGS=-I$IBM_DB_HOME/include
+export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
 Linux:
 export LD_LIBRARY_PATH=/home/uname/go/src/github.com/ibmdb/clidriver/lib
 or
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DB2HOME/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
 or
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$DB2HOME/lib
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
 
 
 Script file to set environment variables in Linux/Mac 
@@ -286,7 +289,7 @@ func main() {
 ```
 To run the sample:- go run example3.go
 
-### example4.go:-(POOLING- Limit on the number of connetions)
+### example4.go:-(POOLING- Limit on the number of connections)
 
 ```go
 package main
