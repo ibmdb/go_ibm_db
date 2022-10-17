@@ -19,6 +19,9 @@ For Docker Linux Container(Ex: Amazon Linux2), use below commands:
 yum install go git tar libpam
 ```
 
+## Note:
+ Environment variable DB2HOME name is changed to IBM_DB2_HOME.
+
 ## How to Install in Windows
 ```
 You may install go_ibm_db using either of below commands
