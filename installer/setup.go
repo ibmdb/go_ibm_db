@@ -105,8 +105,8 @@ func main() {
 	var target, cliFileName string
 	var unpackageType int
 	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB2_HOME.")
-	value, errDir := os.LookupEnv("IBM_DB_HOME")
-	if errDir {
+	value, ok := os.LookupEnv("IBM_DB_HOME")
+	if !ok {
 		if runtime.GOOS == "windows" {
 			fmt.Println("clidriver is already present in this path ", value)
 			fmt.Println("Please add this path to PATH environment variable")
