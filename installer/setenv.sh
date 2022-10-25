@@ -2,7 +2,7 @@
 # clidriver/bin folder
 # This script is only for non-Windows platform.
 
-echo "NOTE: Environment variable DB2HOME name is changed to IBM_DB2_HOME."
+echo "NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME."
 
 if [ "$IBM_DB_HOME" == "" ]
 then
