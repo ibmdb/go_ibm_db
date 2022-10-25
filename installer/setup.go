@@ -104,7 +104,7 @@ func aix_untar(clidriver string, targetDirectory string) error {
 func main() {
 	var target, cliFileName string
 	var unpackageType int
-	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB2_HOME.")
+	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME.")
 	value, ok := os.LookupEnv("IBM_DB_HOME")
 	if !ok {
 		if runtime.GOOS == "windows" {

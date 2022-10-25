@@ -20,14 +20,14 @@ yum install go git tar libpam
 ```
 
 ## Note:
- Environment variable DB2HOME name is changed to IBM_DB2_HOME.
+Environment variable DB2HOME name is changed to IBM_DB_HOME.
 
 ## How to Install in Windows
 ```
 You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@0.4.1
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 
 If you already have a cli driver available in your system, add the path of the same to your Path windows environment variable
 Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
@@ -53,7 +53,7 @@ setenvwin.bat
 You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@0.4.1
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 
 
 If you already have a cli driver available in your system, set the below environment variables with the clidriver path
@@ -103,7 +103,7 @@ rm /usr/bin/gofmt
 cp /usr/local/go/bin/go /usr/bin/
 cp /usr/local/go/bin/gofmt /usr/bin/
 
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.1
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 or 
 go install github.com/ibmdb/go_ibm_db/installer@latest
 
