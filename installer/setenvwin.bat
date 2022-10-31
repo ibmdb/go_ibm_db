@@ -4,7 +4,8 @@
 
 
 echo off
-cd ../../clidriver/bin
+cd ../../clidriver
 set clidrvpath=%cd%
-set PATH=%PATH%;%clidrvpath%
+set IBM_DB_HOME=%clidrvpath%
+set PATH=%PATH%;%IBM_DB_HOME%\bin
 

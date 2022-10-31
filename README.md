@@ -29,7 +29,7 @@ go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 
-If you already have a cli driver available in your system, add the path of the same to your Path windows environment variable
+If you already have a clidriver available in your system, add the path of the same to your Path windows environment variable
 Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
 
 
@@ -38,8 +38,14 @@ If you do not have a clidriver in your system, go to installer folder where go_i
  where uname is the username ) and run setup.go file (go run setup.go).
 
 
-Add the path of the clidriver downloaded to your Path windows environment variable
-(Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin)
+Set IBM_DB_HOME to clidriver downloaded path and
+set this path to your PATH windows environment variable
+(Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver)
+set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
+set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
+or 
+set PATH=%PATH%;%IBM_DB_HOME%\bin
+
 
 
 Script file to set environment variable 
@@ -56,24 +62,24 @@ go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 
 
-If you already have a cli driver available in your system, set the below environment variables with the clidriver path
+If you already have a clidriver available in your system, set the below environment variables with the clidriver path
 
-export IBM_DB_HOME=/home/uname/dsdriver
+export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
 Linux:
-export LD_LIBRARY_PATH=/home/uname/dsdriver/lib
+export LD_LIBRARY_PATH=/home/uname/clidriver/lib
 or
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 Mac:
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/dsdriver/lib
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/clidriver/lib
 
 If you do not have a clidriver available in your system, use below command:
 go to installer folder where go_ibm_db is downloaded in your system 
 (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/go/pkg/mod/github.com/ibmdb/go_ibm_db/installer 
 where uname is the username) and run setup.go file (go run setup.go)
 
-Set the below envronment variables with the path of the clidriver downloaded
+Set the below environment variables with the path of the clidriver downloaded
 
 export IBM_DB_HOME=/home/uname/go/src/github.com/ibmdb/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
@@ -111,7 +117,7 @@ go install github.com/ibmdb/go_ibm_db/installer@latest
 
 ### <a name="Licenserequirements"></a> License requirements for connecting to databases
 
-go_ibm_db driver can connect to DB2 on Linux Unix and Windows without any additional license/s, however, connecting to databases on DB2 for z/OS or DB2 for i(AS400) Servers require either client side or server side license/s. The client side license would need to be copied under `license` folder of your `clidriver` installation directory and for activating server side license, you would need to purchase DB2 Connect Unlimited for System z® and DB2 Connect Unlimited Edition for System i®.
+go_ibm_db driver can connect to DB2 on Linux Unix and Windows without any additional license/s, however, connecting to databases on DB2 for z/OS or DB2 for i(AS400) Servers require either client side or server side license/s. The client side license would need to be copied under `license` folder of your `clidriver` installation directory and for activating server side license, you would need to purchase DB2 Connect Unlimited Edition for System z® and DB2 Connect Unlimited Edition for System i®.
 
 To know more about license and purchasing cost, please contact [IBM Customer Support](http://www-05.ibm.com/support/operations/zz/en/selectcountrylang.html).
 
@@ -195,7 +201,7 @@ func insert(db *sql.DB) error {
 	return nil
 }
 
-// This api selects the data from the table and prints it.
+// This API selects the data from the table and prints it.
 
 func display(db *sql.DB) error {
 	st, err := db.Prepare("select * from SAMPLE")
@@ -273,7 +279,7 @@ func main() {
 	}
 	st.Query()
 
-	// Here the the time out is default.
+	// Here the time out is default.
 	db1 := pool.Open(con)
 	st1, err := db1.Prepare("Insert into SAMPLE values('hi1','hi1','hi1','hi1')")
 	if err != nil {
@@ -354,4 +360,4 @@ For Running the Tests:
 
 2) Now run go test command (use go test -v command for details) 
 
-
+3) To run a particular test case (use "go test <test case> main.go"> example "go test Arraystring_test.go main.go"
