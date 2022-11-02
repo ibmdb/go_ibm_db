@@ -10,8 +10,7 @@ import (
 	"errors"
 	"sync"
 	"time"
-    "context"
-
+	"context"
 	"github.com/ibmdb/go_ibm_db/api"
 )
 
@@ -60,10 +59,19 @@ func (s *Stmt) Close() error {
 
 // Exec executes the the sql but does not return the rows
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
-    return s.ExecContext(context.Background(), args)
+    return s.exec(context.Background(), args)
 }
 
-func (s *Stmt) ExecContext(ctx context.Context, args []driver.Value) (driver.Result, error) {
+// ExecContext implements driver.StmtExecContext interface
+func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
+	dargs := make([]driver.Value, len(args))
+	for n, param := range args {
+		dargs[n] = param.Value
+	}
+
+	return s.exec(ctx, dargs)
+}
+func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -107,10 +115,20 @@ func (s *Stmt) ExecContext(ctx context.Context, args []driver.Value) (driver.Res
 
 // Query function executes the sql and return rows if rows are present
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
-    return s.QueryContext(context.Background(), args)
+    return s.query1(context.Background(), args)
 }
 
-func (s *Stmt) QueryContext(ctx context.Context, args []driver.Value) (driver.Rows, error) {
+// QueryContext implements driver.StmtQueryContext interface
+func (s *Stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
+	dargs := make([]driver.Value, len(args))
+	for n, param := range args {
+		dargs[n] = param.Value
+	}
+
+	return s.query1(ctx, dargs)
+}
+
+func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, error) {
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
