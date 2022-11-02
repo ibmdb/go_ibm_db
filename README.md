@@ -360,4 +360,4 @@ For Running the Tests:
 
 2) Now run go test command (use go test -v command for details) 
 
-3) To run a particular test case (use "go test <test case> main.go"> example "go test Arraystring_test.go main.go"
+3) To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
