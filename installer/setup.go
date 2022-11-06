@@ -106,6 +106,18 @@ func main() {
 	var unpackageType int
 
 	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME.")
+	value, ok := os.LookupEnv("IBM_DB_HOME")
+	if ok {
+		if runtime.GOOS == "windows" {
+			fmt.Println("clidriver is already present in this path ", value)
+			fmt.Println("Please add this path to PATH environment variable")
+			os.Exit(1)
+		} else {
+			fmt.Println("clidriver is already present in this path ", value)
+			fmt.Println("Please set CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables")
+			os.Exit(1)
+		}
+	}
 
 	if len(os.Args) == 2 {
 		target = os.Args[1]
