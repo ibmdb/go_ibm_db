@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"bufio"
 )
 
 func downloadFile(filepath string, url string) error {
@@ -101,28 +102,55 @@ func aix_untar(clidriver string, targetDirectory string) error {
 	return nil
 }
 
+func getinstalledpath(validateout string)  error{
+	var line string
+
+	scanner := bufio.NewScanner(strings.NewReader(validateout))
+
+	for scanner.Scan() {
+		line  = scanner.Text()
+		if(strings.Contains(line, "Install")) {
+			fields := strings.Split(line, " ")
+			fmt.Println(fields[7])
+			input1 :=  fields[7][1:len(fields[7])]
+		        fmt.Println("Clidriver is already present")
+			fmt.Println("Please set IBM_DB_HOME to ", input1)
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	var target, cliFileName string
 	var unpackageType int
+	var err11 error
+	var out []byte
 
 	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME.")
-	value, ok := os.LookupEnv("IBM_DB_HOME")
-	if ok {
-		out, err := exec.Command("db2level").Output()
-		if err != nil {
-			fmt.Println("Installing clidiver....")
-		} else {
-			fmt.Println(string(out))
-			fmt.Println("Clidriver is already present")
+
+	out, err11 = exec.Command("db2cli", "validate").Output()
+	if err11 != nil {
+		_, ok := os.LookupEnv("IBM_DB_HOME")
+		if !ok {
 			if runtime.GOOS == "windows" {
-				fmt.Println("Please add this path to PATH environment variable")
-				os.Exit(1)
+				fmt.Println("Please set IBM_DB_HOME add this path to PATH environment variable after clidriver installed")
 			} else {
-				fmt.Println("Please set  CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables", value)
-				os.Exit(1)
+				fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables after clidriver installed")
 			}
 		}
+	}else {
+		_, ok := os.LookupEnv("IBM_DB_HOME")
+		if !ok {
+			//set IBM_DB_HOME
+			getinstalledpath(string(out))
+		}else{
+			fmt.Println("clidriver folder exists in the path....")
+		}
+
+		os.Exit(1)
 	}
+
 
 	if len(os.Args) == 2 {
 		target = os.Args[1]
