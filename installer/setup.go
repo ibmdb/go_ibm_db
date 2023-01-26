@@ -102,23 +102,35 @@ func aix_untar(clidriver string, targetDirectory string) error {
 	return nil
 }
 
-func getinstalledpath(validateout string)  error{
+func getinstalledpath(validateout string) {
 	var line string
 
 	scanner := bufio.NewScanner(strings.NewReader(validateout))
 
 	for scanner.Scan() {
 		line  = scanner.Text()
+
 		if(strings.Contains(line, "Install")) {
 			fields := strings.Split(line, " ")
 			fmt.Println(fields[7])
-			input1 :=  fields[7][1:len(fields[7])]
+			input1 :=  fields[7][0:len(fields[7])]
 		        fmt.Println("Clidriver is already present")
 			fmt.Println("Please set IBM_DB_HOME to ", input1)
 		}
 	}
+}
 
-	return nil
+func checkincludepath( includepath string) bool {
+
+	if _, err1 := os.Stat(includepath + "/include"); !os.IsNotExist(err1) {
+		//fmt.Println("clidriver/include folder exists in the path")
+		if _, err2 := os.Stat(includepath + "/lib"); !os.IsNotExist(err2) {
+			//fmt.Println("clidriver/lib folder exists in the path")
+			return true
+		}
+	}
+
+	return false
 }
 
 func main() {
@@ -140,15 +152,17 @@ func main() {
 			}
 		}
 	}else {
-		_, ok := os.LookupEnv("IBM_DB_HOME")
+		path, ok := os.LookupEnv("IBM_DB_HOME")
 		if !ok {
 			//set IBM_DB_HOME
 			getinstalledpath(string(out))
+			os.Exit(1)
 		}else{
-			fmt.Println("clidriver folder exists in the path....")
+			fmt.Println("clidriver folder exists in the path....", path)
+			if checkincludepath(path) {
+				os.Exit(1)
+			}
 		}
-
-		os.Exit(1)
 	}
 
 
@@ -158,10 +172,23 @@ func main() {
 		target = "./../.."
 	}
 
-	if _, err := os.Stat(target + "/clidriver"); !os.IsNotExist(err) {
+	if _, err1 := os.Stat(target + "/clidriver"); !os.IsNotExist(err1) {
 		fmt.Println("clidriver folder exists in the path")
-		os.Exit(2)
+
+		if _, err2 := os.Stat(target + "/clidriver/include"); !os.IsNotExist(err2) {
+			//fmt.Println("clidriver/include folder exists in the path")
+
+			if _, err3 := os.Stat(target + "/clidriver/lib"); !os.IsNotExist(err3) {
+				//fmt.Println("clidriver/lib folder exists in the path")
+				os.Exit(2)
+			} else {
+				fmt.Println("clidriver/lib folder is not exist, installing clidriver ....")
+			}
+		} else {
+			fmt.Println("clidriver/include folder is not exist, installing clidriver ....")
+		}
 	}
+
 	if runtime.GOOS == "windows" {
 		unpackageType = 1
 		const wordsize = 32 << (^uint(0) >> 32 & 1)
