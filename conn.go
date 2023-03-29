@@ -75,7 +75,7 @@ func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 	os = &ODBCStmt{
 		h:          h,
 		Parameters: ps,
-		usedByStmt: true}
+		usedByRows: true}
 	err = os.BindColumns()
 	if err != nil {
 		return nil, err
