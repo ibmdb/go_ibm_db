@@ -248,7 +248,8 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 		if b.SType == api.SQL_DECIMAL {
 			l = l + 4 // adding 4 as decimal has '.' which takes 1 byte
 		} else {
-			l++ // room for null-termination character
+			l++    // room for null-termination character
+			l *= 2 // chars take 2 bytes each
 		}
 	case api.SQL_C_BINARY:
 		// nothing to do
