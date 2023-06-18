@@ -68,13 +68,8 @@ using directory `/goapp` for example.
 ```
 1. mkdir goapp
 2. cd goapp
-```
-
-```
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-```
 or
-```
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
@@ -104,9 +99,7 @@ export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
 export LD_LIBRARY_PATH=/home/uname/clidriver/lib
-```
 or
-```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 ```
 
@@ -130,8 +123,6 @@ extract the file.
 ```
 1. mkdir goapp
 2. cd goapp
-```
-```
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
 or
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
@@ -166,20 +157,13 @@ export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
 or
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
-
 ```
 
 #### 3.4.2 Script file
+```
 cd .../go_ibm_db/installer
 source setenv.sh
-
-
-
-
-
-
-
-## <a name="inswin"></a> 4. Go_ibm_db Installation on Windows.
+```
 
 ### 4.1 Install GoLang for Windows
 
@@ -226,7 +210,6 @@ set PATH=%PATH%;%IBM_DB_HOME%\bin
 ```
 
 ### 4.4.2 Script file 
-
 ```
 cd .../go_ibm_db/installer
 Run setenvwin.bat
@@ -237,7 +220,7 @@ It's Done.
 
 
 
-## <a name="m1chip"></a> 10. Steps to install ibm_db on MacOS M1/M2 Chip system (arm64 architecture)
+## <a name="m1chip"></a> 5. Steps to install ibm_db on MacOS M1/M2 Chip system (arm64 architecture)
 **Warning:** If you use the ARM version of homebrew (as recommended for M1/M2 chip systems) you will get the following error message:
 ```
 $ brew install gcc-12
