@@ -64,7 +64,6 @@ Following are the steps to install [*go_ibm_db*](https://github.com/ibmdb/go_ibm
 using directory `/goapp` for example.
 
 #### 2.2.1 Direct Installation.
-
 ```
 1. mkdir goapp
 2. cd goapp
@@ -175,6 +174,7 @@ install it.
 Following are the steps to install [*go_ibm_db*](https://github.com/ibmdb/go_ibm_db) from github.
 using directory `/goapp` for example.
 
+#### 4.2.1 Direct Installation.
 ```
 1. mkdir goapp
 2. cd gopapp
