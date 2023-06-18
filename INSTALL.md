@@ -165,6 +165,8 @@ cd .../go_ibm_db/installer
 source setenv.sh
 ```
 
+## <a name="insmac"></a> 4. Go_ibm_db Installation on Windows.
+
 ### 4.1 Install GoLang for Windows
 
 Download the [Go Windows binary/installer](https://golang.org/dl) or [Go Latest binaries](https://go.dev/dl/) and
