@@ -38,7 +38,7 @@ This go_ibm_db driver has been tested on 64-bit/32-bit IBM Linux, MacOS and Wind
 
 
 
-## <a name="inslnx"></a> 2. Go_bm_db Installation on Linux.
+## <a name="inslnx"></a> 2. Go_ibm_db Installation on Linux.
 
 ### 2.1 Install GoLang for Linux
 
@@ -61,7 +61,7 @@ export PATH=/mygo/go/bin:$PATH
 ### 2.2 Install go_ibm_db
 
 Following are the steps to install [*go_ibm_db*](https://github.com/ibmdb/go_ibm_db) from github.
-using directory `/nodeapp` for example.
+using directory `/goapp` for example.
 
 #### 2.2.1 Direct Installation.
 
@@ -99,22 +99,22 @@ where uname is the username) and run setup.go file (go run setup.go)
 ### 2.4 Set environment variables with the clidriver path
 
 #### 2.4.1 Manual
+```
 export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
 export LD_LIBRARY_PATH=/home/uname/clidriver/lib
+```
 or
+```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
+```
 
-#### 2.4.1 Script file
+#### 2.4.2 Script file
+```
 cd .../go_ibm_db/installer
 source setenv.sh
-
-
-
-
-
-
+```
 ## <a name="insmac"></a> 3. Go_ibm_db Installation on MacOS.
 
 ### 3.1 Install GoLang for Mac
@@ -131,12 +131,9 @@ extract the file.
 1. mkdir goapp
 2. cd goapp
 ```
-
 ```
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-```
 or
-```
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
@@ -161,6 +158,7 @@ where uname is the username) and run setup.go file (go run setup.go)
 ### 3.4 Set environment variables  clidriver
 
 #### 3.4.1 Manual
+```
 export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
@@ -169,6 +167,7 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/
 or
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
 
+```
 
 #### 3.4.2 Script file
 cd .../go_ibm_db/installer
@@ -195,13 +194,8 @@ using directory `/goapp` for example.
 ```
 1. mkdir goapp
 2. cd gopapp
-```
-
-```
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-```
 or
-```
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
@@ -224,25 +218,20 @@ Download clidriver in your system, go to installer folder where go_ibm_db is dow
 
 #### 4.4.1 Manual
 
+```
 set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
 set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
 or 
 set PATH=%PATH%;%IBM_DB_HOME%\bin
+```
 
 ### 4.4.2 Script file 
 
+```
 cd .../go_ibm_db/installer
 Run setenvwin.bat
 ```
-
-
 It's Done.
-
-
-
-
-
-
 
 4. Download platform specific clidriver from https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/ , untar/unzip it and set `IBM_DB_HOME` environmental variable to full path of extracted 'clidriver' directory, for example if clidriver is extracted as: `/home/mysystem/clidriver`, then set system level environment variable `IBM_DB_HOME=/home/mysystem/clidriver`.
 
@@ -282,18 +271,3 @@ Suppose path of gcc lib is `/usr/local/homebrew/lib/gcc/12`. Then update your .b
 ```
 export DYLD_LIBRARY_PATH=/usr/local/homebrew/lib/gcc/12:$DYLD_LIBRARY_PATH
 ```
-
-
-### Getting error and unable to run test file
-* If connection fails with SQL30081N error: means `ibm_db` installation is correct and you need to provide correct connection string.
-
-* If `import ibm_db` fails with `Symbol not found: ___cxa_throw_bad_array_new_length` error or `malloc` error:
-  You need to find the correct location of lib/gcc/12 directory and add it to DYLD_LIBRARY_PATH environment variable.
-  Also, execute below commands from terminal with correct location of `lib/gcc/12/libstdc++.6.dylib` library.
-  ```
-  cd node_modules/ibm_db/installer/clidriverd/lib
-  install_name_tool -change /usr/local/lib/gcc/8/libstdc++.6.dylib <full path of libstdc++.6.dylib> libdb2.dylib
-  f.e.
-  install_name_tool -change /usr/local/lib/gcc/8/libstdc++.6.dylib /usr/local/homebrew/lib/gcc/12/libstdc++.6.dylib libdb2.dylib
-  ```
-Now run your test program and verify.
