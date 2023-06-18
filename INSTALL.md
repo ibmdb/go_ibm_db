@@ -69,8 +69,8 @@ using directory `/goapp` for example.
 1. mkdir goapp
 2. cd goapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-or
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   or
+   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
 It's Done.
@@ -91,7 +91,7 @@ go to installer folder where go_ibm_db is downloaded in your system
 where uname is the username) and run setup.go file (go run setup.go)
 
 
-### 2.4 Set environment variables with the clidriver path
+### 2.4 Set environment variables to clidriver directory path
 
 #### 2.4.1 Manual
 ```
@@ -119,19 +119,17 @@ extract the file.
 ### 3.2 Install go_ibm_db
 
 #### 3.2.1 Direct Installation.
-
 ```
 1. mkdir goapp
 2. cd goapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-or
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   or
+   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
 It's Done.
 
 #### 3.2.2 Manual Installation by using git clone.
-
 ```
 1. mkdir goapp
 2. cd goapp
@@ -146,7 +144,7 @@ go to installer folder where go_ibm_db is downloaded in your system
 where uname is the username) and run setup.go file (go run setup.go)
 
 
-### 3.4 Set environment variables  clidriver
+### 3.4 Set environment variables to clidriver directory path
 
 #### 3.4.1 Manual
 ```
@@ -165,7 +163,7 @@ cd .../go_ibm_db/installer
 source setenv.sh
 ```
 
-## <a name="insmac"></a> 4. Go_ibm_db Installation on Windows.
+## <a name="inswin"></a> 4. Go_ibm_db Installation on Windows.
 
 ### 4.1 Install GoLang for Windows
 
@@ -181,12 +179,11 @@ using directory `/goapp` for example.
 1. mkdir goapp
 2. cd gopapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
-or
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   or
+   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 ```
 
 #### 4.2.2 Manual Installation by using git clone.
-
 ```
 1. mkdir goapp
 2. cd goapp
@@ -200,10 +197,9 @@ Download clidriver in your system, go to installer folder where go_ibm_db is dow
  where uname is the username ) and run setup.go file (go run setup.go).
 
 
-### 4.4 Set environment variables with the clidriver path
+### 4.4 Set environment variables to clidriver directory path
 
 #### 4.4.1 Manual
-
 ```
 set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
 set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
