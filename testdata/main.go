@@ -2739,6 +2739,13 @@ func main() {
 	} else {
 		fmt.Println("Fail")
 	}
+
+        result71 := ChineseCharCodeunits32()
+        if result71 == nil {
+                fmt.Println("Pass")
+        } else {
+                fmt.Println("Fail")
+        }
 }
 
 func AllDataTypes() error {
@@ -3373,5 +3380,45 @@ func StoredProcedureArray() error{
 }
 
 
+func ChineseCharCodeunits32() error {
+        db, _ := sql.Open("go_ibm_db", connStr)
+        defer db.Close()
+        db.Exec("Drop table TT")
+        _, err := db.Exec("create table TT(C1 INTEGER NOT NULL, C2 VARCHAR(5 CODEUNITS32))")
+        if err != nil {
+                return err
+        }
+        st, err := db.Prepare("Insert into TT(C1, C2) values(1,'一二三四五')")
+        defer st.Close()
+        if err != nil {
+                return err
+        }
+        _, err = st.Query()
+        if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                fmt.Println("Error while inserting []string")
+                return err
+        }
+/*
+        queryTypes := "select * from TT;"
+
+        rows, err := db.Query(queryTypes)
+        if err != nil {
+                fmt.Println("Error:", err)
+                return err
+        }
+
+        for rows.Next() {
+                var c1 int
+                var c2 string
+                err = rows.Scan(&c1, &c2)
+                if err != nil {
+                        fmt.Println("Error:", err)
+                }
+                fmt.Printf("C1=: %v\t C2: %v\n", c1, c2)
+        }
+
+*/
+        return nil
+}
 
 
