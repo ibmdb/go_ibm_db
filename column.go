@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"time"
 	"unsafe"
+        "bytes"
 
 	"github.com/ibmdb/go_ibm_db/api"
 )
@@ -168,6 +169,9 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	case api.SQL_C_DOUBLE:
 		return *((*float64)(p)), nil
 	case api.SQL_C_CHAR:
+		if c.SType == api.SQL_DECIMAL {
+			    return bytes.Replace(buf, []byte(","), []byte("."), 1), nil
+		}
 		return buf, nil
 	case api.SQL_C_WCHAR:
 		if p == nil {
