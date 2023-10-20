@@ -60,48 +60,50 @@ func UpdateConnectionVariables() {
 	var portFound bool
 	var uidFound bool
 	var pwdFound bool
-	var flag1 bool = false
 
         config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
         if !databaseFound{
-		fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
-		flag1 = true
 		database = config.Database
+		if len(database) == 0 {
+		    fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
+	        }
 	}
 
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
-		fmt.Println("Warning: Environment variable DB2_HOSTNAME is not set.")
-		flag1 = true
 		host = config.Host
+		if len(host)==0 {
+		    fmt.Println("Warning: Environment variable DB2_HOSTNAME is not set.")
+	        }
 	}
 
 	port, portFound = os.LookupEnv("DB2_PORT")
         if !portFound{
-		fmt.Println("Warning: Environment variable DB2_PORT is not set.")
-		flag1 = true
 		port = config.Port
+		if len(port)==0 {
+		    fmt.Println("Warning: Environment variable DB2_PORT not set.")
+	        }
 	}
 
         uid, uidFound = os.LookupEnv("DB2_USER")
         if !uidFound{
-		fmt.Println("Warning: Environment variable DB2_USER is not set.")
-		flag1 = true
 		uid = config.Uid
+		if len(uid)==0 {
+		    fmt.Println("Warning: Environment variable DB2_USER is not set.")
+	        }
 	}
 
         pwd, pwdFound = os.LookupEnv("DB2_PASSWD")
         if !pwdFound{
-		fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
-		flag1 = true
 		pwd = config.Pwd
-	}
 
-	if flag1 == true {
-		fmt.Println("Please set it before running test file and avoid")
-		fmt.Println("hardcoded password in config.json file.")
+		if len(pwd)==0 {
+		    fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
+		    fmt.Println("Please set it before running test file and avoid")
+		    fmt.Println("hardcoded password in config.json file.")
+	        }
 	}
 
 }
@@ -110,7 +112,6 @@ func UpdateConnectionVariables() {
 func Createconnection() (db *sql.DB) {
         UpdateConnectionVariables()
         connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
-
 	db, _ = sql.Open("go_ibm_db", connStr)
 	return db
 }
