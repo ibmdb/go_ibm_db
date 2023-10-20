@@ -9,3 +9,5 @@ func TestConnectionInvalidDatabaseName(t *testing.T) {
 		t.Error("Error at ConnectionInvalidDatabaseName")
 	}
 }
+
+

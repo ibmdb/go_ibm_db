@@ -356,8 +356,22 @@ To run the sample:- go run example4.go
 For Running the Tests:
 ======================
 
-1) Put your connection string in the main.go file in testdata folder
+* Connection information must be specified in the environment variables
+```
+For example, by sourcing the following ENV variables:
+export DB2_DATABASE=<Database Name>
+export DB2_USER=<Username>
+export DB2_PASSWD=<Password>
+export DB2_HOSTNAME=<Hostname or IP>
+export DB2_PORT=<Database Port>
+```
 
-2) Now run go test command (use go test -v command for details) 
+* OR
+```
+If not using environment variables, update connection information in
+go_ibm_db/testdata/config.json file.
+```
 
-3) To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
+* Now run go test command (use go test -v command for details) 
+
+* To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
