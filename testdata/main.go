@@ -97,13 +97,10 @@ func UpdateConnectionVariables() {
 
         pwd, pwdFound = os.LookupEnv("DB2_PASSWD")
         if !pwdFound{
-		pwd = config.Pwd
-
-		if len(pwd)==0 {
-		    fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
-		    fmt.Println("Please set it before running test file and avoid")
-		    fmt.Println("hardcoded password in config.json file.")
-	        }
+               pwd = config.Pwd
+               fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
+               fmt.Println("Please set it before running test file and avoid")
+               fmt.Println("hardcoded password in config.json file.")
 	}
 
 }
