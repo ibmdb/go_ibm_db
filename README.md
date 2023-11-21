@@ -29,14 +29,16 @@ go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
 
+You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable to the full path of your desired cli driver.  For example, if you want to install the 64-bit macos v11.5.4 cli driver instead of the latest one, set the variable as below:
+
+export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.4/macos64_odbc_cli.tar.gz
+
 If you already have a clidriver available in your system, add the path of the same to your Path windows environment variable
 Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
-
 
 If you do not have a clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system, use below command: 
 (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer 
  where uname is the username ) and run setup.go file (go run setup.go).
-
 
 Set IBM_DB_HOME to clidriver downloaded path and
 set this path to your PATH windows environment variable
@@ -61,6 +63,9 @@ go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
 
+You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable to the full path of your desired driver.  For example, if you want to install the 64-bit macos v11.5.4 cli driver instead of the latest one, set the variable as below:
+
+export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.4/macos64_odbc_cli.tar.gz
 
 If you already have a clidriver available in your system, set the below environment variables with the clidriver path
 
