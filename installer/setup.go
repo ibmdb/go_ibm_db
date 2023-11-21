@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"bufio"
 )
 
 func downloadFile(filepath string, url string) error {
@@ -108,19 +108,19 @@ func getinstalledpath(validateout string) {
 	scanner := bufio.NewScanner(strings.NewReader(validateout))
 
 	for scanner.Scan() {
-		line  = scanner.Text()
+		line = scanner.Text()
 
-		if(strings.Contains(line, "Install")) {
+		if strings.Contains(line, "Install") {
 			fields := strings.Split(line, " ")
 			fmt.Println(fields[7])
-			input1 :=  fields[7][0:len(fields[7])]
-		        fmt.Println("Clidriver is already present")
+			input1 := fields[7][0:len(fields[7])]
+			fmt.Println("Clidriver is already present")
 			fmt.Println("Please set IBM_DB_HOME to ", input1)
 		}
 	}
 }
 
-func checkincludepath( includepath string) bool {
+func checkincludepath(includepath string) bool {
 
 	if _, err1 := os.Stat(includepath + "/include"); !os.IsNotExist(err1) {
 		//fmt.Println("clidriver/include folder exists in the path")
@@ -151,20 +151,19 @@ func main() {
 				fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables after clidriver installed")
 			}
 		}
-	}else {
+	} else {
 		path, ok := os.LookupEnv("IBM_DB_HOME")
 		if !ok {
 			//set IBM_DB_HOME
 			getinstalledpath(string(out))
 			os.Exit(1)
-		}else{
+		} else {
 			fmt.Println("clidriver folder exists in the path....", path)
 			if checkincludepath(path) {
 				os.Exit(1)
 			}
 		}
 	}
-
 
 	if len(os.Args) == 2 {
 		target = os.Args[1]
@@ -270,7 +269,7 @@ func main() {
 		fmt.Println("not known platform")
 		os.Exit(3)
 	}
-	fileUrl := "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+	fileUrl := downloadUrl(cliFileName)
 	fmt.Println("Downloading " + fileUrl)
 	err := downloadFile(cliFileName, fileUrl)
 	if err != nil {
@@ -286,4 +285,12 @@ func main() {
 	} else {
 		linux_untar(cliFileName, target)
 	}
+}
+
+func downloadUrl(cliFileName string) string {
+	downloadUrl, downloadUrlFound := os.LookupEnv("IBM_DB_DOWNLOAD_URL")
+	if !downloadUrlFound {
+		downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+	}
+	return downloadUrl
 }
