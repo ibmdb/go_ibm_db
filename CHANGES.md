@@ -1,3 +1,43 @@
+2023-11-23, Version 0.4.5
+=========================
+
+ * Add env var for cli driver download url (#229) (Andrew Becher)
+
+ * Enhance Go driver to read Db2 credentials form Evn for testing (#226) (VIKAS MATHUR)
+
+ * Decimal value by instering as string (#223) (VIKAS MATHUR)
+
+
+2023-07-05, Version 0.4.4
+=========================
+
+ * Fix for SQL_DECIMAL type uses comma as separator (#219) (VIKAS MATHUR)
+
+ * Added INSTALL.md file and new testcases (#216) (VIKAS MATHUR)
+
+ * Fix: pass integer values into SQLSetEnvAttr and SQLSetConnectAttr (#215) (Andrew Becher)
+
+ * Updated README.md and changed default buffer read length for varchar field (#213) (VIKAS MATHUR)
+
+
+2023-03-29, Version 0.4.3
+=========================
+
+ * Fixing Release Handle (#204) (alexcocia)
+
+ * Added db2level check before installing clidriver (#193) (VIKAS MATHUR)
+
+ * Fix issue #200 index out of range (#201) (VIKAS MATHUR)
+
+ * Added new testcases (#197) (VIKAS MATHUR)
+
+ * Added new testcases (#195) (VIKAS MATHUR)
+
+ * Updated ExecContext and QueryContext functions (#190) (VIKAS MATHUR)
+
+ * Change in handling of os.LookupEnv (#188) (VIKAS MATHUR)
+
+
 2022-10-25, Version 0.4.2
 =========================
 

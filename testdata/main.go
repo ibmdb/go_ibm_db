@@ -564,176 +564,176 @@ func main() {
 	if result != nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-0")
 	}
 
 	result1 := Createtable()
 	if result1 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-1")
 	}
 
 	result2 := Insert()
 	if result2 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-2")
 	}
 
 	result3 := Drop()
 	if result3 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-3")
 	}
 
 	result4 := Prepare()
 	if result4 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-4")
 	}
 
 	result5 := Query()
 	if result5 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-5")
 	}
 
 	result6 := Scan()
 	if result6 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-6")
 	}
 
 	result7 := Next()
 	if result7 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-7")
 	}
 
 	result8 := Columns()
 	if result8 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-8")
 	}
 
 	result9 := Queryrow()
 	if result9 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-9")
 	}
 
 	result10 := Begin()
 	if result10 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-10")
 	}
 
 	result11 := Commit()
 	if result11 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-11")
 	}
 
 	result12 := Close()
 	if result12 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-12")
 	}
 
 	result13 := PoolOpen()
 	if result13 == 1 {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-13")
 	}
 	result27 := CreateDB()
 	if result27 == true {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-27")
 	}
 
 	result28 := DropDB()
 	if result28 == true {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-28")
 	}
 	result32 := Createtable_ExecContext()
 	if result32 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-32")
 	}
 
 	result33 := ConnectionPool()
         if result33 == 1 {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-33")
         }
 
 	result34 := ConnectionPoolWithTimeout()
         if result34 == 1 {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-34")
         }
 	result36 := InsertArray()
 	if result36 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-36")
 	}
 	result39 := BadConnectionString()
         if result39 == 1 {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-39")
         }
 	result43 := ConnectionInvalidUserPassword()
         if result43 == 1  {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-43")
         }
 
 	result44 := ConnectionInvalidUserID()
         if result44 == 1  {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-44")
         }
 
 	result45 := ConnectionInvalidPortNumber()
         if result45 == 1  {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-45")
         }
 
 	result46 := ConnectionInvalidDatabaseName()
         if result46 == 1  {
                 fmt.Println("Pass")
         } else {
-                fmt.Println("Fail")
+                fmt.Println("Fail-46")
         }
 	result54 := IntegerArray()
 	if result54 == nil {
 		fmt.Println("Pass")
 	} else {
-		fmt.Println("Fail")
+		fmt.Println("Fail-54")
 	}
 }
 

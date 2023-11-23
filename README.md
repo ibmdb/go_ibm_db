@@ -1,6 +1,6 @@
 # go_ibm_db
 
-Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
+Interface for GoLang to `DB2 for z/OS`, `DB2 for LUW` and `DB2 for i` database servers.
 
 ## API Documentation
 
@@ -8,38 +8,50 @@ Interface for GoLang to DB2 for z/OS, DB2 for LUW, DB2 for i.
 
 ## Prerequisite
 
-Golang should be installed(Golang version should be >=1.12.x and <= 1.20.X)
+- Golang should be installed(Golang version should be >=1.12.x and <= 1.21.X)
 
-Git should be installed in your system.
+- Git should be installed in your system.
 
-For non-windows users, GCC and tar should be present in your system.
+- For non-windows users, GCC and tar should be present in your system.
 
+- For Docker Linux Container(Ex: Amazon Linux2), use below commands:
 ```
-For Docker Linux Container(Ex: Amazon Linux2), use below commands:
 yum install go git tar libpam
 ```
+### Note:
+* Environment variable `DB2HOME` is changed to `IBM_DB_HOME`.
 
-## Note:
-Environment variable DB2HOME name is changed to IBM_DB_HOME.
+* **SQL1598N Error** - It is expected in absence of valid db2connect license. Please click [here](#Licenserequirements) and read instructions about license requirement and how to apply the license.
 
 ## How to Install in Windows
+
+- You may install go_ibm_db using either of below commands
+
 ```
-You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
+```
 
-You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable to the full path of your desired cli driver.  For example, if you want to install the 64-bit macos v11.5.4 cli driver instead of the latest one, set the variable as below:
-
+- You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable
+to the full path of your desired cli driver.  For example, if you want to install the 64-bit macos v11.5.4
+cli driver instead of the latest one, set the variable as below:
+```
 export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.4/macos64_odbc_cli.tar.gz
+```
 
-If you already have a clidriver available in your system, add the path of the same to your Path windows environment variable
-Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
+- If you already have a clidriver available in your system, add the path of the same to your
+PATH windows environment variable.
+Example:
+`set PATH = "C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin";%PATH%`
 
-If you do not have a clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system, use below command: 
-(Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer 
+- If you do not have a clidriver in your system, go to installer folder where go_ibm_db
+is downloaded in your system, use below command:
+(Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer
+ or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer
  where uname is the username ) and run setup.go file (go run setup.go).
 
+```
 Set IBM_DB_HOME to clidriver downloaded path and
 set this path to your PATH windows environment variable
 (Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver)
@@ -47,28 +59,33 @@ set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
 set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
 or 
 set PATH=%PATH%;%IBM_DB_HOME%\bin
+```
 
-
-
-Script file to set environment variable 
+- Script file to set environment variable
+```
 cd .../go_ibm_db/installer
 setenvwin.bat
-
 ```
 
 ## How to Install in Linux/Mac
+
+- You may install go_ibm_db using either of below commands
+
 ```
-You may install go_ibm_db using either of below commands
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
+```
 
-You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable to the full path of your desired driver.  For example, if you want to install the 64-bit macos v11.5.4 cli driver instead of the latest one, set the variable as below:
-
+- You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment
+variable to the full path of your desired driver. For example, if you want to install the 64-bit
+macos v11.5.4 cli driver instead of the latest one, set the variable as below:
+```
 export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.4/macos64_odbc_cli.tar.gz
+```
 
-If you already have a clidriver available in your system, set the below environment variables with the clidriver path
-
+- If you already have a clidriver available in your system, set the below environment variables with the clidriver path
+```
 export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
@@ -78,14 +95,17 @@ or
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/clidriver/lib
+```
 
-If you do not have a clidriver available in your system, use below command:
+- If you do not have a clidriver available in your system, use below command:
+```
 go to installer folder where go_ibm_db is downloaded in your system 
-(Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/go/pkg/mod/github.com/ibmdb/go_ibm_db/installer 
+(Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer
+ or /home/uname/go/pkg/mod/github.com/ibmdb/go_ibm_db/installer
 where uname is the username) and run setup.go file (go run setup.go)
 
-Set the below environment variables with the path of the clidriver downloaded
-
+- Set the below environment variables with the path of the clidriver downloaded
+```
 export IBM_DB_HOME=/home/uname/go/src/github.com/ibmdb/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
@@ -97,13 +117,17 @@ Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
 or
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
+```
 
+- Script file to set environment variables in Linux/Mac
 
-Script file to set environment variables in Linux/Mac 
+```
 cd .../go_ibm_db/installer
 source setenv.sh
+```
 
-For Docker Linux Container, use below commands
+- For Docker Linux Container, use below commands:
+```
 yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
 curl -OL https://golang.org/dl/go1.17.X.linux-amd64.tar.gz
@@ -114,21 +138,47 @@ rm /usr/bin/gofmt
 cp /usr/local/go/bin/go /usr/bin/
 cp /usr/local/go/bin/gofmt /usr/bin/
 
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.2
+go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
 or 
 go install github.com/ibmdb/go_ibm_db/installer@latest
-
 ```
 
-### <a name="Licenserequirements"></a> License requirements for connecting to databases
+## <a name="Licenserequirements"></a>For z/OS and iSeries Connectivity and SQL1598N error
 
-go_ibm_db driver can connect to DB2 on Linux Unix and Windows without any additional license/s, however, connecting to databases on DB2 for z/OS or DB2 for i(AS400) Servers require either client side or server side license/s. The client side license would need to be copied under `license` folder of your `clidriver` installation directory and for activating server side license, you would need to purchase DB2 Connect Unlimited Edition for System z® and DB2 Connect Unlimited Edition for System i®.
+- Connection to `Db2 for z/OS` or `Db2 for i`(AS400) Server using `ibm_db` driver from distributed platforms (Linux, Unix, Windows and MacOS) is not free. It requires either client side or server side license.
 
-To know more about license and purchasing cost, please contact [IBM Customer Support](http://www-05.ibm.com/support/operations/zz/en/selectcountrylang.html).
+- Connection to `Db2 for LUW` or `Informix` Server using `ibm_db` driver is free.
 
-To know more about server based licensing viz db2connectactivate, follow below links:
-* [Activating the license certificate file for DB2 Connect Unlimited Edition](https://www.ibm.com/developerworks/community/blogs/96960515-2ea1-4391-8170-b0515d08e4da/entry/unlimited_licensing_in_non_java_drivers_using_db2connectactivate_utlility1?lang=en).
-* [Unlimited licensing using db2connectactivate utility](https://www.ibm.com/developerworks/community/blogs/96960515-2ea1-4391-8170-b0515d08e4da/entry/unlimited_licensing_in_non_java_drivers_using_db2connectactivate_utlility1?lang=en.)
+- `ibm_db` returns SQL1598N error in absence of a valid db2connect license. SQL1598N error is returned by the Db2 Server to client.
+To suppress this error, Db2 server must be activated with db2connectactivate utility OR a client side db2connect license file must exist.
+
+- Db2connect license can be applied on database server or client side. A **db2connect license of version 11.5** is required for ibm_db.
+
+- For activating server side license, you can purchase either `Db2 Connect Unlimited Edition for System z®` or `Db2 Connect Unlimited Edition for System i®` license from IBM.
+
+- Ask your DBA to run db2connectactivate utility on Server to activate db2connect license.
+
+- If database Server is enabled for db2connect, no need to apply client side db2connect license.
+
+- If Db2 Server is not db2connectactivated to accept unlimited number of client connection, you must need to apply client side db2connect license.
+
+- db2connectactivate utility and client side db2connect license both comes together from IBM in a single zip file.
+
+- Client side db2connect license is a `db2con*.lic` file that must be copied under `clidriver\license` directory.
+
+- If you have a `db2jcc_license_cisuz.jar` file, it will not work for ibm_db. `db2jcc_license_cisuz.jar` is a db2connect license file for Java Driver. For non-Java Driver, client side db2connect license comes as a file name `db2con*.lic`.
+
+- If environment variable `IBM_DB_HOME` or `IBM_DB_INSTALLER_URL` is not set, `ibm_db` automatically downloads [open source driver specific clidriver](https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/) from https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli and save as `node_modules\ibm_db\installer\clidriver`. Ignores any other installation.
+
+- If `IBM_DB_HOME` or `IBM_DB_INSTALLER_URL` is set, you need to have same version of db2connect license as installed db2 client. Check db2 client version using `db2level` command to know version of db2connect license required. The license file should get copied under `$IBM_DB_HOME\license` directory.
+
+- If you do not have db2connect license, contact [IBM Customer Support](https://www.ibm.com/mysupport/s/?language=en_US) to buy db2connect license. Find the `db2con*.lic` file in the db2connect license shared by IBM and copy it under `.../node_modules/ibm_db/installer/clidriver/license` folder to be effective.
+
+- To know more about license and purchasing cost, please contact [IBM Customer Support](https://www.ibm.com/mysupport/s/?language=en_US).
+
+- To know more about server based licensing viz db2connectactivate, follow below links:
+* [Activating the license certificate file for Db2 Connect Unlimited Edition](https://www.ibm.com/docs/en/db2/11.5?topic=li-activating-license-certificate-file-db2-connect-unlimited-edition).
+* [Unlimited licensing using db2connectactivate utility](https://www.ibm.com/docs/en/db2/11.1?topic=edition-db2connectactivate-server-license-activation-utility).
 
 ## How to run sample program
 
@@ -154,7 +204,7 @@ func main() {
 ```
 To run the sample:- go run example1.go
 
-For complete list of connection parameters please check [this.](https://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.swg.im.dbclient.config.doc/doc/c0054698.html)
+For complete list of connection parameters please check [this.](https://www.ibm.com/docs/en/db2/11.5?topic=file-data-server-driver-configuration-keywords)
 
 ### example2.go:-
 
