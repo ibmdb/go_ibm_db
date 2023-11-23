@@ -45,11 +45,11 @@ PATH windows environment variable.
 Example:
 `set PATH = "C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin";%PATH%`
 
-- If you do not have a clidriver in your system, go to installer folder where go_ibm_db
+- If you do not have a clidriver in your system, go to installer folder where `go_ibm_db`
 is downloaded in your system, use below command:
 (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer
  or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer
- where uname is the username ) and run setup.go file (go run setup.go).
+ where uname is the username ) and run setup.go file (`go run setup.go`).
 
 ```
 Set IBM_DB_HOME to clidriver downloaded path and
@@ -97,14 +97,11 @@ Mac:
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/clidriver/lib
 ```
 
-- If you do not have a clidriver available in your system, use below command:
-```
-go to installer folder where go_ibm_db is downloaded in your system 
+- If you do not have a clidriver available in your system, use below commands.
 (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer
  or /home/uname/go/pkg/mod/github.com/ibmdb/go_ibm_db/installer
-where uname is the username) and run setup.go file (go run setup.go)
+where uname is the username) and run setup.go file (`go run setup.go`)
 
-- Set the below environment variables with the path of the clidriver downloaded
 ```
 export IBM_DB_HOME=/home/uname/go/src/github.com/ibmdb/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
@@ -130,8 +127,8 @@ source setenv.sh
 ```
 yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
-curl -OL https://golang.org/dl/go1.17.X.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.17.X.linux-amd64.tar.gz
+curl -OL https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz
 
 rm /usr/bin/go
 rm /usr/bin/gofmt
@@ -168,11 +165,11 @@ To suppress this error, Db2 server must be activated with db2connectactivate uti
 
 - If you have a `db2jcc_license_cisuz.jar` file, it will not work for ibm_db. `db2jcc_license_cisuz.jar` is a db2connect license file for Java Driver. For non-Java Driver, client side db2connect license comes as a file name `db2con*.lic`.
 
-- If environment variable `IBM_DB_HOME` or `IBM_DB_INSTALLER_URL` is not set, `ibm_db` automatically downloads [open source driver specific clidriver](https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/) from https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli and save as `node_modules\ibm_db\installer\clidriver`. Ignores any other installation.
+- If environment variable `IBM_DB_HOME` or `IBM_DB_INSTALLER_URL` is not set, `ibm_db` automatically downloads [open source driver specific clidriver](https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/) and save as `github.com/ibmdb/clidriver`. Ignores any other installation.
 
 - If `IBM_DB_HOME` or `IBM_DB_INSTALLER_URL` is set, you need to have same version of db2connect license as installed db2 client. Check db2 client version using `db2level` command to know version of db2connect license required. The license file should get copied under `$IBM_DB_HOME\license` directory.
 
-- If you do not have db2connect license, contact [IBM Customer Support](https://www.ibm.com/mysupport/s/?language=en_US) to buy db2connect license. Find the `db2con*.lic` file in the db2connect license shared by IBM and copy it under `.../node_modules/ibm_db/installer/clidriver/license` folder to be effective.
+- If you do not have db2connect license, contact [IBM Customer Support](https://www.ibm.com/mysupport/s/?language=en_US) to buy db2connect license. Find the `db2con*.lic` file in the db2connect license shared by IBM and copy it under `.../github.com/ibmdb/clidriver/license` directory or `$IBM_DB_HOME/license` directory if `IBM_DB_HOME` is set.
 
 - To know more about license and purchasing cost, please contact [IBM Customer Support](https://www.ibm.com/mysupport/s/?language=en_US).
 
