@@ -56,6 +56,7 @@ jobs:
   
     - name: Modfiles
       run: |
+        pwd
         go mod init t1
         go mod tidy
         
