@@ -26,9 +26,9 @@ jobs:
          pwd
          go run installer/setup.go
          pwd
-         cd installer
-         pwd
-         source setenv.sh
+         export IBM_DB_HOME=/home/runner/work/clidriver
+         echo $IBM_DB_HOME
+         #source setenv.sh
          #cd ../..
          pwd
          ls
