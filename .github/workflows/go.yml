@@ -27,8 +27,9 @@ jobs:
          go run installer/setup.go
          pwd
          cd ../..
+         pwd
          ls
-         source installer/setenv.sh
+         #source installer/setenv.sh
   
     - name: Modfiles
       run: |
