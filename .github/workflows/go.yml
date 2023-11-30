@@ -27,9 +27,15 @@ jobs:
          go run installer/setup.go
          pwd
          export IBM_DB_HOME=/home/runner/work/clidriver
-         echo $IBM_DB_HOME
-         #source setenv.sh
-         #cd ../..
+         echo "IBM_DB_HOME= " $IBM_DB_HOME
+         export CGO_CFLAGS=-I$IBM_DB_HOME/include
+         echo "CGO_CFLAGS = " $CGO_CFLAGS
+         export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
+         echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+         export LD_LIBRARY_PATH=$IBM_DB_HOME/lib:$LD_LIBRARY_PATH
+         echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
+         
+         cd ../..
          pwd
          ls
          #source installer/setenv.sh
