@@ -26,6 +26,7 @@ jobs:
          pwd
          go run installer/setup.go
          pwd
+         cd ../..
          ls
          ./installer/setenv.sh
     
