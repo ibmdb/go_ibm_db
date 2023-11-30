@@ -35,6 +35,16 @@ jobs:
          echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
          echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
 
+         db2_user=Zurbie
+         db2_passwd=A2m8test
+         db2_database=Sample
+         db2_hostname=waldevdbclnxtst06.dev.rocketsoftware.com
+         db2_port=60000
+         echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
+         echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
+         echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
+         echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
+         echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
          
          
          cd ../..
