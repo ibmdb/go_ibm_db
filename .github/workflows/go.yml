@@ -25,6 +25,7 @@ jobs:
       run: |
          pwd
          go run installer/setup.go
+         ./installer/setenv.sh
     
     - name: Modfiles
       run: |
