@@ -32,7 +32,7 @@ jobs:
          echo "CGO_CFLAGS = " $CGO_CFLAGS
          export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
          echo "CGO_LDFLAGS = " $CGO_LDFLAGS
-         export LD_LIBRARY_PATH=$IBM_DB_HOME/lib:$LD_LIBRARY_PATH
+         export LD_LIBRARY_PATH=$IBM_DB_HOME/lib
          echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
          
          cd ../..
