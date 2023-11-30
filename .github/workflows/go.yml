@@ -28,7 +28,7 @@ jobs:
          pwd
          cd ../..
          ls
-         ./installer/setenv.sh
+         source installer/setenv.sh
   
     - name: Modfiles
       run: |
