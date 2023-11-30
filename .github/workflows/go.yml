@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: [ "vmtest6" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "vmtest6" ]
+    branches: [ "master" ]
 
 jobs:
 
