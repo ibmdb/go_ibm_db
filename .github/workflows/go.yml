@@ -51,4 +51,7 @@ jobs:
    #   run: go build -v ./...
 
     - name: Test
-      run: go test -v .
+      run: |
+           pwd
+           echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+           go test -v .
