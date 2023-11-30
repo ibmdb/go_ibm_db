@@ -38,6 +38,8 @@ jobs:
          cd ../..
          pwd
          ls
+         echo "checking clidriver"
+         ls clidriver
          #source installer/setenv.sh
   
     - name: Modfiles
