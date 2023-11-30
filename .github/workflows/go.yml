@@ -26,8 +26,8 @@ jobs:
         go mod init t1
         go mod tidy
         
-    - name: build
-      run: go build -v ./...
+   # - name: build
+   #   run: go build -v ./...
 
     - name: Test
       run: go test -v ./...
