@@ -47,11 +47,11 @@ jobs:
          echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
          
          
-         cd ../..
-         pwd
-         ls
-         echo "checking clidriver"
-         ls clidriver
+         #cd ../..
+         #pwd
+         #ls
+         #echo "checking clidriver"
+         #ls clidriver
          #source installer/setenv.sh
   
     - name: Modfiles
@@ -70,5 +70,6 @@ jobs:
            go mod tidy
            echo "==================="
            echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+           echo "DB2_USER = " $DB2_USER
            pwd
            go test -v .
