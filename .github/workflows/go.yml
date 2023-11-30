@@ -73,4 +73,4 @@ jobs:
            echo "DB2_USER = " $DB2_USER
            pwd
            #go test -v
-           go test createdroptable.go main.go
+           go test createdroptable_test.go main.go
