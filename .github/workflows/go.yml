@@ -26,14 +26,16 @@ jobs:
          pwd
          go run installer/setup.go
          pwd
-         export IBM_DB_HOME=/home/runner/work/clidriver
-         echo "IBM_DB_HOME= " $IBM_DB_HOME
-         export CGO_CFLAGS=-I$IBM_DB_HOME/include
-         echo "CGO_CFLAGS = " $CGO_CFLAGS
-         export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
-         echo "CGO_LDFLAGS = " $CGO_LDFLAGS
-         export LD_LIBRARY_PATH=$IBM_DB_HOME/lib
-         echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
+         ibm_db_home=/home/runner/work/clidriver
+         cgo_cflags=-I$ibm_db_home/include
+         cgo_ldflags=-L$ibm_db_home/lib
+         ld_library_path=$ibm_db_home/lib
+         echo "IBM_DB_HOME=$ibm_db_home" >> "$GITHUB_ENV"
+         echo "CGO_CFLAGS=$cgo_cflags" >> "$GITHUB_ENV"
+         echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
+         echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
+
+         
          
          cd ../..
          pwd
