@@ -55,5 +55,10 @@ jobs:
     - name: Test
       run: |
            pwd
+           cd testdata
+           go mod init t2
+           go mod tidy
+           echo "==================="
            echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+           pwd
            go test -v .
