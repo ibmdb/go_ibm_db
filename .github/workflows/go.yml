@@ -3,7 +3,6 @@
 
 name: Go
 
-
 on:
   push:
     branches: [ "master" ]
