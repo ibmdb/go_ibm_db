@@ -53,12 +53,6 @@ jobs:
          #ls clidriver
          #source installer/setenv.sh
 
-    - name: Build
-      run: |
-           cd testdata
-           go build -v
-           cd ..
-  
     - name: Test
       run: |
            pwd
