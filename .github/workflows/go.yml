@@ -63,7 +63,7 @@ jobs:
            echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            echo "DB2_USER = " $DB2_USER
           # echo "======pwd======="
-           #pwd
+          # pwd
           # echo "=======ls ======"
           # ls
           # cat main.go
