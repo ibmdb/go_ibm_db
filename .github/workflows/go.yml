@@ -30,28 +30,22 @@ jobs:
          cgo_cflags=-I$ibm_db_home/include
          cgo_ldflags=-L$ibm_db_home/lib
          ld_library_path=$ibm_db_home/lib
-         echo "IBM_DB_HOME=$ibm_db_home" >> "$GITHUB_ENV"
-         echo "CGO_CFLAGS=$cgo_cflags" >> "$GITHUB_ENV"
-         echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
-         echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
+         #echo "IBM_DB_HOME=$ibm_db_home" >> "$GITHUB_ENV"
+         #echo "CGO_CFLAGS=$cgo_cflags" >> "$GITHUB_ENV"
+         #echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
+         #echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
 
          db2_user=zlb01094
          db2_passwd=8ls3Tkgi6vfdOgwl
          db2_database=bludb
          db2_hostname=815fa4db-dc03-4c70-869a-a9cc13f33084.bs2io90l08kqb1od8lcg.databases.appdomain.cloud
          db2_port=30367
-         echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
-         echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
-         echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
-         echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
-         echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
+         #echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
+         #echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
+         #echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
+         #echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
+         #echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
          
-         #cd ../..
-         #pwd
-         #ls
-         #echo "checking clidriver"
-         #ls clidriver
-         #source installer/setenv.sh
 
     - name: Test
       run: |
@@ -59,9 +53,9 @@ jobs:
            cd testdata
            go mod init t2
            go mod tidy
-           echo "==================="
-           echo "CGO_LDFLAGS = " $CGO_LDFLAGS
-           echo "DB2_USER = " $DB2_USER
+           echo "============TEST CASES ======"
+           #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+           #echo "DB2_USER = " $DB2_USER
            #go test -v
            go test createdroptable_test.go main.go
            go test alldatatypes_test.go main.go
