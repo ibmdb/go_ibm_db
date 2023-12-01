@@ -68,4 +68,4 @@ jobs:
            ls
            cat main.go
            #go test -v
-           #go test createdroptable_test.go main.go
+           go test createdroptable_test.go main.go
