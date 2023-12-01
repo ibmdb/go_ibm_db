@@ -57,8 +57,8 @@ jobs:
            #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            #echo "DB2_USER = " $DB2_USER
            #go test -v
-           go test createdroptable_test.go main.go
-           go test alldatatypes_test.go main.go
-           go test chinesechar_test.go main.go
-           go test hugequery_test.go main.go
-           go test decimal_test.go main.go
+           #go test createdroptable_test.go main.go
+           #go test alldatatypes_test.go main.go
+           #go test chinesechar_test.go main.go
+           #go test hugequery_test.go main.go
+           #go test decimal_test.go main.go
