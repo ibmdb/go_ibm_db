@@ -21,7 +21,7 @@ jobs:
       with:
         go-version: '1.19.3'
         
-    - name: clidriver
+    - name: Install clidriver
       run: |
          pwd
          go run installer/setup.go
@@ -46,7 +46,6 @@ jobs:
          echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
          echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
          
-         
          #cd ../..
          #pwd
          #ls
@@ -54,15 +53,6 @@ jobs:
          #ls clidriver
          #source installer/setenv.sh
   
-    - name: Modfiles
-      run: |
-        pwd
-        go mod init t1
-        go mod tidy
-        
-   # - name: build
-   #   run: go build -v ./...
-
     - name: Test
       run: |
            pwd
