@@ -54,7 +54,10 @@ jobs:
          #source installer/setenv.sh
 
     - name: Build
-      run: go build -v
+      run: |
+           cd testdata
+           go build -v
+           cd ..
   
     - name: Test
       run: |
