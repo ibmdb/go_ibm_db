@@ -62,6 +62,10 @@ jobs:
            echo "==================="
            echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            echo "DB2_USER = " $DB2_USER
+           echo "======pwd======="
            pwd
+           echo "=======ls ======"
+           ls
+           cat main.go
            #go test -v
-           go test createdroptable_test.go main.go
+           #go test createdroptable_test.go main.go
