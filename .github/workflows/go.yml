@@ -35,11 +35,11 @@ jobs:
          echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
          echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
 
-         db2_user=zlb01094
-         db2_passwd=8ls3Tkgi6vfdOgwl
-         db2_database=bludb
-         db2_hostname=815fa4db-dc03-4c70-869a-a9cc13f33084.bs2io90l08kqb1od8lcg.databases.appdomain.cloud
-         db2_port=30367
+         db2_user=
+         db2_passwd=
+         db2_database=
+         db2_hostname=
+         db2_port=
          echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
          echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
          echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
