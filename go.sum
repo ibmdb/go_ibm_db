@@ -1,0 +1,4 @@
+github.com/ibmdb/go_ibm_db v0.4.5 h1:a0qKWbA5shCRo5HRRnAuENwhjg6AkgfPNr9xx0IZ160=
+github.com/ibmdb/go_ibm_db v0.4.5/go.mod h1:nl5aUh1IzBVExcqYXaZLApaq8RUvTEph3VP49UTmEvg=
+github.com/ibmruntimes/go-recordio/v2 v2.0.0-20240327185926-a9cddb84114f h1:0bpe1R9upvXKZkUUNRXERsz1NVL/pg9FMydmHi6Hv8w=
+github.com/ibmruntimes/go-recordio/v2 v2.0.0-20240327185926-a9cddb84114f/go.mod h1:NSpUK0x9IyEoM1EjTp2/S8ErxZfRHoA2DfwiYobFSkc=

@@ -7,6 +7,7 @@ package go_ibm_db
 import (
 	"database/sql/driver"
 	"fmt"
+	"runtime"
 	"strings"
 	"unsafe"
 
@@ -41,16 +42,24 @@ func (e *Error) Error() string {
 }
 
 func NewError(apiName string, handle interface{}) error {
+	var ret api.SQLRETURN
 	h, ht := ToHandleAndType(handle)
 	err := &Error{APIName: apiName}
 	var ne api.SQLINTEGER
 	state := make([]uint16, 6)
 	msg := make([]uint16, api.SQL_MAX_MESSAGE_LENGTH)
 	for i := 1; ; i++ {
-		ret := api.SQLGetDiagRec(ht, h, api.SQLSMALLINT(i),
-			(*api.SQLWCHAR)(unsafe.Pointer(&state[0])), &ne,
-			(*api.SQLWCHAR)(unsafe.Pointer(&msg[0])),
-			api.SQLSMALLINT(len(msg)), nil)
+		if runtime.GOOS == "zos"{
+			ret = api.SQLGetDiagRec(ht, h, api.SQLSMALLINT(i),
+				(*api.SQLWCHAR)(unsafe.Pointer(&state[0])), &ne,
+				(*api.SQLWCHAR)(unsafe.Pointer(&msg[0])),
+				api.SQLSMALLINT(2*len(msg)), nil) // odbc api on zos doesn't handle null terminated strings, the exact size is passed
+			} else {
+			ret = api.SQLGetDiagRec(ht, h, api.SQLSMALLINT(i),
+				(*api.SQLWCHAR)(unsafe.Pointer(&state[0])), &ne,
+				(*api.SQLWCHAR)(unsafe.Pointer(&msg[0])),
+				api.SQLSMALLINT(len(msg)), nil)
+			}
 		if ret == api.SQL_NO_DATA {
 			break
 		}

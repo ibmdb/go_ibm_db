@@ -7,6 +7,7 @@ package api
 import (
 	"unicode/utf16"
 	"unsafe"
+	"runtime"
 )
 
 type (
@@ -67,7 +68,14 @@ func UTF16ToString(s []uint16) string {
 
 // StringToUTF16 returns the UTF-16 encoding of the UTF-8 string s,
 // with a terminating NUL added.
-func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")) }
+func StringToUTF16(s string) []uint16 { 
+	if runtime.GOOS == "zos"{
+		return utf16.Encode([]rune(s))
+	}else {
+
+		return utf16.Encode([]rune(s + "\u0000"))
+		}
+}
 
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.

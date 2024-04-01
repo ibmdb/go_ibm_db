@@ -6,6 +6,7 @@ package go_ibm_db
 
 import (
 	"database/sql/driver"
+	"runtime"
 	"unsafe"
 
 	"github.com/ibmdb/go_ibm_db/api"
@@ -26,9 +27,15 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	drv.Stats.updateHandleCount(api.SQL_HANDLE_DBC, 1)
 
 	b := api.StringToUTF16(dsn)
-	ret = api.SQLDriverConnect(h, 0,
-		(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQLSMALLINT(len(b)),
+	if runtime.GOOS == "zos"{	
+		ret = api.SQLDriverConnect(h, 0,
+		(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQLSMALLINT(2*len(b)), // odbc api on zos doesn't handle null terminated strings, the exact size is passed
 		nil, 0, nil, api.SQL_DRIVER_NOPROMPT)
+	} else {
+		ret = api.SQLDriverConnect(h, 0,
+ 		(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQLSMALLINT(len(b)),
+ 		nil, 0, nil, api.SQL_DRIVER_NOPROMPT)
+	}
 	if IsError(ret) {
 		defer releaseHandle(h)
 		return nil, NewError("SQLDriverConnect", h)
