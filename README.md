@@ -140,7 +140,7 @@ or
 go install github.com/ibmdb/go_ibm_db/installer@latest
 ```
 
-## How to Install in Windows
+## How to Install in z/OS
 
 - You may install go_ibm_db using the below command
 
@@ -347,7 +347,7 @@ func create(db *sql.DB) error {
 // Inserting row.
 
 func insert(db *sql.DB) error {
-	st, err := db.Prepare("Insert into SAMPLE(ID,NAME,LOCATION,POSITION) values('3242','mike','hyd','manager')")
+	st, err := db.Prepare("Insert into SAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Mike','Hyderabad','Manager')")
 	if err != nil {
 		return err
 	}
@@ -384,7 +384,7 @@ func execquery(st *sql.Stmt) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%v  %v   %v         %v\n", t, x, m, n)
+		fmt.Printf("%v  %v   %v   %v\n", t, x, m, n)
 	}
 	return nil
 }
@@ -422,6 +422,9 @@ import (
 )
 
 func main() {
+	// Defining connection string
+	// Depending on your connection type
+	// you may wish to add: MULTICONTEXT=0
 	con := "HOSTNAME=host;PORT=number;DATABASE=name;UID=username;PWD=password"
 	pool := a.Pconnect("PoolSize=100")
 
@@ -444,7 +447,7 @@ func main() {
 	db1.Close()
 	db.Close()
 	pool.Release()
-	fmt.println("success")
+	fmt.Println("success")
 }
 ```
 To run the sample:- go run example3.go
@@ -495,7 +498,7 @@ func main() {
                                 fmt.Println("err1 : ", err1)
                         }else{
                                 go func() {
-                                        execquery(st1)
+                                        ExecQuery(st1)
                                         db1.Close()
                                 }()
                         }
