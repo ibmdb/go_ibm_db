@@ -1,4 +1,4 @@
-// Copyright 2012 The Go Authors. All rights reserved.
+// Copyright 2024 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -49,17 +49,17 @@ func NewError(apiName string, handle interface{}) error {
 	state := make([]uint16, 6)
 	msg := make([]uint16, api.SQL_MAX_MESSAGE_LENGTH)
 	for i := 1; ; i++ {
-		if runtime.GOOS == "zos"{
+		if runtime.GOOS == "zos" {
 			ret = api.SQLGetDiagRec(ht, h, api.SQLSMALLINT(i),
 				(*api.SQLWCHAR)(unsafe.Pointer(&state[0])), &ne,
 				(*api.SQLWCHAR)(unsafe.Pointer(&msg[0])),
 				api.SQLSMALLINT(2*len(msg)), nil) // odbc api on zos doesn't handle null terminated strings, the exact size is passed
-			} else {
+		} else {
 			ret = api.SQLGetDiagRec(ht, h, api.SQLSMALLINT(i),
 				(*api.SQLWCHAR)(unsafe.Pointer(&state[0])), &ne,
 				(*api.SQLWCHAR)(unsafe.Pointer(&msg[0])),
 				api.SQLSMALLINT(len(msg)), nil)
-			}
+		}
 		if ret == api.SQL_NO_DATA {
 			break
 		}
