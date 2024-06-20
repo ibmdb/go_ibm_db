@@ -81,6 +81,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		//  sqltype is SQL_DECIMAL set p.Decimal
 		if sqltype == api.SQL_DECIMAL {
 			decimal = p.Decimal
+			size = p.Size // SQL_DECIMAL this is the maximum decimal precision
 		}
 	case int64:
 		ctype = api.SQL_C_SBIGINT

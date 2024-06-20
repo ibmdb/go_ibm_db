@@ -140,6 +140,108 @@ or
 go install github.com/ibmdb/go_ibm_db/installer@latest
 ```
 
+## How to Install in z/OS
+
+- You may install go_ibm_db using the below command
+
+```
+go install github.com/ibmdb/go_ibm_db/installer@latest
+```
+
+### Configure ODBC driver on z/OS
+
+> **Note**
+> You must have the following environment variables set.
+> * IBM_DB_HOME
+> * STEPLIB
+> * DSNAOINI
+
+
+Please refer to the [ODBC Guide and References](https://www.ibm.com/support/knowledgecenter/SSEPEK/pdf/db2z_12_odbcbook.pdf) cookbook for how to configure your ODBC driver.   Specifically, you need to ensure you have:
+
+1. Apply Db2 on z/OS PTF [UI60551](https://www-01.ibm.com/support/docview.wss?uid=swg1PH05953) to pick up new ODBC functionality to support Node.js applications.
+
+2. Binded the ODBC packages.  A sample JCL is provided in the `SDSNSAMP` dataset in member `DSNTIJCL`.  Customize the JCL with specifics to your system.
+
+3. Set the `IBM_DB_HOME` environment variable to the High Level Qualifier (HLQ) of your Db2 datasets.  For example, if your Db2 datasets are located as `DSNC10.SDSNC.H` and `DSNC10.SDSNMACS`, you need to set `IBM_DB_HOME` environment variable to `DSNC10` with the following statement (can be saved in `~/.profile`):
+
+    ```sh
+    # Set HLQ to Db2 datasets.
+    export IBM_DB_HOME="DSNC10"
+    ```
+
+4. Update the `STEPLIB` environment variable to include the Db2 SDSNEXIT, SDSNLOAD and SDSNLOD2 data sets. You can set the `STEPLIB` environment variable with the following statement, after defining `IBM_DB_HOME` to the high level qualifier of your Db2 datasets as instructed above:
+
+    ```sh
+    # Assumes IBM_DB_HOME specifies the HLQ of the Db2 datasets.
+    export STEPLIB=$STEPLIB:$IBM_DB_HOME.SDSNEXIT:$IBM_DB_HOME.SDSNLOAD:$IBM_DB_HOME.SDSNLOD2
+    ```
+
+5. Configured an appropriate _Db2 ODBC initialization file_ that can be read at application time. You can specify the file by using either a DSNAOINI data definition statement or by defining a `DSNAOINI` z/OS UNIX environment variable.  For compatibility with ibm_db, the following properties must be set:
+
+    In COMMON section:
+
+    ```
+    MULTICONTEXT=2
+    CURRENTAPPENSCH=ASCII
+    FLOAT=IEEE
+    ```
+
+    In SUBSYSTEM section:
+
+    ```
+    MVSATTACHTYPE=RRSAF
+    ```
+
+    Here is a sample of a complete initialization file:
+
+    ```
+    ; This is a comment line...
+    ; Example COMMON stanza
+    [COMMON]
+    MVSDEFAULTSSID=VC1A
+    CONNECTTYPE=1
+    MULTICONTEXT=2
+    CURRENTAPPENSCH=ASCII
+    FLOAT=IEEE
+    ; Example SUBSYSTEM stanza for VC1A subsystem
+    [VC1A]
+    MVSATTACHTYPE=RRSAF
+    PLANNAME=DSNACLI
+    ; Example DATA SOURCE stanza for STLEC1 data source
+    [STLEC1]
+    AUTOCOMMIT=1
+    CURSORHOLD=1
+    ```
+
+Here's a simple script you can run setup your ODBC INI file.
+The following script exepcts that you have have defined your subsystem in following way:
+
+```export SUBSYSTEM=<SSID>```
+
+This script will setup your inistialization file. 
+
+```shell
+export DSNAOINI="$HOME/ODBC_${HOSTNAME}_${SUBSYSTEM}_CAF"
+touch $DSNAOINI
+/bin/cat /dev/null  > "$DSNAOINI"
+/bin/chtag -t -c 1047 "$DSNAOINI"
+_BPXK_AUTOCVT=ON /bin/cat <<EOF >"$DSNAOINI"
+[COMMON]
+MVSDEFAULTSSID=$SUBSYSTEM
+CURRENTAPPENSCH=UNICODE
+FLOAT=IEEE
+[$SUBSYSTEM]
+MVSATTACHTYPE=CAF
+PLANNAME=DSNACLI
+[$HOSTNAME$SUBSYSTEM]
+AUTOCOMMIT=1
+EOF
+```
+
+    Reference Chapter 3 in the [ODBC Guide and References](https://www.ibm.com/support/knowledgecenter/SSEPEK/pdf/db2z_12_odbcbook.pdf) for more instructions.
+
+
 ## <a name="Licenserequirements"></a>For z/OS and iSeries Connectivity and SQL1598N error
 
 - Connection to `Db2 for z/OS` or `Db2 for i`(AS400) Server using `ibm_db` driver from distributed platforms (Linux, Unix, Windows and MacOS) is not free. It requires either client side or server side license.
@@ -245,7 +347,7 @@ func create(db *sql.DB) error {
 // Inserting row.
 
 func insert(db *sql.DB) error {
-	st, err := db.Prepare("Insert into SAMPLE(ID,NAME,LOCATION,POSITION) values('3242','mike','hyd','manager')")
+	st, err := db.Prepare("Insert into SAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Mike','Hyderabad','Manager')")
 	if err != nil {
 		return err
 	}
@@ -282,7 +384,7 @@ func execquery(st *sql.Stmt) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%v  %v   %v         %v\n", t, x, m, n)
+		fmt.Printf("%v  %v   %v   %v\n", t, x, m, n)
 	}
 	return nil
 }
@@ -320,6 +422,9 @@ import (
 )
 
 func main() {
+	// Defining connection string
+	// Depending on your connection type
+	// you may wish to add: MULTICONTEXT=0
 	con := "HOSTNAME=host;PORT=number;DATABASE=name;UID=username;PWD=password"
 	pool := a.Pconnect("PoolSize=100")
 
@@ -342,7 +447,7 @@ func main() {
 	db1.Close()
 	db.Close()
 	pool.Release()
-	fmt.println("success")
+	fmt.Println("success")
 }
 ```
 To run the sample:- go run example3.go
@@ -393,7 +498,7 @@ func main() {
                                 fmt.Println("err1 : ", err1)
                         }else{
                                 go func() {
-                                        execquery(st1)
+                                        ExecQuery(st1)
                                         db1.Close()
                                 }()
                         }
