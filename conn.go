@@ -8,8 +8,9 @@ import (
 	"database/sql/driver"
 	"runtime"
 	"unsafe"
-
+	"fmt"
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 type Conn struct {
@@ -18,6 +19,9 @@ type Conn struct {
 }
 
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
+	trc.Trace1("conn.go: Open() - ENTRY")
+	trc.Trace1(fmt.Sprintf("dsn = %s", dsn))
+	
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_DBC, api.SQLHANDLE(d.h), &out)
 	if IsError(ret) {
@@ -40,21 +44,28 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 		defer releaseHandle(h)
 		return nil, NewError("SQLDriverConnect", h)
 	}
+	trc.Trace1("conn.go: Open() - EXIT")
 	return &Conn{h: h}, nil
 }
 
 func (c *Conn) Close() error {
+	trc.Trace1("conn.go: Close() - ENTRY")
+	
 	ret := api.SQLDisconnect(c.h)
 	if IsError(ret) {
 		return NewError("SQLDisconnect", c.h)
 	}
 	h := c.h
 	c.h = api.SQLHDBC(api.SQL_NULL_HDBC)
+	trc.Trace1("conn.go: Close() - EXIT")
 	return releaseHandle(h)
 }
 
-// Query method executes the statement with out prepare if no args provided, and a driver.ErrSkip otherwise (handled by sql.go to execute usual preparedStmt)
+//Query method executes the statement with out prepare if no args provided, and a driver.ErrSkip otherwise (handled by sql.go to execute usual preparedStmt)
 func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
+	trc.Trace1("conn.go: Query() - ENTRY")
+	trc.Trace1(fmt.Sprintf("query = %s", query))
+	
 	if len(args) > 0 {
 		// Not implemented for queries with parameters
 		return nil, driver.ErrSkip
@@ -87,5 +98,6 @@ func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 	if err != nil {
 		return nil, err
 	}
+	trc.Trace1("conn.go: Query() - EXIT")
 	return &Rows{os: os}, nil
 }

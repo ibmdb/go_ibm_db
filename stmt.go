@@ -12,6 +12,8 @@ import (
 	"time"
 	"context"
 	"github.com/ibmdb/go_ibm_db/api"
+	"fmt"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 type Stmt struct {
@@ -22,10 +24,17 @@ type Stmt struct {
 }
 
 func (c *Conn) Prepare( query string) (driver.Stmt, error) {
+	trc.Trace1("stmt.go: Prepare()")
+	trc.Trace1(fmt.Sprintf("query=%s", query))
+	
     return c.PrepareContext(context.Background(), query)
 }
 
+
 func (c *Conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
+	trc.Trace1("stmt.go: PrepareContext() - ENTRY")
+	trc.Trace1(fmt.Sprintf("query=%s", query))
+	
 	os, err := c.PrepareODBCStmt(query)
 	if err != nil {
 		return nil, err
@@ -36,11 +45,13 @@ func (c *Conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, e
     case <-ctx.Done():
          return nil, ctx.Err()
     }
-
+    trc.Trace1("stmt.go: PrepareContext() - EXIT")
 	return &Stmt{c: c, os: os, query: query}, nil
 }
 
 func (s *Stmt) NumInput() int {
+	trc.Trace1("stmt.go: NumInput()")
+	
 	if s.os == nil {
 		return -1
 	}
@@ -49,21 +60,29 @@ func (s *Stmt) NumInput() int {
 
 // Close closes the opened statement
 func (s *Stmt) Close() error {
+    trc.Trace1("stmt.go: Close() - ENTRY")
+	 
 	if s.os == nil {
 		return errors.New("Stmt is already closed")
 	}
 	ret := s.os.closeByStmt()
 	s.os = nil
+	
+	trc.Trace1("stmt.go: Close() - EXIT")
 	return ret
 }
 
 // Exec executes the the sql but does not return the rows
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
+	trc.Trace1("stmt.go: Exec()")
+	
     return s.exec(context.Background(), args)
 }
 
 // ExecContext implements driver.StmtExecContext interface
 func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
+	trc.Trace1("stmt.go: ExecContext()")
+	
 	dargs := make([]driver.Value, len(args))
 	for n, param := range args {
 		dargs[n] = param.Value
@@ -72,6 +91,8 @@ func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (drive
 	return s.exec(ctx, dargs)
 }
 func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, error) {
+	 trc.Trace1("stmt.go: exec()- ENTRY")
+	 
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -110,16 +131,21 @@ func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, er
          return nil, ctx.Err()
     }
 
+     trc.Trace1("stmt.go: exec()- EXIT")
 	return &Result{rowCount: sumRowCount}, nil
 }
 
 // Query function executes the sql and return rows if rows are present
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
+	trc.Trace1("stmt.go: Query()")
+
     return s.query1(context.Background(), args)
 }
 
 // QueryContext implements driver.StmtQueryContext interface
 func (s *Stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
+	trc.Trace1("stmt.go: QueryContext()")
+
 	dargs := make([]driver.Value, len(args))
 	for n, param := range args {
 		dargs[n] = param.Value
@@ -129,6 +155,8 @@ func (s *Stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driv
 }
 
 func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, error) {
+	trc.Trace1("stmt.go: query1()")
+	
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -164,6 +192,8 @@ func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, er
 
 // CheckNamedValue implementes driver.NamedValueChecker.
 func (s *Stmt) CheckNamedValue(nv *driver.NamedValue) (err error) {
+	trc.Trace1("stmt.go: CheckNamedValue() - ENTRY")
+	
 	switch d := nv.Value.(type) {
 	case sql.Out:
 		err = nil
@@ -215,5 +245,6 @@ func (s *Stmt) CheckNamedValue(nv *driver.NamedValue) (err error) {
 	default:
 		nv.Value, err = driver.DefaultParameterConverter.ConvertValue(nv.Value)
 	}
+	trc.Trace1("stmt.go: CheckNamedValue() - EXIT")
 	return err
 }

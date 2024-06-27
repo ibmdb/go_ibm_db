@@ -6,6 +6,8 @@ package api
 
 import (
 	"syscall"
+    trc "github.com/ibmdb/go_ibm_db/log2"
+	"fmt"
 )
 
 const (
@@ -161,13 +163,25 @@ type (
 )
 
 func SQLSetEnvUIntPtrAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
+    trc.Trace1("api/api_windows.go SQLSetEnvUIntPtrAttr() - ENTRY")
+	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=0x%x, stringLength=%d", attribute, valuePtr, stringLength))
+	
 	r0, _, _ := syscall.Syscall6(procSQLSetEnvAttr.Addr(), 4, uintptr(environmentHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
 	ret = SQLRETURN(r0)
+
+    trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1("api/api_windows.go SQLSetEnvUIntPtrAttr() - EXIT")
 	return
 }
 
 func SQLSetConnectUIntPtrAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
+    trc.Trace1("api/api_windows.go SQLSetConnectUIntPtrAttr() - ENTRY")
+	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=%x, stringLength=%d", attribute, valuePtr, stringLength))
+	
 	r0, _, _ := syscall.Syscall6(procSQLSetConnectAttrW.Addr(), 4, uintptr(connectionHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
 	ret = SQLRETURN(r0)
+	
+	trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1("api/api_windows.go SQLSetConnectUIntPtrAttr() - EXIT")
 	return
 }
