@@ -6,11 +6,13 @@ package go_ibm_db
 
 import (
 	"fmt"
-
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT) {
+	trc.Trace1("handle.go: ToHandleAndType() - ENTRY")
+	
 	switch v := handle.(type) {
 	case api.SQLHENV:
 		if v == api.SQLHENV(api.SQL_NULL_HANDLE) {
@@ -28,10 +30,13 @@ func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT) {
 	default:
 		panic(fmt.Errorf("unexpected handle type %T", v))
 	}
+	trc.Trace1("handle.go: ToHandleAndType() - EXIT")
 	return h, ht
 }
 
 func releaseHandle(handle interface{}) error {
+	trc.Trace1("handle.go: releaseHandle() - ENTRY")
+
 	h, ht := ToHandleAndType(handle)
 	ret := api.SQLFreeHandle(ht, h)
 	if ret == api.SQL_INVALID_HANDLE {
@@ -41,5 +46,7 @@ func releaseHandle(handle interface{}) error {
 		return NewError("SQLFreeHandle", handle)
 	}
 	drv.Stats.updateHandleCount(ht, -1)
+
+	trc.Trace1("handle.go: releaseHandle() - EXIT")
 	return nil
 }

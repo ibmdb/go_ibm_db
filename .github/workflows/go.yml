@@ -1,0 +1,64 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.19.3'
+        
+    - name: Install clidriver
+      run: |
+         pwd
+         go run installer/setup.go
+         pwd
+         ibm_db_home=/home/runner/work/clidriver
+         cgo_cflags=-I$ibm_db_home/include
+         cgo_ldflags=-L$ibm_db_home/lib
+         ld_library_path=$ibm_db_home/lib
+         echo "IBM_DB_HOME=$ibm_db_home" >> "$GITHUB_ENV"
+         echo "CGO_CFLAGS=$cgo_cflags" >> "$GITHUB_ENV"
+         echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
+         echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
+
+         db2_user=
+         db2_passwd=
+         db2_database=
+         db2_hostname=
+         db2_port=
+         echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
+         echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
+         echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
+         echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
+         echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
+         
+
+    - name: Test
+      run: |
+           pwd
+           cd testdata
+           go mod init t2
+           go mod tidy
+           echo "============TEST CASES ======"
+           #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
+           #echo "DB2_USER = " $DB2_USER
+           go test -v
+           #go test createdroptable_test.go main.go
+           #go test alldatatypes_test.go main.go
+           #go test chinesechar_test.go main.go
+           #go test hugequery_test.go main.go
+           #go test decimal_test.go main.go

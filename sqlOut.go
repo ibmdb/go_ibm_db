@@ -12,6 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 // Out struct is used to store the value of a OUT parameter in Stored Procedure
@@ -30,6 +31,9 @@ type Out struct {
 }
 
 func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
+    trc.Trace1("sqlOut.go: newOut() - ENTRY")
+	trc.Trace1(fmt.Sprintf("idx=%d", idx))
+	
 	var ctype, sqltype, decimalDigits, nullable, inputOutputType api.SQLSMALLINT
 	var parameterSize api.SQLULEN
 	var buflen api.SQLLEN
@@ -138,6 +142,7 @@ func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
 		plen = &buflen
 	}
 
+    trc.Trace1("sqlOut.go: newOut() - EXIT")
 	return &Out{
 		sqlOut:          sqlOut,
 		idx:             idx + 1,
@@ -155,6 +160,8 @@ func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
 
 // Value function converts the database value to driver.value
 func (o *Out) Value() (driver.Value, error) {
+    trc.Trace1("sqlOut.go: Value() - ENTRY")
+	
 	var p unsafe.Pointer
 	buf := o.data
 	if len(buf) > 0 {
@@ -207,11 +214,14 @@ func (o *Out) Value() (driver.Value, error) {
 	case api.SQL_C_BINARY:
 		return buf, nil
 	}
+	trc.Trace1("sqlOut.go: Value() - EXIT")
 	return nil, fmt.Errorf("unsupported ctype %d for OUT parameter", o.ctype)
 }
 
 // ConvertAssign function copies the database data to Dest field in stored procedure.
 func (o *Out) ConvertAssign() error {
+    trc.Trace1("sqlOut.go: ConvertAssign() - ENTRY")
+	
 	if o.sqlOut == nil {
 		return fmt.Errorf("sql.Out is nil at OUT param index %d", o.idx)
 	}
@@ -229,11 +239,14 @@ func (o *Out) ConvertAssign() error {
 	if err != nil {
 		return err
 	}
+	trc.Trace1("sqlOut.go: ConvertAssign() - EXIT")
 	return ConvertAssign(o.sqlOut.Dest, dv)
 }
 
 // ConvertAssign function copies the database data to Dest field in stored procedure.
 func ConvertAssign(dest, src interface{}) error {
+    trc.Trace1("sqlOut.go: ConvertAssign() - ENTRY")
+	
 	switch s := src.(type) {
 	case string:
 		switch d := dest.(type) {
@@ -427,10 +440,14 @@ func ConvertAssign(dest, src interface{}) error {
 		}
 	}
 
+    trc.Trace1("sqlOut.go: ConvertAssign() - EXIT")
 	return fmt.Errorf("unsupported Scan, storing driver.Value type %T into type %T", src, dest)
 }
 
 func strconvErr(err error) error {
+    trc.Trace1("sqlOut.go: strconvErr()")
+	trc.Trace1(fmt.Sprintf("Error:%s", err))
+
 	if ne, ok := err.(*strconv.NumError); ok {
 		return ne.Err
 	}
@@ -438,6 +455,8 @@ func strconvErr(err error) error {
 }
 
 func copyBytes(b []byte) []byte {
+    trc.Trace1("sqlOut.go: copyBytes()")
+	
 	if b == nil {
 		return nil
 	}
@@ -447,6 +466,8 @@ func copyBytes(b []byte) []byte {
 }
 
 func asString(src interface{}) string {
+    trc.Trace1("sqlOut.go: asString()")
+	
 	switch v := src.(type) {
 	case string:
 		return v
@@ -470,6 +491,8 @@ func asString(src interface{}) string {
 }
 
 func asBytes(buf []byte, rv reflect.Value) (b []byte, ok bool) {
+    trc.Trace1("sqlOut.go: asBytes()")
+	
 	switch rv.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return strconv.AppendInt(buf, rv.Int(), 10), true
@@ -490,6 +513,8 @@ func asBytes(buf []byte, rv reflect.Value) (b []byte, ok bool) {
 
 // This function is mirrored in the database/sql/driver package.
 func callValuerValue(vr driver.Valuer) (v driver.Value, err error) {
+    trc.Trace1("sqlOut.go: callValuerValue()")
+	
 	if rv := reflect.ValueOf(vr); rv.Kind() == reflect.Ptr &&
 		rv.IsNil() &&
 		rv.Type().Elem().Implements(reflect.TypeOf((*driver.Valuer)(nil)).Elem()) {

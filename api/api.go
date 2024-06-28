@@ -8,6 +8,8 @@ import (
 	"unicode/utf16"
 	"unsafe"
 	"runtime"
+	trc "github.com/ibmdb/go_ibm_db/log2"
+	"fmt"
 )
 
 type (
@@ -57,25 +59,31 @@ type (
 // UTF16ToString returns the UTF-8 encoding of the UTF-16 sequence s,
 // with a terminating NUL removed.
 func UTF16ToString(s []uint16) string {
+    trc.Trace1("api/api.go UTF16ToString() - ENTRY")
 	for i, v := range s {
 		if v == 0 {
 			s = s[0:i]
 			break
 		}
 	}
+	trc.Trace1("api/api.go UTF16ToString() - EXIT")
 	return string(utf16.Decode(s))
 }
 
 // StringToUTF16 returns the UTF-16 encoding of the UTF-8 string s,
 // with a terminating NUL added.
-func StringToUTF16(s string) []uint16 { 
+//func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")) }
+func StringToUTF16(s string) []uint16 {
+    trc.Trace1("api/api.go StringToUTF16()")
+	trc.Trace1(fmt.Sprintf("api/api.go StringToUTF16() - s = %s", s))
+	
 	if runtime.GOOS == "zos"{
 		return utf16.Encode([]rune(s))
 	}else {
-
 		return utf16.Encode([]rune(s + "\u0000"))
 		}
 }
+
 
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.
@@ -83,18 +91,26 @@ func StringToUTF16Ptr(s string) *uint16 { return &StringToUTF16(s)[0] }
 
 // ExtractUTF16Str uses unsafe package to copy UTF16 string to a byte slice.
 func ExtractUTF16Str(s []uint16) []byte {
+    trc.Trace1("api/api.go ExtractUTF16Str() - ENTRY")
+	
 	var out []byte
 	for i := range s {
 		b := Extract(unsafe.Pointer(&s[i]), unsafe.Sizeof(s[i]))
 		out = append(out, b...)
 	}
+	
+	trc.Trace1("api/api.go ExtractUTF16Str() - EXIT")
 	return out
 }
 
 func Extract(ptr unsafe.Pointer, size uintptr) []byte {
+	trc.Trace1("api/api.go Extract() - ENTRY")
+	
 	out := make([]byte, size)
 	for i := range out {
 		out[i] = *((*byte)(unsafe.Pointer(uintptr(ptr) + uintptr(i))))
 	}
+	
+	trc.Trace1("api/api.go Extract() - EXIT")
 	return out
 }
