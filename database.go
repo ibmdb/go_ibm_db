@@ -6,12 +6,18 @@ import (
 	"unsafe"
 
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 // CreateDb function will take the db name and user details as parameters
 // and create the database.
 func CreateDb(dbname string, connStr string, options ...string) (bool, error) {
+    trc.Trace1("database.go: CreateDb() - ENTRY")
+	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s", dbname, connStr))
+	
 	if dbname == "" {
+	    trc.Trace1("Error: Database name cannot be empty")
+		trc.Trace1("database.go: CreateDb() - EXIT")
 		return false, fmt.Errorf("Database name cannot be empty")
 	}
 	var codeset, mode string
@@ -29,10 +35,13 @@ func CreateDb(dbname string, connStr string, options ...string) (bool, error) {
 		}
 	}
 	connStr = connStr + ";" + "ATTACH=true"
+	trc.Trace1("database.go: CreateDb() - EXIT")
 	return createDatabase(dbname, connStr, codeset, mode)
 }
 
 func createDatabase(dbname string, connStr string, codeset string, mode string) (bool, error) {
+	trc.Trace1("database.go: createDatabase() - ENTRY")
+	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s, codeset=%s, mode=%s", dbname, connStr, codeset, mode))
 	var out api.SQLHANDLE
 	in := api.SQLHANDLE(api.SQL_NULL_HANDLE)
 	bufDBN := api.StringToUTF16(dbname)
@@ -72,20 +81,29 @@ func createDatabase(dbname string, connStr string, codeset string, mode string) 
 		return false, NewError("SQLCreateDb", hdbc)
 	}
 	defer releaseHandle(hdbc)
+	
+	trc.Trace1("database.go: createDatabase() - EXIT")
 	return true, nil
 }
 
 // DropDb function will take the db name and user details as parameters
 // and drop the database.
 func DropDb(dbname string, connStr string) (bool, error) {
+    trc.Trace1("database.go: DropDb() - ENTRY")
+	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s", dbname, connStr))
+	
 	if dbname == "" {
 		return false, fmt.Errorf("Database name cannot be empty")
 	}
 	connStr = connStr + ";" + "ATTACH=true"
+	trc.Trace1("database.go: DropDb() - EXIT")
 	return dropDatabase(dbname, connStr)
 }
 
 func dropDatabase(dbname string, connStr string) (bool, error) {
+    trc.Trace1("database.go: dropDatabase() - ENTRY")
+	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s", dbname, connStr))
+	
 	var out api.SQLHANDLE
 	in := api.SQLHANDLE(api.SQL_NULL_HANDLE)
 	bufDBN := api.StringToUTF16(dbname)

@@ -13,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 // TODO(brainman): see if I could use SQLExecDirect anywhere
@@ -28,6 +29,9 @@ type ODBCStmt struct {
 }
 
 func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
+	trc.Trace1("odbcstmt.go: PrepareODBCStmt() - ENTRY")
+	trc.Trace1(fmt.Sprintf("query=%s", query))
+	
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
 	if IsError(ret) {
@@ -47,6 +51,8 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 		defer releaseHandle(h)
 		return nil, err
 	}
+	
+	trc.Trace1("odbcstmt.go: PrepareODBCStmt() - EXIT")
 	return &ODBCStmt{
 		h:          h,
 		Parameters: ps,
@@ -55,6 +61,8 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 }
 
 func (s *ODBCStmt) closeByStmt() error {
+	trc.Trace1("odbcstmt.go: closeByStmt() - ENTRY")
+	
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.usedByStmt {
@@ -63,10 +71,13 @@ func (s *ODBCStmt) closeByStmt() error {
 			return s.releaseHandle()
 		}
 	}
+	trc.Trace1("odbcstmt.go: closeByStmt() - EXIT")
 	return nil
 }
 
 func (s *ODBCStmt) closeByRows() error {
+	trc.Trace1("odbcstmt.go: closeByRows()")
+	
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.usedByRows {
@@ -85,6 +96,8 @@ func (s *ODBCStmt) closeByRows() error {
 }
 
 func (s *ODBCStmt) releaseHandle() error {
+	trc.Trace1("odbcstmt.go: releaseHandle()")
+	
 	h := s.h
 	s.h = api.SQLHSTMT(api.SQL_NULL_HSTMT)
 	return releaseHandle(h)
@@ -93,6 +106,8 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value) error {
+	trc.Trace1("odbcstmt.go: Exec() - ENTRY")
+	
 	ArrayCheck := 0
 	ArrayLength := 0
 	if len(args) != len(s.Parameters) {
@@ -201,10 +216,13 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 			}
 		}
 	}
+	trc.Trace1("odbcstmt.go: Exec() - EXIT")
 	return nil
 }
 
 func (s *ODBCStmt) BindColumns() error {
+	trc.Trace1("odbcstmt.go: BindColumns() - ENTRY")
+	
 	// count columns
 	var n api.SQLSMALLINT
 	ret := api.SQLNumResultCols(s.h, &n)
@@ -237,5 +255,6 @@ func (s *ODBCStmt) BindColumns() error {
 			binding = false
 		}
 	}
+	trc.Trace1("odbcstmt.go: BindColumns() - EXIT")
 	return nil
 }

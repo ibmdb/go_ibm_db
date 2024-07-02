@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 type Stats struct {
@@ -19,6 +20,9 @@ type Stats struct {
 }
 
 func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) {
+    trc.Trace1("stats.go: updateHandleCount() - ENTRY")
+	trc.Trace1(fmt.Sprintf("change=%d", change))
+	
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	switch handleType {
@@ -29,6 +33,9 @@ func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) {
 	case api.SQL_HANDLE_STMT:
 		s.StmtCount += change
 	default:
+	    trc.Trace1(fmt.Sprintf("unexpected handle type %d", handleType))
 		panic(fmt.Errorf("unexpected handle type %d", handleType))
 	}
+	
+	trc.Trace1("stats.go: updateHandleCount() - EXIT")
 }
