@@ -9,7 +9,7 @@
 package api
 
 import (
-    trc "github.com/ibmdb/go_ibm_db/log2"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 	"fmt"
 )
 
@@ -177,23 +177,23 @@ type (
 )
 
 func SQLSetEnvUIntPtrAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_unix.go SQLSetEnvUIntPtrAttr() - ENTRY)
+	trc.Trace1("api/api_unix.go SQLSetEnvUIntPtrAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=0x%x, stringLength=%d", attribute, valuePtr, stringLength))
 
 	r := C.sqlSetEnvUIntPtrAttr(C.SQLHENV(environmentHandle), C.SQLINTEGER(attribute), C.uintptr_t(valuePtr), C.SQLINTEGER(stringLength))
-	
+
 	trc.Trace1(fmt.Sprintf("r = %d", r))
-	trc.Trace1("api/api_unix.go SQLSetEnvUIntPtrAttr() - EXIT)
+	trc.Trace1("api/api_unix.go SQLSetEnvUIntPtrAttr() - EXIT")
 	return SQLRETURN(r)
 }
 
 func SQLSetConnectUIntPtrAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_unix.go SQLSetConnectUIntPtrAttr() - ENTRY) 
+	trc.Trace1("api/api_unix.go SQLSetConnectUIntPtrAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=%x, stringLength=%d", attribute, valuePtr, stringLength))
-	
+
 	r := C.sqlSetConnectUIntPtrAttr(C.SQLHDBC(connectionHandle), C.SQLINTEGER(attribute), C.uintptr_t(valuePtr), C.SQLINTEGER(stringLength))
-	
+
 	trc.Trace1(fmt.Sprintf("r = %d", r))
-	trc.Trace1("api/api_unix.go SQLSetConnectUIntPtrAttr() - EXIT)
+	trc.Trace1("api/api_unix.go SQLSetConnectUIntPtrAttr() - EXIT")
 	return SQLRETURN(r)
 }

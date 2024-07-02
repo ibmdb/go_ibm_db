@@ -12,7 +12,7 @@ import (
 
 func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT) {
 	trc.Trace1("handle.go: ToHandleAndType() - ENTRY")
-	
+
 	switch v := handle.(type) {
 	case api.SQLHENV:
 		if v == api.SQLHENV(api.SQL_NULL_HANDLE) {

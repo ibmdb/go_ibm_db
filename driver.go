@@ -23,7 +23,7 @@ type Driver struct {
 }
 
 func initDriver() error {
-    trc.Trace1("driver.go:InitDriver() - ENTRY")
+        trc.Trace1("driver.go:InitDriver() - ENTRY")
 
 	//Allocate environment handle
 	var out api.SQLHANDLE
@@ -42,27 +42,29 @@ func initDriver() error {
 		defer releaseHandle(drv.h)
 		return NewError("SQLSetEnvAttr ODBC v3", drv.h)
 	}
-    trc.Trace1("driver.go:InitDriver() - EXIT")
+
+        trc.Trace1("driver.go:InitDriver() - EXIT")
 	return nil
 }
 
 func (d *Driver) Close() error {
 	 trc.Trace1("driver.go: Close() - ENTRY")
-	 
+
 	// TODO(brainman): who will call (*Driver).Close (to dispose all opened handles)?
 	h := d.h
 	d.h = api.SQLHENV(api.SQL_NULL_HENV)
+
 	trc.Trace1("driver.go: Close() - EXIT")
 	return releaseHandle(h)
 }
 
 func init() {
-    wordPtr := flag.String("trace", "", "log/trace file name")
+        wordPtr := flag.String("trace", "", "log/trace file name")
 
-    if len(os.Args) > 2 {
-        flag.Parse()
+        if len(os.Args) > 2 {
+            flag.Parse()
 	}
-    trc.GetPath(*wordPtr, len(os.Args))
+        trc.GetPath(*wordPtr, len(os.Args))
 
 	trc.Trace1("driver.go:init() - ENTRY")
 
@@ -79,6 +81,6 @@ func init() {
 	}
 	//go's to databse/sql/sql.go 43 line
 	sql.Register("go_ibm_db", &drv)
-	
-    trc.Trace1("driver.go:init() - EXIT")
+
+        trc.Trace1("driver.go:init() - EXIT")
 }
