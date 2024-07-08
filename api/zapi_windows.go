@@ -25,6 +25,7 @@ var (
 	procSQLEndTran         = mododbc32.NewProc("SQLEndTran")
 	procSQLExecute         = mododbc32.NewProc("SQLExecute")
 	procSQLFetch           = mododbc32.NewProc("SQLFetch")
+	procSQLFetchScroll     = mododbc32.NewProc("SQLFetchScroll")
 	procSQLFreeHandle      = mododbc32.NewProc("SQLFreeHandle")
 	procSQLGetData         = mododbc32.NewProc("SQLGetData")
 	procSQLGetDiagRecW     = mododbc32.NewProc("SQLGetDiagRecW")
@@ -37,7 +38,11 @@ var (
 	procSQLSetConnectAttrW = mododbc32.NewProc("SQLSetConnectAttrW")
 	procSQLColAttribute    = mododbc32.NewProc("SQLColAttribute")
 	procSQLMoreResults     = mododbc32.NewProc("SQLMoreResults")
+	procSQLSetStmtAttr     = mododbc32.NewProc("SQLSetStmtAttr")
 	procSQLSetStmtAttrW    = mododbc32.NewProc("SQLSetStmtAttrW")
+	procSQLGetStmtAttr     = mododbc32.NewProc("SQLGetStmtAttr")
+	procSQLSetPos	       = mododbc32.NewProc("SQLSetPos")
+	procSQLBulkOperations  = mododbc32.NewProc("SQLBulkOperations")
 	procSQLCreateDb        = mododbc32.NewProc("SQLCreateDbW")
 	procSQLDropDb          = mododbc32.NewProc("SQLDropDbW")
 )
@@ -181,6 +186,18 @@ func SQLFetch(statementHandle SQLHSTMT) (ret SQLRETURN) {
 	return
 }
 
+func SQLFetchScroll(statementHandle SQLHSTMT, fetchOrientation SQLUSMALLINT, fetchOffset SQLLEN) (ret SQLRETURN) {
+        trc.Trace1("api/zapi_windows.go SQLFetchScroll() - ENTRY")
+	trc.Trace1(fmt.Sprintf("fetchOrientation=%d, fetchOffset=%d", fetchOrientation, fetchOffset))
+
+	r0, _, _ := syscall.Syscall(procSQLFetch.Addr(), 3, uintptr(statementHandle), uintptr(fetchOrientation), uintptr(fetchOffset))
+	ret = SQLRETURN(r0)
+
+	trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1("api/zapi_windows.go SQLFetchScroll()- EXIT")
+	return
+}
+
 func SQLFreeHandle(handleType SQLSMALLINT, handle SQLHANDLE) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLFreeHandle() - ENTRY")
 	trc.Trace1(fmt.Sprintf("handleType=%d",  handleType))
@@ -321,6 +338,18 @@ func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQL
 
 	trc.Trace1(fmt.Sprintf("ret = %d", ret))
 	trc.Trace1("api/zapi_windows.go SQLSetStmtAttr()- EXIT")
+	return
+}
+
+func SQLGetStmtAttr(environmentHandle SQLHSTMT, attribute SQLINTEGER, targetValuePtr []byte, stringLength SQLINTEGER) (ret SQLRETURN) {
+        trc.Trace1("api/zapi_windows.go SQLGetStmtAttr() - ENTRY")
+	trc.Trace1(fmt.Sprintf("attribute=%d, stringLength=%d", attribute, stringLength))
+
+	r0, _, _ := syscall.Syscall6(procSQLGetStmtAttr.Addr(), 4, uintptr(environmentHandle), uintptr(attribute), uintptr(unsafe.Pointer(&targetValuePtr[0])), uintptr(stringLength), 0, 0)
+	ret = SQLRETURN(r0)
+
+	trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1("api/zapi_windows.go SQLGetStmtAttr()- EXIT")
 	return
 }
 

@@ -59,12 +59,22 @@ func (d *Driver) Close() error {
 }
 
 func init() {
-        wordPtr := flag.String("trace", "", "log/trace file name")
+	var cmdStr string = ""
 
-        if len(os.Args) > 2 {
-            flag.Parse()
+	for e:=0; e<len(os.Args); e++ {
+	    cmdStr = cmdStr + os.Args[e]
 	}
-        trc.GetPath(*wordPtr, len(os.Args))
+
+
+	if strings.Contains(cmdStr, "trace") {
+		wordPtr := flag.String("trace", "", "log/trace file name")
+
+		if len(os.Args) > 2 {
+			flag.Parse()
+		}
+		trc.GetPath(*wordPtr, len(os.Args))
+	}
+
 
 	trc.Trace1("driver.go:init() - ENTRY")
 
