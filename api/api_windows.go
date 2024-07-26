@@ -6,7 +6,7 @@ package api
 
 import (
 	"syscall"
-    trc "github.com/ibmdb/go_ibm_db/log2"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 	"fmt"
 )
 
@@ -112,9 +112,50 @@ const (
 	SQL_AUTOCOMMIT_ON      = 1
 	SQL_AUTOCOMMIT_DEFAULT = SQL_AUTOCOMMIT_ON
 	SQL_ATTR_PARAMSET_SIZE = 22
+	//  Statement attributes
+	SQL_ROW_NUMBER	       = 14
+
+	//	Statement attributes for ODBC 3.0
+	SQL_ATTR_CURSOR_TYPE		= 6
+	//SQL_ATTR_PARAMSET_SIZE 		= 22
+	SQL_ATTR_ROW_NUMBER		= SQL_ROW_NUMBER
+	SQL_ATTR_ROW_ARRAY_SIZE		= 27
+	SQL_ATTR_ROW_STATUS_PTR		= 25
+	SQL_ATTR_ROWS_FETCHED_PTR	= 26
+
+	// SQL_CURSOR_TYPE options
+	SQL_CURSOR_FORWARD_ONLY	 = 0
+	SQL_CURSOR_KEYSET_DRIVEN = 1
+	SQL_CURSOR_DYNAMIC	 = 2
+	SQL_CURSOR_STATIC	 = 3
+	SQL_CURSOR_TYPE_DEFAULT  = SQL_CURSOR_FORWARD_ONLY
+
+	// Operations in SQLSetPos
+	SQL_POSITION	= 0
+	SQL_REFRESH	= 1
+	SQL_UPDATE	= 2
+	SQL_DELETE	= 3
+
+	// Operations in SQLBulkOperations
+	SQL_ADD				= 4
+	SQL_SETPOS_MAX_OPTION_VALUE	= SQL_ADD
+	SQL_UPDATE_BY_BOOKMARK		= 5    // Check if to be removed
+	SQL_DELETE_BY_BOOKMARK		= 6
+	SQL_FETCH_BY_BOOKMARK		= 7
+
+	//	Lock options in SQLSetPos
+	SQL_LOCK_NO_CHANGE = 0
 
 	SQL_IS_UINTEGER = -5
 	SQL_IS_INTEGER  = -6
+
+	// Fetch Orientation in SQLFetchScroll 
+	SQL_FETCH_NEXT		= 1
+	SQL_FETCH_FIRST		= 2
+	SQL_FETCH_LAST		= 3
+	SQL_FETCH_PRIOR		= 4
+	SQL_FETCH_ABSOLUTE	= 5
+	SQL_FETCH_RELATIVE	= 6
 
 	//Connection pooling
 	SQL_ATTR_CONNECTION_POOLING = 201
@@ -145,14 +186,15 @@ type (
 	SQLHSTMT  SQLHANDLE
 	SQLHWND   uintptr
 
-	SQLWCHAR     uint16
-	SQLSCHAR     int8
-	SQLSMALLINT  int16
-	SQLUSMALLINT uint16
-	SQLINTEGER   int32
-	SQLUINTEGER  uint32
-	SQLPOINTER   uintptr
-	SQLRETURN    SQLSMALLINT
+	SQLWCHAR      uint16
+	SQLSCHAR      int8
+	SQLSMALLINT   int16
+	SQLUSMALLINT  uint16
+	SQLINTEGER    int32
+	SQLUINTEGER   uint32
+	SQLPOINTER    uintptr
+	SQLRETURN     SQLSMALLINT
+	SQLSETPOSIROW SQLUSMALLINT
 
 	SQLGUID struct {
 		Data1 uint32
@@ -163,24 +205,24 @@ type (
 )
 
 func SQLSetEnvUIntPtrAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_windows.go SQLSetEnvUIntPtrAttr() - ENTRY")
+	trc.Trace1("api/api_windows.go SQLSetEnvUIntPtrAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=0x%x, stringLength=%d", attribute, valuePtr, stringLength))
-	
+
 	r0, _, _ := syscall.Syscall6(procSQLSetEnvAttr.Addr(), 4, uintptr(environmentHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
 	ret = SQLRETURN(r0)
 
-    trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1(fmt.Sprintf("ret = %d", ret))
 	trc.Trace1("api/api_windows.go SQLSetEnvUIntPtrAttr() - EXIT")
 	return
 }
 
 func SQLSetConnectUIntPtrAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_windows.go SQLSetConnectUIntPtrAttr() - ENTRY")
+	trc.Trace1("api/api_windows.go SQLSetConnectUIntPtrAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=%x, stringLength=%d", attribute, valuePtr, stringLength))
-	
+
 	r0, _, _ := syscall.Syscall6(procSQLSetConnectAttrW.Addr(), 4, uintptr(connectionHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
 	ret = SQLRETURN(r0)
-	
+
 	trc.Trace1(fmt.Sprintf("ret = %d", ret))
 	trc.Trace1("api/api_windows.go SQLSetConnectUIntPtrAttr() - EXIT")
 	return

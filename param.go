@@ -30,8 +30,8 @@ type Parameter struct {
 // StoreStrLen_or_IndPtr stores v into StrLen_or_IndPtr field of p
 // and returns address of that field.
 func (p *Parameter) StoreStrLen_or_IndPtr(v api.SQLLEN) *api.SQLLEN {
-    trc.Trace1("param.go: StoreStrLen_or_IndPtr()")
-	
+	trc.Trace1("param.go: StoreStrLen_or_IndPtr()")
+
 	p.StrLen_or_IndPtr = v
 	return &p.StrLen_or_IndPtr
 
@@ -41,7 +41,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 	// TODO(brainman): Reuse memory for previously bound values. If memory
 	// is reused, we, probably, do not need to call SQLBindParameter either.
 	trc.Trace1("param.go: BindValue() - ENTRY")
-	
+
 	var ctype, sqltype, decimal api.SQLSMALLINT
 	var size api.SQLULEN
 	var buflen api.SQLLEN
@@ -267,7 +267,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 	if IsError(ret) {
 		return NewError("SQLBindParameter", h)
 	}
-	
+
 	trc.Trace1("param.go: BindValue() - EXIT")
 	return nil
 }
@@ -276,7 +276,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 	// count parameters
 	trc.Trace1("param.go: ExtractParameters() - ENTRY")
-	
+
 	var n, nullable api.SQLSMALLINT
 	ret := api.SQLNumParams(h, &n)
 	if IsError(ret) {
@@ -307,8 +307,8 @@ func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 
 //SqltoCtype function will convert the sql type to c type
 func SqltoCtype(sqltype api.SQLSMALLINT) api.SQLSMALLINT {
-    trc.Trace1("param.go: SqltoCtype()")
-	
+	trc.Trace1("param.go: SqltoCtype()")
+
 	switch sqltype {
 	case api.SQL_BIT:
 		return api.SQL_C_BIT

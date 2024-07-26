@@ -16,7 +16,7 @@ import (
 )
 
 func IsError(ret api.SQLRETURN) bool {
-    trc.Trace1("error.go: IsError() - ENTRY")
+	trc.Trace1("error.go: IsError() - ENTRY")
 	if ret == api.SQL_SUCCESS {
 	    trc.Trace1("api.SQL_SUCCESS")
 	} else if ret == api.SQL_SUCCESS_WITH_INFO {
@@ -42,7 +42,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-    trc.Trace1("error.go: Error() - ENTRY")
+	trc.Trace1("error.go: Error() - ENTRY")
 	ss := make([]string, len(e.Diag))
 	for i, r := range e.Diag {
 		ss[i] = r.String()
@@ -55,7 +55,7 @@ func (e *Error) Error() string {
 func NewError(apiName string, handle interface{}) error {
 	trc.Trace1("error.go: NewError() - ENTRY")
 	trc.Trace1(fmt.Sprintf("apiName=%s",apiName))
-    
+
 	var ret api.SQLRETURN
 	h, ht := ToHandleAndType(handle)
 	err := &Error{APIName: apiName}

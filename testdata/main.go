@@ -108,8 +108,8 @@ func UpdateConnectionVariables() {
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
         UpdateConnectionVariables()
-        //connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
-	connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
+        connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
 	db, _ = sql.Open("go_ibm_db", connStr)
 	return db
 }
@@ -119,11 +119,17 @@ func Createtable() error {
 	db := Createconnection()
 	defer db.Close()
 	db.Exec("DROP table rocket")
-	_, err := db.Exec("create table rocket(a int)")
-	_, err = db.Exec("create table rocket1(a int)")
-	if err != nil {
-		return err
+	db.Exec("DROP table rocket1")
+	_, err1 := db.Exec("create table rocket(a int)")
+	if err1 != nil {
+		return err1
 	}
+
+	_, err2 := db.Exec("create table rocket1(a int)")
+	if err2 != nil {
+		return err2
+	}
+
 	return nil
 }
 
