@@ -62,4 +62,4 @@ jobs:
            #go test chinesechar_test.go main.go
            #go test hugequery_test.go main.go
            #go test decimal_test.go main.go
-           go test column_test.go main.go
+           go test columns_test.go main.go
