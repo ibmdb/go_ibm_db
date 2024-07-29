@@ -110,6 +110,7 @@ func Createconnection() (db *sql.DB) {
         UpdateConnectionVariables()
         connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
 	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
+	fmt.Println("connStr: ", connStr)
 	db, _ = sql.Open("go_ibm_db", connStr)
 	return db
 }
