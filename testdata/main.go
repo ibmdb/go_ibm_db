@@ -114,7 +114,8 @@ fmt.Println("database= " + database + " host= " + host)
 func Createconnection() (db *sql.DB) {
 	fmt.Println("--Createconnection()--")
         UpdateConnectionVariables()
-        connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+        //connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+	connStr = "PROTOCOL=tcpip;HOSTNAME=waldevdbclnxtst06.dev.rocketsoftware.com;PORT=60000;DATABASE=sample;UID=zurbie;PWD=A2m8test"
 	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
 	fmt.Println("connStr: ", connStr)
 	db, _ = sql.Open("go_ibm_db", connStr)
