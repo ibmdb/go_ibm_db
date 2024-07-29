@@ -243,7 +243,11 @@ func Columns() error {
 	fmt.Println("----1-----")
 	st, _ := db.Prepare("select * from rocket")
 	fmt.Println("----2-----")
-	rows, _ := st.Query()
+	rows, errQuery := st.Query()
+	if errQuery ! = nil {
+		fmt.Println("errQuery = ", errQuery)
+		return err
+		}
 	fmt.Println("----3-----")
 	_, err := rows.Columns()
 	if err != nil {
