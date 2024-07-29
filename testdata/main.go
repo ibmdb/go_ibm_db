@@ -63,8 +63,7 @@ func UpdateConnectionVariables() {
 	var uidFound bool
 	var pwdFound bool
         fmt.Println("---UpdateConnectionVariables()--")
-	GetConnectionInfoFromConfigFile()
-        //config, _:= LoadConfiguration("config.json")
+        config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
         if !databaseFound{
@@ -72,7 +71,9 @@ func UpdateConnectionVariables() {
 		if len(database) == 0 {
 		    fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
 	        }
-	}
+	}else {
+		fmt.Println("==Database: ", database)
+		}
 
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
