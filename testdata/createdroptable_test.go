@@ -6,7 +6,7 @@ import (
 )
 
 func TestCreateDropTable(t *testing.T) {
-        fmt.Println("TestCreateDropTable()")
+        fmt.Println("-------------TestCreateDropTable()")
         if CreateDropTable() != 1 {
                 t.Error("Error at CreateDropTable")
         }
