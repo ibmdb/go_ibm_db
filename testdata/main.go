@@ -63,7 +63,7 @@ func UpdateConnectionVariables() {
 	var uidFound bool
 	var pwdFound bool
         fmt.Println("---UpdateConnectionVariables()--")
-        config, _:= LoadConfiguration("config.json")
+        config, _:= LoadConfiguration("./config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
         if !databaseFound{
@@ -74,7 +74,7 @@ func UpdateConnectionVariables() {
 	}else {
 		fmt.Println("==Database: ", database)
 		}
-fmt.Println("==Database2: ", database)
+fmt.Println("==Database22: ", database)
 	
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
