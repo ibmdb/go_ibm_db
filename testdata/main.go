@@ -64,7 +64,7 @@ func UpdateConnectionVariables() {
 	var pwdFound bool
         fmt.Println("---UpdateConnectionVariables()--")
 	GetConnectionInfoFromConfigFile()
-        config, _:= LoadConfiguration("config.json")
+        //config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
         if !databaseFound{
