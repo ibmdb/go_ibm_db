@@ -20,14 +20,17 @@ fmt.Println("----CreateDropTable() ----")
         if err2 != nil {
                _, err3 := db.Exec("create table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
                if err3 != nil {
+                        fmt.Println("err3 = ", err3)
                          return 0
                }
         } else {
               _, err4 := db.Exec("create table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
               if err4 != nil {
+                      fmt.Println("err4: ", err4)
                         return 0
              }
        }
+        fmt.Println("----------1-----------")
 
         
        fmt.Println("TABLE CREATED Successfully")
