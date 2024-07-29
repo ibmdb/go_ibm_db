@@ -10,7 +10,6 @@ import (
 	"log"
 	"runtime"
 	"unsafe"
-
 	"github.com/ibmruntimes/go-recordio/v2/utils"
 	trc "github.com/ibmdb/go_ibm_db/log2"
 	"fmt"
@@ -166,20 +165,20 @@ type (
 )
 
 func SQLSetEnvUIntPtrAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_zos.go SQLSetEnvUIntPtrAttr() - ENTRY")
-	
+	trc.Trace1("api/api_zos.go SQLSetEnvUIntPtrAttr() - ENTRY")
+
 	r := utils.CfuncEbcdic(getFunc(&dll, "SQLSetEnvAttr"), uintptr(environmentHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength))
-	
+
 	trc.Trace1(fmt.Sprintf("r = %d", r))
 	trc.Trace1("api/api_zos.go SQLSetEnvUIntPtrAttr() - EXIT")
 	return SQLRETURN(r)
 }
 
 func SQLSetConnectUIntPtrAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-    trc.Trace1("api/api_zos.go SQLSetConnectUIntPtrAttr() - ENTRY")
+	trc.Trace1("api/api_zos.go SQLSetConnectUIntPtrAttr() - ENTRY")
 
 	r := utils.CfuncEbcdic(getFunc(&dll, "SQLSetConnectAttr"), uintptr(connectionHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength))
-	
+
 	trc.Trace1(fmt.Sprintf("r = %d", r))
 	trc.Trace1("api/api_zos.go SQLSetConnectUIntPtrAttr() - EXIT")
 	return SQLRETURN(r)

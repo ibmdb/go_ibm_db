@@ -21,7 +21,7 @@ type Conn struct {
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	trc.Trace1("conn.go: Open() - ENTRY")
 	trc.Trace1(fmt.Sprintf("dsn = %s", dsn))
-	
+
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_DBC, api.SQLHANDLE(d.h), &out)
 	if IsError(ret) {
@@ -50,7 +50,7 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 
 func (c *Conn) Close() error {
 	trc.Trace1("conn.go: Close() - ENTRY")
-	
+
 	ret := api.SQLDisconnect(c.h)
 	if IsError(ret) {
 		return NewError("SQLDisconnect", c.h)
@@ -65,7 +65,7 @@ func (c *Conn) Close() error {
 func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 	trc.Trace1("conn.go: Query() - ENTRY")
 	trc.Trace1(fmt.Sprintf("query = %s", query))
-	
+
 	if len(args) > 0 {
 		// Not implemented for queries with parameters
 		return nil, driver.ErrSkip

@@ -20,9 +20,9 @@ type Stats struct {
 }
 
 func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) {
-    trc.Trace1("stats.go: updateHandleCount() - ENTRY")
+	trc.Trace1("stats.go: updateHandleCount() - ENTRY")
 	trc.Trace1(fmt.Sprintf("change=%d", change))
-	
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	switch handleType {
@@ -36,6 +36,6 @@ func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) {
 	    trc.Trace1(fmt.Sprintf("unexpected handle type %d", handleType))
 		panic(fmt.Errorf("unexpected handle type %d", handleType))
 	}
-	
+
 	trc.Trace1("stats.go: updateHandleCount() - EXIT")
 }

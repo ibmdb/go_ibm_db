@@ -21,13 +21,13 @@ type BufferLen api.SQLLEN
 
 func (l *BufferLen) IsNull() bool {
 	trc.Trace1("column.go: IsNull()")
-	
+
 	return int16(*l) == api.SQL_NULL_DATA
 }
 
 func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
-	 trc.Trace1("column.go: GetData()")
-	 
+	trc.Trace1("column.go: GetData()")
+
 	return api.SQLGetData(h, api.SQLUSMALLINT(idx+1), ctype,
 		api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLLEN(len(buf)),
 		(*api.SQLLEN)(l))
@@ -35,7 +35,7 @@ func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf 
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
 	trc.Trace1("column.go: Bind()- ENTRY")
-	
+
 	if len(buf) <= 2147483647 {
 		return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
 			buf, api.SQLLEN(len(buf)),
@@ -57,14 +57,14 @@ type Column interface {
 
 func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, ret api.SQLRETURN) {
 	trc.Trace1("column.go: describeColumn() - ENTRY")
-	
+
 	var l, decimal, nullable api.SQLSMALLINT
 	ret = api.SQLDescribeCol(h, api.SQLUSMALLINT(idx+1),
 		(*api.SQLWCHAR)(unsafe.Pointer(&namebuf[0])),
 		api.SQLSMALLINT(len(namebuf)), &l,
 		&sqltype, &size, &decimal, &nullable)
-		  
-	trc.Trace1("column.go: describeColumn() - EXIT")	  
+
+	trc.Trace1("column.go: describeColumn() - EXIT")
 	return int(l), sqltype, size, ret
 }
 
@@ -72,7 +72,7 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	trc.Trace1("column.go: NewColumn() - ENTRY")
-	
+
 	namebuf := make([]uint16, 150)
 	namelen, sqltype, size, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
@@ -91,9 +91,9 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		name:  api.UTF16ToString(namebuf[:namelen]),
 		SType: sqltype,
 	}
-	 
+
 	trc.Trace1("column.go: NewColumn() - EXIT")
-	
+
 	switch sqltype {
 	case api.SQL_BIT, api.SQL_BOOLEAN:
 		return NewBindableColumn(b, api.SQL_C_BIT, 1), nil
@@ -147,7 +147,7 @@ func (c *BaseColumn) Name() string {
 
 func (c *BaseColumn) TypeScan() reflect.Type {
 	trc.Trace1("column.go: TypeScan()")
-	
+
 	//TODO(Akhil):This will return the golang type of a variable
 	switch c.CType {
 	case api.SQL_C_BIT:
@@ -175,7 +175,7 @@ func (c *BaseColumn) TypeScan() reflect.Type {
 
 func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	trc.Trace1("column.go: Value()")
-	
+
 	var p unsafe.Pointer
 	if len(buf) > 0 {
 		p = unsafe.Pointer(&buf[0])
@@ -250,7 +250,7 @@ type BindableColumn struct {
 func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *BindableColumn {
 	trc.Trace1("column.go: NewBindableColumn() - ENTRY")
 	trc.Trace1(fmt.Sprintf("bufSize = %d", bufSize))
-	
+
 	b.CType = ctype
 	c := &BindableColumn{BaseColumn: b, Size: bufSize}
 	if c.Size <= len(c.smallBuf) {
@@ -265,7 +265,7 @@ func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *Binda
 
 func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.SQLULEN) Column {
 	trc.Trace1("column.go: NewVariableWidthColumn() - ENTRY")
-	
+
 	if colWidth == 0 {
 		b.CType = ctype
 		return &NonBindableColumn{b}
@@ -296,7 +296,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 	trc.Trace1("column.go: Bind() - ENTRY")
 	trc.Trace1(fmt.Sprintf("idx = %d", idx))
-	
+
 	ret := c.Len.Bind(h, idx, c.CType, c.Buffer)
 	if IsError(ret) {
 		return false, NewError("SQLBindCol", h)
@@ -309,7 +309,7 @@ func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
 	trc.Trace1("column.go: Value() - ENTRY")
 	trc.Trace1(fmt.Sprintf("idx = %d", idx))
-	
+
 	if !c.IsBound {
 		ret := c.Len.GetData(h, idx, c.CType, c.Buffer)
 		if IsError(ret) {

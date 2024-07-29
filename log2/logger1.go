@@ -11,24 +11,24 @@ import (
 	"fmt"
 )
 
-var globalvar string
-var globalArgsLen int
+var globalvar string = ""
+var globalArgsLen int = 0
 
 func GetPath(filename string, argsLen int) {
 	//fmt.Println("filename = ", filename)
 	//fmt.Println("Args Length = ", argsLen)
-	
+
 	if _, err := os.Stat(filename); err == nil {
         //fmt.Println("File exits\n")
 		e := os.Remove(filename)
 		if e != nil {
 		  fmt.Println("Problem in removing existing log file")
-		}	
+		}
 	}
-	
+
 	globalvar = filename
 	globalArgsLen = argsLen
-	
+
 }
 
 func Trace1(msg1 string) {
