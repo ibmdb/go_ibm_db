@@ -6,14 +6,12 @@ import (
 )
 
 func TestCreateDropTable(t *testing.T) {
-        fmt.Println("-------------TestCreateDropTable()")
         if CreateDropTable() != 1 {
                 t.Error("Error at CreateDropTable")
         }
 }
 
 func CreateDropTable() int {
-fmt.Println("----CreateDropTable() ----")
         db := Createconnection()
 
         _, err2 := db.Exec("DROP table VMSAMPLE")
@@ -30,9 +28,7 @@ fmt.Println("----CreateDropTable() ----")
                         return 0
              }
        }
-        fmt.Println("----------1-----------")
-
-        
+                
        fmt.Println("TABLE CREATED Successfully")
 
        st, err5 := db.Prepare("Insert into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','mike','hyd','manager')")
