@@ -299,6 +299,10 @@ func Commit() error {
 	db := Createconnection()
 	defer db.Close()
 	bg, err := db.Begin()
+	if err != nil {
+		fmt.Println("err: ", err)
+		return err
+	}
 	db.Exec("DROP table u")
 	_, err = bg.Exec("create table u(id int)")
 	err = bg.Commit()
