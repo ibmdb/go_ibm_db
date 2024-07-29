@@ -246,7 +246,7 @@ func Columns() error {
 	rows, errQuery := st.Query()
 	if errQuery != nil {
 		fmt.Println("errQuery = ", errQuery)
-		return err
+		return errQuery
 		}
 	fmt.Println("----3-----")
 	_, err := rows.Columns()
