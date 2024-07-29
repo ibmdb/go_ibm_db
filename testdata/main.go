@@ -31,8 +31,7 @@ type Config  struct {
 }
 
 func LoadConfiguration(filename string) (Config, error) {
-	fmt.Println("----LoadConfiguration() --")
-        var config Config
+	var config Config
         configFile, err := os.Open(filename)
         defer configFile.Close()
         if err != nil {
@@ -45,7 +44,7 @@ func LoadConfiguration(filename string) (Config, error) {
 
 //Get connection information from config.json
 func GetConnectionInfoFromConfigFile() {
-	fmt.Println("--GetConnectionInfoFromConfigFile()--")
+	
        config, _:= LoadConfiguration("config.json")
        host = config.Host
        port = config.Port
@@ -62,7 +61,7 @@ func UpdateConnectionVariables() {
 	var portFound bool
 	var uidFound bool
 	var pwdFound bool
-        fmt.Println("---UpdateConnectionVariables()--")
+        
         config, _:= LoadConfiguration("./config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
@@ -71,10 +70,7 @@ func UpdateConnectionVariables() {
 		if len(database) == 0 {
 		    fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
 	        }
-	}else {
-		fmt.Println("==Database: ", database)
-		}
-fmt.Println("==Database22: ", database)
+	}
 	
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
@@ -107,14 +103,13 @@ fmt.Println("==Database22: ", database)
                fmt.Println("Please set it before running test file and avoid")
                fmt.Println("hardcoded password in config.json file.")
 	}
-fmt.Println("database= " + database + " host= " + host)
 }
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
 	fmt.Println("--Createconnection()--")
         UpdateConnectionVariables()
-        //connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+       // connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
 	connStr = "PROTOCOL=tcpip;HOSTNAME=waldevdbclnxtst06.dev.rocketsoftware.com;PORT=60000;DATABASE=sample;UID=zurbie;PWD=A2m8test"
 	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
 	fmt.Println("connStr: ", connStr)
