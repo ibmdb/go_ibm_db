@@ -237,8 +237,10 @@ func Next() error {
 
 //Columns will return the names of the cols
 func Columns() error {
+	fmt.Println("----main.go ---Colunns()---")
 	db := Createconnection()
 	defer db.Close()
+	fmt.Println("----1-----")
 	st, _ := db.Prepare("select * from rocket")
 	rows, _ := st.Query()
 	_, err := rows.Columns()
