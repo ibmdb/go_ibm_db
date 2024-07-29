@@ -232,8 +232,17 @@ func Scan() error {
 func Next() error {
 	db := Createconnection()
 	defer db.Close()
-	st, _ := db.Prepare("select * from rocket")
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("errPrepare = ", errPrepare)
+		return errPrepare
+	}
 	rows, err := st.Query()
+	if err != nil {
+		fmt.Println("err Query = ", err)
+		return err
+	}
+	
 	for rows.Next() {
 		var a string
 		err = rows.Scan(&a)
