@@ -914,3 +914,7 @@ func ConnectionInvalidDatabaseName() int {
         return 1
 }
 
+func CreateDropTable() int {
+	fmt.Println("=====main.go CreateDropTable?()=====")
+	return 1
+}
