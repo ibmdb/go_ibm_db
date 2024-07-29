@@ -74,7 +74,8 @@ func UpdateConnectionVariables() {
 	}else {
 		fmt.Println("==Database: ", database)
 		}
-
+fmt.Println("==Database2: ", database)
+	
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
 		host = config.Host
