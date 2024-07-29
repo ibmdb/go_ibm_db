@@ -241,7 +241,12 @@ func Columns() error {
 	db := Createconnection()
 	defer db.Close()
 	fmt.Println("----1-----")
-	st, _ := db.Prepare("select * from rocket")
+	st, errPrepare := db.Prepare("select * from rocket")
+        if errPrepare != nil {
+		fmt.Println("errPrepare = ", errPrepare)
+		return errPrepare
+		}
+	
 	fmt.Println("----2-----")
 	rows, errQuery := st.Query()
 	if errQuery != nil {
