@@ -242,9 +242,12 @@ func Columns() error {
 	defer db.Close()
 	fmt.Println("----1-----")
 	st, _ := db.Prepare("select * from rocket")
+	fmt.Println("----2-----")
 	rows, _ := st.Query()
+	fmt.Println("----3-----")
 	_, err := rows.Columns()
 	if err != nil {
+		fmt.Println("err: ", err)
 		return err
 	}
 	for rows.Next() {
