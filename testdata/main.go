@@ -31,6 +31,7 @@ type Config  struct {
 }
 
 func LoadConfiguration(filename string) (Config, error) {
+	fmt.Println("----LoadConfiguration() --")
         var config Config
         configFile, err := os.Open(filename)
         defer configFile.Close()
@@ -44,6 +45,7 @@ func LoadConfiguration(filename string) (Config, error) {
 
 //Get connection information from config.json
 func GetConnectionInfoFromConfigFile() {
+	fmt.Println("--GetConnectionInfoFromConfigFile()--")
        config, _:= LoadConfiguration("config.json")
        host = config.Host
        port = config.Port
@@ -60,7 +62,7 @@ func UpdateConnectionVariables() {
 	var portFound bool
 	var uidFound bool
 	var pwdFound bool
-
+        fmt.Println("---UpdateConnectionVariables()--")
         config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
@@ -102,11 +104,12 @@ func UpdateConnectionVariables() {
                fmt.Println("Please set it before running test file and avoid")
                fmt.Println("hardcoded password in config.json file.")
 	}
-
+fmt.Println("database= " + database + " host= " + host)
 }
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
+	fmt.Println("--Createconnection()--")
         UpdateConnectionVariables()
         connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
 	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
