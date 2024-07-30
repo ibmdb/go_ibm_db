@@ -44,7 +44,6 @@ func LoadConfiguration(filename string) (Config, error) {
 
 //Get connection information from config.json
 func GetConnectionInfoFromConfigFile() {
-	
        config, _:= LoadConfiguration("config.json")
        host = config.Host
        port = config.Port
@@ -61,8 +60,7 @@ func UpdateConnectionVariables() {
 	var portFound bool
 	var uidFound bool
 	var pwdFound bool
-        
-        config, _:= LoadConfiguration("./config.json")
+        config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
         if !databaseFound{
@@ -71,7 +69,7 @@ func UpdateConnectionVariables() {
 		    fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
 	        }
 	}
-	
+
 	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
         if !hostFound{
 		host = config.Host
@@ -110,7 +108,6 @@ func Createconnection() (db *sql.DB) {
         UpdateConnectionVariables()
         connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
 	//connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
-	//fmt.Println("connStr: ", connStr)
 	db, _ = sql.Open("go_ibm_db", connStr)
 	return db
 }
@@ -248,23 +245,21 @@ func Next() error {
 
 //Columns will return the names of the cols
 func Columns() error {
-	fmt.Println("----main.go ---Colunns()---")
 	db := Createconnection()
 	defer db.Close()
-	fmt.Println("----1-----")
+
 	st, errPrepare := db.Prepare("select * from rocket")
         if errPrepare != nil {
 		fmt.Println("errPrepare = ", errPrepare)
 		return errPrepare
 		}
 	
-	fmt.Println("----2-----")
 	rows, errQuery := st.Query()
 	if errQuery != nil {
 		fmt.Println("errQuery = ", errQuery)
 		return errQuery
 		}
-	fmt.Println("----3-----")
+
 	_, err := rows.Columns()
 	if err != nil {
 		fmt.Println("err: ", err)
