@@ -19,7 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.19.3'
+        go-version: '1.22.5'
         
     - name: Install clidriver
       run: |
@@ -51,8 +51,6 @@ jobs:
       run: |
            pwd
            cd testdata
-           go mod init t2
-           go mod tidy
            echo "============TEST CASES ======"
            #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            #echo "DB2_USER = " $DB2_USER
