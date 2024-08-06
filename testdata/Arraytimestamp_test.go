@@ -17,9 +17,11 @@ func TestTimeStampArray(t *testing.T) {
 func TimeStampArray() error {
         db := Createconnection()
         defer db.Close()
+
         db.Exec("Drop table arr")
         _, err := db.Exec("create table arr(var1 timestamp, var2 time, var3 date)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
         a := []time.Time{}
@@ -30,6 +32,7 @@ func TimeStampArray() error {
         st, err := db.Prepare("Insert into arr values(?,?,?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, a, a)

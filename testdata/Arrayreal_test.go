@@ -29,6 +29,7 @@ func RealArray_1() error {
 
         _, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 real)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
 
@@ -37,6 +38,7 @@ func RealArray_1() error {
          st, err := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, b)
@@ -46,6 +48,7 @@ func RealArray_1() error {
         }
         rows, err2 := db.Query("SELECT * from " + tableOne)
         if err2 != nil {
+                fmt.Println("Query error: ", err)
                 return err
         }
 
@@ -54,6 +57,7 @@ func RealArray_1() error {
               var c1, c2  string
               err = rows.Scan(&c1, &c2)
               if err != nil {
+                      fmt.Println("Scan error: ", err)
                       return err
               }
 

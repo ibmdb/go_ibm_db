@@ -24,6 +24,7 @@ func Int2Array() error {
 
         _, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 int)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
 
@@ -32,6 +33,7 @@ func Int2Array() error {
          st, err := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, b)
@@ -46,6 +48,7 @@ func Int2Array() error {
          st, err = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(c, d)
@@ -61,19 +64,23 @@ func Int2Array() error {
          st, err = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
+
         _, err = st.Query(e, f)
         if err != nil {
                 errStr = fmt.Sprintf("%s", err)
                 if !strings.Contains(errStr, substring) {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
         }
 
         rows, err2 := db.Query("SELECT * from " + tableOne)
         if err2 != nil {
-                return err
+                fmt.Println("Query error: ", err2)
+                return err2
         }
 
         defer rows.Close()
@@ -81,6 +88,7 @@ func Int2Array() error {
               var c1, c2  string
               err = rows.Scan(&c1, &c2)
               if err != nil {
+                      fmt.Println("Scan error: ", err)
                       return err
               }
 

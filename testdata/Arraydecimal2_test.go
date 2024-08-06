@@ -25,6 +25,7 @@ func Decimal2Array_1() error {
 
         _, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 numeric(31))")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
 
@@ -33,6 +34,7 @@ func Decimal2Array_1() error {
          st, err := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, b)
@@ -48,6 +50,7 @@ func Decimal2Array_1() error {
          st, err = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(c, d)
@@ -55,19 +58,22 @@ func Decimal2Array_1() error {
                 errStr = fmt.Sprintf("%s", err)
 
                 if !strings.Contains(errStr, substring) {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
         }
 
         rows, err2 := db.Query("SELECT * from " + tableOne)
         if err2 != nil {
-                return err
+                fmt.Println("Query error: ", err2)
+                return err2
         }
         defer rows.Close()
         for rows.Next() {
               var c1, c2  string
               err = rows.Scan(&c1, &c2)
               if err != nil {
+                      fmt.Println("Scan error: ", err)
                       return err
               }
 

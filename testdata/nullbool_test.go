@@ -22,11 +22,14 @@ func NullValueBool() error {
         var out4 sql.NullBool
         var out5 sql.NullFloat64
         var out6 sql.NullTime
+
         db := Createconnection()
         defer db.Close()
+
         db.Exec("Drop table arr")
         _, err := db.Exec("create table arr(var1 character, var2 varchar(30), var3 integer, var4 boolean, var5 double, var6 timestamp)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
         c1 := "a"
@@ -34,9 +37,11 @@ func NullValueBool() error {
         c3 := int64(10)
         c5 := 1.234
         c6 := time.Now()
+
         st, err := db.Prepare("Insert into arr(var1,var2,var3,var5,var6) values(?,?,?,?,?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(c1, c2, c3, c5, c6)
@@ -47,10 +52,12 @@ func NullValueBool() error {
         st1, err := db.Prepare("select * from arr")
         defer st1.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         rows, err := st1.Query()
         if err != nil {
+                fmt.Println("Query error: ", err)
                 return err
         }
         for rows.Next() {
