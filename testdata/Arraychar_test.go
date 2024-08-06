@@ -16,9 +16,11 @@ func TestCharArray(t *testing.T) {
 func CharArray() error {
         db := Createconnection()
         defer db.Close()
+
         db.Exec("Drop table arr")
         _, err := db.Exec("create table arr(var1 character, var2 character)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
         a := []string{"a", "b", "c"}
@@ -26,6 +28,7 @@ func CharArray() error {
         st, err := db.Prepare("Insert into arr values(?,?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, b)
@@ -35,6 +38,4 @@ func CharArray() error {
         }
         return nil
 }
-
-
 

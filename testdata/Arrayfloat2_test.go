@@ -22,6 +22,7 @@ func Float2Array_1() error {
 
         _, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 float)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
 
@@ -30,6 +31,7 @@ func Float2Array_1() error {
          st, err := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a, b)
@@ -40,7 +42,8 @@ func Float2Array_1() error {
 
         rows, err2 := db.Query("SELECT * from " + tableOne)
         if err2 != nil {
-                return err
+                fmt.Println("Query error: ", err2)
+                return err2
         }
 
         defer rows.Close()
@@ -48,6 +51,7 @@ func Float2Array_1() error {
               var c1, c2  string
               err = rows.Scan(&c1, &c2)
               if err != nil {
+                      fmt.Println("Scan error: ", err)
                       return err
               }
 

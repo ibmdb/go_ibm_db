@@ -31,7 +31,7 @@ type Config  struct {
 }
 
 func LoadConfiguration(filename string) (Config, error) {
-        var config Config
+	var config Config
         configFile, err := os.Open(filename)
         defer configFile.Close()
         if err != nil {
@@ -60,7 +60,6 @@ func UpdateConnectionVariables() {
 	var portFound bool
 	var uidFound bool
 	var pwdFound bool
-
         config, _:= LoadConfiguration("config.json")
 
 	database, databaseFound = os.LookupEnv("DB2_DATABASE")
@@ -102,7 +101,6 @@ func UpdateConnectionVariables() {
                fmt.Println("Please set it before running test file and avoid")
                fmt.Println("hardcoded password in config.json file.")
 	}
-
 }
 
 //Createconnection will return the db instance
@@ -122,11 +120,13 @@ func Createtable() error {
 	db.Exec("DROP table rocket1")
 	_, err1 := db.Exec("create table rocket(a int)")
 	if err1 != nil {
+		fmt.Println("Exec error: ", err1)
 		return err1
 	}
 
 	_, err2 := db.Exec("create table rocket1(a int)")
 	if err2 != nil {
+		fmt.Println("Exec error: ", err2)
 		return err2
 	}
 
@@ -140,11 +140,13 @@ func Createtable_ExecContext() error {
 	db.ExecContext(ctx, "DROP table rocket2")
 	_, err := db.ExecContext(ctx, "create table rocket2(a int)")
 	if err != nil {
+		fmt.Println("ExecContext error: ", err)
 		return err
 	}
 
 	_, err = db.ExecContext(ctx, "drop table rocket2")
 	if err != nil {
+		fmt.Println("ExecContex error: ", err)
 		return err
 	}
 	return nil
@@ -154,9 +156,10 @@ func Createtable_ExecContext() error {
 func Insert() error {
 	db := Createconnection()
 	defer db.Close()
-	_, err := db.Exec("insert into rocket values(1)")
-	if err != nil {
-		return err
+	_, errExec := db.Exec("insert into rocket values(1)")
+	if errExec != nil {
+		fmt.Println("Exec error: ", errExec)
+		return errExec
 	}
 	return nil
 }
@@ -167,6 +170,7 @@ func Drop() error {
 	defer db.Close()
 	_, err := db.Exec("drop table rocket1")
 	if err != nil {
+		fmt.Println("Exec error: ", err)
 		return err
 	}
 	return nil
@@ -178,6 +182,7 @@ func Prepare() error {
 	defer db.Close()
 	_, err := db.Prepare("select * from rocket")
 	if err != nil {
+		fmt.Println("Prepare error: ", err)
 		return err
 	}
 	return nil
@@ -187,10 +192,16 @@ func Prepare() error {
 func Query() error {
 	db := Createconnection()
 	defer db.Close()
-	st, _ := db.Prepare("select * from rocket")
-	_, err := st.Query()
-	if err != nil {
-		return err
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare erro: ", errPrepare)
+		return errPrepare
+	}
+
+	_, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error: ", errQuery)
+		return errQuery
 	}
 	return nil
 }
@@ -199,13 +210,23 @@ func Query() error {
 func Scan() error {
 	db := Createconnection()
 	defer db.Close()
-	st, _ := db.Prepare("select * from rocket")
-	rows, err := st.Query()
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error:  ", errQuery)
+		return errQuery
+	}
 	for rows.Next() {
 		var a string
-		err = rows.Scan(&a)
-		if err != nil {
-			return err
+		errScan := rows.Scan(&a)
+		if errScan != nil {
+			fmt.Println("Scan error: ", errScan)
+			return errScan
 		}
 	}
 	return nil
@@ -215,13 +236,24 @@ func Scan() error {
 func Next() error {
 	db := Createconnection()
 	defer db.Close()
-	st, _ := db.Prepare("select * from rocket")
-	rows, err := st.Query()
+
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error: ", errQuery)
+		return errQuery
+	}
+
 	for rows.Next() {
 		var a string
-		err = rows.Scan(&a)
-		if err != nil {
-			return err
+		errScan := rows.Scan(&a)
+		if errScan != nil {
+			fmt.Println("Scan error: ", errScan)
+			return errScan
 		}
 	}
 	return nil
@@ -231,10 +263,22 @@ func Next() error {
 func Columns() error {
 	db := Createconnection()
 	defer db.Close()
-	st, _ := db.Prepare("select * from rocket")
-	rows, _ := st.Query()
+
+	st, errPrepare := db.Prepare("select * from rocket")
+        if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query errir: ", errQuery)
+		return errQuery
+	}
+
 	_, err := rows.Columns()
 	if err != nil {
+		fmt.Println("err: ", err)
 		return err
 	}
 	for rows.Next() {
@@ -248,14 +292,18 @@ func Columns() error {
 func Queryrow() error {
 	a := 1
 	var uname int
+
 	db := Createconnection()
 	defer db.Close()
-	st, err := db.Prepare("select a from rocket where a=?")
-	if err != nil {
-		return err
+
+	st, errPrepare := db.Prepare("select a from rocket where a=?")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
 	}
-	err = st.QueryRow(a).Scan(&uname)
+	err := st.QueryRow(a).Scan(&uname)
 	if err != nil {
+		fmt.Println("Query error: ", err)
 		return err
 	}
 	return nil
@@ -265,10 +313,13 @@ func Queryrow() error {
 func Begin() error {
 	db := Createconnection()
 	defer db.Close()
+
 	_, err := db.Begin()
 	if err != nil {
+		fmt.Println("Error: ", err)
 		return err
 	}
+
 	return nil
 }
 
@@ -276,13 +327,26 @@ func Begin() error {
 func Commit() error {
 	db := Createconnection()
 	defer db.Close()
+
 	bg, err := db.Begin()
-	db.Exec("DROP table u")
-	_, err = bg.Exec("create table u(id int)")
-	err = bg.Commit()
 	if err != nil {
+		fmt.Println("Error: ", err)
 		return err
 	}
+
+	db.Exec("DROP table u")
+	_, errExec := bg.Exec("create table u(id int)")
+	if errExec != nil {
+		fmt.Println("Exec error: ", errExec)
+		return errExec
+	}
+
+	errCommit := bg.Commit()
+	if errCommit != nil {
+		fmt.Println("Commit error: ", errCommit)
+		return errCommit
+	}
+
 	return nil
 }
 
@@ -290,10 +354,13 @@ func Commit() error {
 func Close() error {
 	db := Createconnection()
 	defer db.Close()
-	err := db.Close()
-	if err != nil {
-		return err
+
+	errClose := db.Close()
+	if errClose != nil {
+		fmt.Println("Close error: ", errClose)
+		return errClose
 	}
+
 	return nil
 }
 
@@ -317,67 +384,79 @@ func IntegerArray() error {
 
         db.Query("DROP table " + tableOne)
 
-        _, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 integer)")
-        if err != nil {
-                return err
+        _, errExec := db.Exec("CREATE table " + tableOne + "(col1 int, col2 integer)")
+        if errExec != nil {
+                fmt.Println("Exec error: ", errExec)
+                return errExec
         }
 
         a :=  []int{1, 2, 3, 4, 5}
         b :=  []int{-2147483648, -32769, 0, 32768,  2147483647}
-         st, err := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
+
+        st, errPrepare := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
-        if err != nil {
-                return err
+        if errPrepare != nil {
+                fmt.Println("Prepare error: ", errPrepare)
+                return errPrepare
         }
-        _, err = st.Query(a, b)
-        if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+
+	_, errQuery := st.Query(a, b)
+        if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
                 fmt.Println("Error while inserting []integer")
-                return err
+                return errQuery
         }
 
         substring := "SQLSTATE=22003"
         c :=  []int{6}
         d :=  []int{-2147483649}
-         st, err = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
+
+	st, errPrepare = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
-        if err != nil {
-                return err
+        if errPrepare != nil {
+                fmt.Println("Prepare error: ", errPrepare)
+                return errPrepare
         }
-        _, err = st.Query(c, d)
-        if err != nil {
-                errStr = fmt.Sprintf("%s", err)
+
+	_, errQuery = st.Query(c, d)
+        if errQuery != nil {
+                errStr = fmt.Sprintf("%s", errQuery)
                 if !strings.Contains(errStr, substring) {
-                        return err
+                        fmt.Println("Query error: ", errQuery)
+                        return errQuery
                 }
         }
 
 
         e :=  []int{7}
         f :=  []int{2147483648}
-         st, err = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
+         st, errPrepare = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
         defer st.Close()
-        if err != nil {
-                return err
+        if errPrepare != nil {
+                fmt.Println("Prepare error: ", errPrepare)
+                return errPrepare
         }
-        _, err = st.Query(e, f)
-        if err != nil {
-                errStr = fmt.Sprintf("%s", err)
+        _, errQuery = st.Query(e, f)
+        if errQuery != nil {
+                errStr = fmt.Sprintf("%s", errQuery)
                 if !strings.Contains(errStr, substring) {
-                        return err
+                        fmt.Println("Query error: ", errQuery)
+                        return errQuery
                 }
         }
 
 
-        rows, err2 := db.Query("SELECT * from " + tableOne)
-        if err2 != nil {
-                return err
+	rows, errQuery1 := db.Query("SELECT * from " + tableOne)
+        if errQuery1 != nil {
+                fmt.Println("Query error: ", errQuery1)
+                return errQuery1
         }
 
         defer rows.Close()
         for rows.Next() {
               var c1, c2  string
-              err = rows.Scan(&c1, &c2)
+	      err := rows.Scan(&c1, &c2)
               if err != nil {
+                      fmt.Println("Scan error: ", err)
                       return err
               }
 
@@ -396,6 +475,7 @@ func FloatArray() error {
 	db.Exec("Drop table arr")
 	_, err := db.Exec("create table arr(var1 double)")
 	if err != nil {
+		fmt.Println("Exec error: ", err)
 		return err
 	}
 	a := []float32{1.232, 2.34245, 3}
@@ -403,6 +483,7 @@ func FloatArray() error {
 	st, err := db.Prepare("Insert into arr values(?)")
 	defer st.Close()
 	if err != nil {
+		fmt.Println("Prepare error: ", err)
 		return err
 	}
 	_, err = st.Query(a)
@@ -423,6 +504,7 @@ func FloatArray() error {
 func CreateDB() bool {
 	res, err := a.CreateDb("Goo", connStr)
 	if err != nil {
+		fmt.Println("CreateDB error: ", err)
 		return false
 	}
 	return res
@@ -432,6 +514,7 @@ func CreateDB() bool {
 func DropDB() bool {
 	res, err := a.DropDb("Goo", connStr)
 	if err != nil {
+		fmt.Println("DropDB error: ", err)
 		return false
 	}
 	return res
@@ -440,6 +523,7 @@ func DropDB() bool {
 func ExecQuery(st *sql.Stmt) error {
         res, err := st.Query()
         if err != nil {
+		fmt.Println("Query error: ", err)
                 return err
         }
         defer res.Close()
@@ -447,6 +531,7 @@ func ExecQuery(st *sql.Stmt) error {
                     var a string
                     err = res.Scan(&a)
                     if err != nil {
+			    fmt.Println("Scan error: ", err)
                             return err
                     }
         }
@@ -456,6 +541,10 @@ func ExecQuery(st *sql.Stmt) error {
 func ConnectionPool() int {
         var flag int
         flag = 0
+
+	db := Createconnection()
+	defer db.Close()
+
         pool := a.Pconnect("PoolSize=5")
 
         ret := pool.Init(5, connStr)
@@ -468,6 +557,7 @@ func ConnectionPool() int {
                 if db != nil {
                         st, err := db.Prepare("select * from rocket")
                         if err != nil {
+                                fmt.Println("Prepare error: ", err)
                                 return 0
                         } else {
                                 go func() {
@@ -494,6 +584,10 @@ func ConnectionPool() int {
 func ConnectionPoolWithTimeout() int {
         var flag int
         flag = 0
+
+	db := Createconnection()
+	defer db.Close()
+
         pool := a.Pconnect("PoolSize=3")
 
 	pool.SetConnMaxLifetime(10)
@@ -507,6 +601,7 @@ func ConnectionPoolWithTimeout() int {
                 if db != nil {
                         st, err := db.Prepare("select * from rocket")
                         if err != nil {
+                                fmt.Println("Prepare error: ", err)
                                 return 0
                         } else {
                                 go func() {
@@ -539,6 +634,7 @@ func InsertArray() error {
 
         _, err := db.Exec("create table arr(c1 int, c2 float, c3 boolean, c4 character, c5 varchar(20))")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
         a := []int{2, 3}
@@ -550,6 +646,7 @@ func InsertArray() error {
         st, err := db.Prepare("Insert into arr values(?, ?, ?, ?, ?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
 
@@ -771,11 +868,13 @@ func QueryCreateTable(db *sql.DB) error {
         if err != nil {
                _, err := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
                if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
         } else {
               _, err := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
                if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
        }
@@ -787,6 +886,7 @@ func QueryCreateTable(db *sql.DB) error {
 func QueryDropTable(db *sql.DB) error {
         _, err := db.Query("DROP table VMSAMPLE")
                if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
         fmt.Println("TABLE DROP Successfully")
@@ -795,6 +895,7 @@ func QueryDropTable(db *sql.DB) error {
 func QueryInsertRow(db *sql.DB) error {
       _, err := db.Query("INSERT into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Vikas','Blr','Developer')")
                if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                        fmt.Println("Query error: ", err)
                         return err
                 }
         return nil
@@ -804,6 +905,7 @@ func QueryInsertRow(db *sql.DB) error {
 func QueryDisplayTable(db *sql.DB) error {
         rows, err := db.Query("SELECT * from VMSAMPLE")
         if err != nil {
+                fmt.Println("Query error: ", err)
                 return err
         }
 
@@ -812,7 +914,8 @@ func QueryDisplayTable(db *sql.DB) error {
               var t, x, m, n string
               err = rows.Scan(&t, &x, &m, &n)
               if err != nil {
-                       return err
+                      fmt.Println("Scan error: ", err)
+                      return err
               }
               fmt.Printf("%v  %v   %v         %v\n", t, x, m, n)
         }
@@ -905,4 +1008,3 @@ func ConnectionInvalidDatabaseName() int {
 
         return 1
 }
-

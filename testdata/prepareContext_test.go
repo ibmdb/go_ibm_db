@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 func TestPrepareContext(t *testing.T){
     if(PrepareContext() != nil){
@@ -12,10 +15,13 @@ func TestPrepareContext(t *testing.T){
 func PrepareContext() error {
         db := Createconnection()
         defer db.Close()
+
         _, err := db.PrepareContext(ctx, "select * from rocket")
         if err != nil {
+                fmt.Println("PrepareContext error: ", err)
                 return err
         }
+
         return nil
 }
 

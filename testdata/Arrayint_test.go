@@ -16,11 +16,14 @@ func TestIntArray(t *testing.T) {
 func IntArray() error {
         db := Createconnection()
         defer db.Close()
+
         db.Exec("Drop table arr")
         _, err := db.Exec("create table arr(var1 int)")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
+
         a := []int{2, 3}
         b := []int8{2, 3}
         c := []int16{2, 3}
@@ -29,6 +32,7 @@ func IntArray() error {
         st, err := db.Prepare("Insert into arr values(?)")
         defer st.Close()
         if err != nil {
+                fmt.Println("Prepare error: ", err)
                 return err
         }
         _, err = st.Query(a)

@@ -15,9 +15,11 @@ func TestMultipleQuery(t *testing.T) {
 func MultipleQuery() error {
         db := Createconnection()
         defer db.Close()
+
         db.Exec("Drop table arr")
         _, err := db.Exec("create table arr(PID bigint, C1 varchar(255), C2 varchar(255), C3 varchar(255))")
         if err != nil {
+                fmt.Println("Exec error: ", err)
                 return err
         }
         _, err = db.Query("Insert into arr values('1', 'PersonA', 'LastNameA', 'QA')")
@@ -60,6 +62,7 @@ func MultipleQuery() error {
 
         _, err = db.Query("SELECT count(*) from arr where PID = 7")
         if err != nil {
+                fmt.Println("Query error: ", err)
                 return err
         } else {
                 fmt.Println("Select statement successful")
@@ -67,6 +70,7 @@ func MultipleQuery() error {
 
         _, err = db.Query("SELECT * from arr where C3 = 'QA Intern'")
         if err != nil {
+		fmt.Println("Query error: ", err)
                 return err
         } else {
                 fmt.Println("Select statement successful")

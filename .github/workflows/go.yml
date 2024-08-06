@@ -19,7 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.19.3'
+        go-version: '1.22.5'
         
     - name: Install clidriver
       run: |
@@ -56,9 +56,4 @@ jobs:
            echo "============TEST CASES ======"
            #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            #echo "DB2_USER = " $DB2_USER
-           #go test -v
-           go test createdroptable_test.go main.go
-           go test alldatatypes_test.go main.go
-           go test chinesechar_test.go main.go
-           go test hugequery_test.go main.go
-           go test decimal_test.go main.go
+           go test -v

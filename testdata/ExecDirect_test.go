@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 func TestExecDirect(t *testing.T) {
 	if ExecDirect() != nil {
@@ -12,8 +15,10 @@ func TestExecDirect(t *testing.T) {
 func ExecDirect() error {
         db := Createconnection()
         defer db.Close()
+
         _, err := db.Query("select * from rocket")
         if err != nil {
+                fmt.Println("Query error: ", err)
                 return err
         }
         return nil
