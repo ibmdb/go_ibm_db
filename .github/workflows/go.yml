@@ -51,8 +51,6 @@ jobs:
       run: |
            pwd
            cd testdata
-           go mod init t2
-           go mod tidy
            echo "============TEST CASES ======"
            #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
            #echo "DB2_USER = " $DB2_USER
