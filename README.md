@@ -532,3 +532,18 @@ go_ibm_db/testdata/config.json file.
 * Now run go test command (use go test -v command for details) 
 
 * To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
+
+
+Logging:
+========
+
+* You may enable logging in the go_ibm_db module to trace activities. Logging can be directed to be console or a specified file.
+
+```
+# Log on console:
+go run sample.go -trace
+
+# Log to a file (e.g., log.txt)
+go run sample.go -trace log.txt
+
+```

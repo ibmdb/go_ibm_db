@@ -864,41 +864,34 @@ func BadConnectionString() int {
 
 // Creating a table.
 func QueryCreateTable(db *sql.DB) error {
-        _, err := db.Query("DROP table VMSAMPLE")
-        if err != nil {
-               _, err := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
-               if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-                        fmt.Println("Query error: ", err)
-                        return err
-                }
-        } else {
-              _, err := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
-               if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-                        fmt.Println("Query error: ", err)
-                        return err
-                }
-       }
-       fmt.Println("TABLE CREATED Successfully")
-       return nil
+        db.Query("DROP table VMSAMPLE")
+
+	_, errQuery := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
+        if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
+                 fmt.Println("Query error: ", errQuery)
+                 return errQuery
+        }
+        fmt.Println("TABLE CREATED Successfully")
+        return nil
 }
 
 // Drop a table.
 func QueryDropTable(db *sql.DB) error {
         _, err := db.Query("DROP table VMSAMPLE")
-               if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-                        fmt.Println("Query error: ", err)
-                        return err
-                }
+        if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                 fmt.Println("Query error: ", err)
+                 return err
+        }
         fmt.Println("TABLE DROP Successfully")
         return nil
 }
 func QueryInsertRow(db *sql.DB) error {
-      _, err := db.Query("INSERT into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Vikas','Blr','Developer')")
-               if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-                        fmt.Println("Query error: ", err)
-                        return err
-                }
-        return nil
+        _, err := db.Query("INSERT into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Vikas','Blr','Developer')")
+        if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+                 fmt.Println("Query error: ", err)
+                 return err
+         }
+         return nil
 }
 
 // This api selects the data from the table and prints it.

@@ -15,20 +15,13 @@ func CreateDropTable() int {
         db := Createconnection()
 	defer db.Close()
 
-        _, err2 := db.Exec("DROP table VMSAMPLE")
-        if err2 != nil {
-               _, err3 := db.Exec("create table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
-               if err3 != nil {
-                       fmt.Println("Exec error: ", err3)
-                       return 0
-               }
-        } else {
-              _, err4 := db.Exec("create table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
-              if err4 != nil {
-                      fmt.Println("Exec error: ", err4)
-                      return 0
-             }
-       }
+        db.Exec("DROP table VMSAMPLE")
+
+        _, errExec := db.Exec("create table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
+        if errExec != nil {
+                fmt.Println("Exec error: ", errExec)
+                return 0
+        }
 
        fmt.Println("TABLE CREATED Successfully")
 
