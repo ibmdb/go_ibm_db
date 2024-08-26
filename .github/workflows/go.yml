@@ -35,23 +35,11 @@ jobs:
          echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
          echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
 
-         db2_user=
-         db2_passwd=
-         db2_database=
-         db2_hostname=
-         db2_port=
-         echo "DB2_USER=$db2_user" >> "$GITHUB_ENV"
-         echo "DB2_PASSWD=$db2_passwd" >> "$GITHUB_ENV"
-         echo "DB2_DATABASE=$db2_database" >> "$GITHUB_ENV"
-         echo "DB2_HOSTNAME=$db2_hostname" >> "$GITHUB_ENV"
-         echo "DB2_PORT=$db2_port" >> "$GITHUB_ENV"
-         
-
     - name: Test
+      env:
+          DB2_CONNSTR: ${{ secrets.DB2_CONNSTR }}
       run: |
            pwd
            cd testdata
            echo "============TEST CASES ======"
-           #echo "CGO_LDFLAGS = " $CGO_LDFLAGS
-           #echo "DB2_USER = " $DB2_USER
            go test -v

@@ -105,9 +105,12 @@ func UpdateConnectionVariables() {
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
-    UpdateConnectionVariables()
-    connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
-        //connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd +";Security=ssl"
+    connStr, connStrFound = os.LookupEnv("DB2_CONNSTR")
+    if !connStrFound{
+        UpdateConnectionVariables()
+        connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+    }
+
     db, _ = sql.Open("go_ibm_db", connStr)
     return db
 }
@@ -919,7 +922,6 @@ func QueryDisplayTable(db *sql.DB) error {
 func ConnectionInvalidUserPassword() int {
     var errStr string
     UpdateConnectionVariables()
-    //badConnStr := "HOSTNAME=hostname1;PORT1234=;DATABASE=sample;UID=uid;PWD=pwd"
     badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=abcd"
 
     db, _ := sql.Open("go_ibm_db", badConnStr )
