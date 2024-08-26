@@ -30,7 +30,7 @@ yum install go git tar libpam
 ```
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
 ```
 
 - You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable
@@ -74,7 +74,7 @@ setenvwin.bat
 ```
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
 ```
 
 - You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment
@@ -135,7 +135,7 @@ rm /usr/bin/gofmt
 cp /usr/local/go/bin/go /usr/bin/
 cp /usr/local/go/bin/gofmt /usr/bin/
 
-go install github.com/ibmdb/go_ibm_db/installer@v0.4.5
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
 or 
 go install github.com/ibmdb/go_ibm_db/installer@latest
 ```
@@ -532,3 +532,18 @@ go_ibm_db/testdata/config.json file.
 * Now run go test command (use go test -v command for details) 
 
 * To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
+
+
+Logging:
+========
+
+* You may enable logging in the go_ibm_db module to trace activities. Logging can be directed to be console or a specified file.
+
+```
+# Log on console:
+go run sample.go -trace
+
+# Log to a file (e.g., log.txt)
+go run sample.go -trace log.txt
+
+```
