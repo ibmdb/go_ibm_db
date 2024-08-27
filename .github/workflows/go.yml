@@ -35,11 +35,11 @@ jobs:
          echo "CGO_LDFLAGS=$cgo_ldflags" >> "$GITHUB_ENV"
          echo "LD_LIBRARY_PATH=$ld_library_path" >> "$GITHUB_ENV"
 
-#    - name: Test
-#      env:
-#          DB2_CONNSTR: ${{ secrets.DB2_CONNSTR }}
-#      run: |
-#           pwd
-#           cd testdata
-#           echo "============TEST CASES ======"
-#           go test -v
+    - name: Test
+      env:
+          DB2_CONNSTR: ${{ secrets.DB2_CONNSTR }}
+      run: |
+           pwd
+           cd testdata
+           echo "============TEST CASES ======"
+           go test -v

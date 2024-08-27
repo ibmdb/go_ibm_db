@@ -105,6 +105,7 @@ func UpdateConnectionVariables() {
 
 //Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
+    var connStrFound bool
     connStr, connStrFound = os.LookupEnv("DB2_CONNSTR")
     if !connStrFound{
         UpdateConnectionVariables()
