@@ -546,8 +546,12 @@ func ConnectionPool() int {
     var flag int
     flag = 0
 
-    db := Createconnection()
-    defer db.Close()
+    errCreatetable := Createtable();
+    if errCreatetable != nil {
+            fmt.Println("Createtable error: ", errCreatetable)
+            return 0
+    }
+    Insert()
 
     pool := a.Pconnect("PoolSize=5")
 
@@ -589,8 +593,12 @@ func ConnectionPoolWithTimeout() int {
     var flag int
     flag = 0
 
-    db := Createconnection()
-    defer db.Close()
+    errCreatetable := Createtable();
+    if errCreatetable != nil {
+            fmt.Println("Createtable error: ", errCreatetable)
+            return 0
+    }
+    Insert()
 
     pool := a.Pconnect("PoolSize=3")
 
