@@ -519,7 +519,7 @@ func DropDB() bool {
     res, err := a.DropDb("Goo", connStr)
     if err != nil {
         fmt.Println("DropDB error: ", err)
-        return true
+        return  true
     }
     return res
 }
