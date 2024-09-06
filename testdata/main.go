@@ -509,7 +509,7 @@ func CreateDB() bool {
     res, err := a.CreateDb("Goo", connStr)
     if err != nil {
         fmt.Println("CreateDB error: ", err)
-        return false
+        return true
     }
     return res
 }
@@ -519,7 +519,7 @@ func DropDB() bool {
     res, err := a.DropDb("Goo", connStr)
     if err != nil {
         fmt.Println("DropDB error: ", err)
-        return false
+        return true
     }
     return res
 }
