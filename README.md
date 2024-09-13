@@ -127,8 +127,8 @@ source setenv.sh
 ```
 yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
-curl -OL https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz
+curl -OL https://golang.org/dl/go1.21.6.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
 
 rm /usr/bin/go
 rm /usr/bin/gofmt
