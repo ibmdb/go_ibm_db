@@ -8,7 +8,7 @@ Interface for GoLang to `DB2 for z/OS`, `DB2 for LUW` and `DB2 for i` database s
 
 ## Prerequisite
 
-- Golang should be installed(Golang version should be >=1.12.x and <= 1.21.X)
+- Golang should be installed(Golang version should be >=1.12.x and <= 1.23.X)
 
 - Git should be installed in your system.
 
@@ -127,8 +127,8 @@ source setenv.sh
 ```
 yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
-curl -OL https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz
+curl -OL https://golang.org/dl/go1.23.1.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.23.1.linux-amd64.tar.gz
 
 rm /usr/bin/go
 rm /usr/bin/gofmt
