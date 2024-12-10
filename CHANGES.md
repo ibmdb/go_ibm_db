@@ -1,3 +1,47 @@
+2024-12-10, Version 0.5.1
+=========================
+
+ * update: go version in mod and workflows files (Bimal Jha)
+
+ * fea: add support for Macos AMR64 platform (Bimal Jha)
+
+ * Update Go Lang version (#254) (VIKAS MATHUR)
+
+
+2024-09-06, Version 0.5.0
+=========================
+
+ * Update DB Create and Drop testcase (#253) (VIKAS MATHUR)
+
+ * Update Pooling testcases (#252) (VIKAS MATHUR)
+
+ * update workflow file for test (Bimal Jha)
+
+ * Update go.yml (VIKAS MATHUR)
+
+ * fix connection issue in github action (Bimal Jha)
+
+ * fix spacing issue by replacing tab with 4spaces (Bimal Jha)
+
+ * Support for logging (#251) (VIKAS MATHUR)
+
+ * Update actions (#248) (hydernaqvi)
+
+ * Updated all testcase with error check (#249) (VIKAS MATHUR)
+
+ * Code alignment (#244) (VIKAS MATHUR)
+
+ * Logs at API Level (#241) (VIKAS MATHUR)
+
+ * Cleanup Files and README (#240) (hydernaqvi)
+
+ * z/OS Initial Port (#239) (hydernaqvi)
+
+ * fix issue #236 Decimal value by instering as string, columnSize should be of maximum decimal precision (#237) (sirius)
+
+ * doc: update Readme file (Bimal Jha)
+
+
 2023-11-23, Version 0.4.5
 =========================
 
