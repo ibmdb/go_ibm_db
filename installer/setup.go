@@ -66,14 +66,20 @@ func Unzipping(sourcefile string, targetDirectory string) {
 }
 
 func linux_untar(clidriver string, targetDirectory string) error {
-	fmt.Printf("Extracting with tar -xvzf %s -C %s\n", clidriver, targetDirectory)
-	out, err := exec.Command("tar", "xvzf", "./../../"+clidriver, "-C", targetDirectory).Output()
+	fmt.Printf("Extracting with tar -xzf %s -C %s\n", clidriver, targetDirectory)
+	out, err := exec.Command("tar", "xzf", "./../../" + clidriver, "-C", targetDirectory).Output()
 
 	fmt.Println(string(out))
 	if err != nil {
 		fmt.Println("Error while running tar: " + err.Error())
 		return err
 	}
+	if runtime.GOOS == "darwin" {
+        // Create symlinks for libdb2
+        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/libdb2.dylib").Output()
+        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/go_ibm_db/libdb2.dylib").Output()
+        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/go_ibm_db/testdata/libdb2.dylib").Output()
+    }
 
 	return nil
 }
@@ -134,42 +140,55 @@ func checkincludepath(includepath string) bool {
 }
 
 func main() {
-	var target, cliFileName string
-	var unpackageType int
-	var err11 error
-	var out []byte
+    var target, cliFileName string
+    var unpackageType int
+    var err11 error
+    var out []byte
 
-	fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME.")
+    fmt.Println("os =",runtime.GOOS, ", processor =", runtime.GOARCH)
+    path, ok := os.LookupEnv("DB2HOME")
+    if ok {
+        fmt.Println("NOTE: Environment variable DB2HOME name is changed to IBM_DB_HOME.")
+        fmt.Println("DB2HOME environment variable is set to", path)
+    }
 
-	out, err11 = exec.Command("db2cli", "validate").Output()
-	if err11 != nil {
-		_, ok := os.LookupEnv("IBM_DB_HOME")
-		if !ok {
-			if runtime.GOOS == "windows" {
-				fmt.Println("Please set IBM_DB_HOME add this path to PATH environment variable after clidriver installed")
-			} else {
-				fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables after clidriver installed")
-			}
-		}
-	} else {
-		path, ok := os.LookupEnv("IBM_DB_HOME")
-		if !ok {
-			//set IBM_DB_HOME
-			getinstalledpath(string(out))
-			os.Exit(1)
-		} else {
-			fmt.Println("clidriver folder exists in the path....", path)
-			if checkincludepath(path) {
-				os.Exit(1)
-			}
-		}
-	}
+    out, err11 = exec.Command("db2cli", "validate").Output()
+    if err11 != nil {
+        _, ok := os.LookupEnv("IBM_DB_HOME")
+        if !ok {
+        if runtime.GOOS == "windows" {
+                fmt.Println("Please set IBM_DB_HOME and add %IBM_DB_HOME%/bin to PATH and %IBM_DB_HOME%/lib to LIB environment variables after clidriver installation")
+            } else if runtime.GOOS == "aix" {
+                fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LIBPATH environment variables after clidriver installation")
+            } else if runtime.GOOS == "darwin" {
+                fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and DYLD_LIBRARY_PATH environment variables after clidriver installation")
+            } else {
+                fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LD_LIBRARY_PATH environment variables after clidriver installation")
+            }
+        }
+    } else {
+        path, ok := os.LookupEnv("IBM_DB_HOME")
+        if !ok {
+            //set IBM_DB_HOME
+            getinstalledpath(string(out))
+            os.Exit(1)
+        } else {
+            fmt.Println("clidriver folder exists in the path....", path)
+            if checkincludepath(path) {
+                os.Exit(1)
+            }
+        }
+    }
 
-	if len(os.Args) == 2 {
-		target = os.Args[1]
-	} else {
-		target = "./../.."
-	}
+    _, setupFile, _, ok := runtime.Caller(0)
+    if len(os.Args) == 2 {
+        target = os.Args[1]
+    } else if ok {
+        target = filepath.Dir(setupFile) + "/../.."
+        target, _ = filepath.Abs(target)
+    } else {
+        target = "./../.."
+    }
 
 	if _, err1 := os.Stat(target + "/clidriver"); !os.IsNotExist(err1) {
 		fmt.Println("clidriver folder exists in the path")
@@ -196,7 +215,6 @@ func main() {
 		} else {
 			cliFileName = "nt32_odbc_cli.zip"
 		}
-		fmt.Printf("windows\n")
 		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "linux" {
 		unpackageType = 2
@@ -227,7 +245,6 @@ func main() {
 				cliFileName = "s390_odbc_cli.tar.gz"
 			}
 		}
-		fmt.Printf("linux\n")
 		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "aix" {
 		unpackageType = 3
@@ -237,7 +254,6 @@ func main() {
 		} else {
 			cliFileName = "aix32_odbc_cli.tar.gz"
 		}
-		fmt.Printf("aix\n")
 		fmt.Println(cliFileName)
 	} else if runtime.GOOS == "sunos" {
 		unpackageType = 2
@@ -256,19 +272,21 @@ func main() {
 				cliFileName = "sun32_odbc_cli.tar.gz"
 			}
 		}
-		fmt.Printf("Sunos\n")
 		fmt.Printf(cliFileName)
 	} else if runtime.GOOS == "darwin" {
-		unpackageType = 2
-		const wordsize = 32 << (^uint(0) >> 32 & 1)
-		if wordsize == 64 {
-			cliFileName = "macos64_odbc_cli.tar.gz"
-		}
-		fmt.Println("darwin")
-	} else {
-		fmt.Println("not known platform")
-		os.Exit(3)
-	}
+        unpackageType = 2
+        const wordsize = 32 << (^uint(0) >> 32 & 1)
+        if wordsize == 64 {
+            if runtime.GOARCH == "arm64" {
+                cliFileName = "macarm64_odbc_cli.tar.gz"
+            } else {
+                cliFileName = "macos64_odbc_cli.tar.gz"
+            }
+        }
+    } else {
+        fmt.Println("Error: Unsupported platform!")
+        os.Exit(3)
+    }
 	fileUrl := downloadUrl(cliFileName)
 	fmt.Println("Downloading " + fileUrl)
 	err := downloadFile(cliFileName, fileUrl)
@@ -290,7 +308,22 @@ func main() {
 func downloadUrl(cliFileName string) string {
 	downloadUrl, downloadUrlFound := os.LookupEnv("IBM_DB_DOWNLOAD_URL")
 	if !downloadUrlFound {
-		downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+	    clidriverVersion, ok := os.LookupEnv("CLIDRIVER_DOWNLOAD_VERSION")
+        if ok {
+            if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" && strings.HasPrefix(strings.ToLower(clidriverVersion), "v11") {
+		        downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+            } else if runtime.GOOS == "darwin" && runtime.GOARCH != "arm64" && strings.HasPrefix(strings.ToLower(clidriverVersion), "v12") {
+		        downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+            } else {
+		        downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + clidriverVersion + "/" + cliFileName
+            }
+        } else {
+            if runtime.GOOS == "darwin" {
+		        downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/" + cliFileName
+            } else {
+		        downloadUrl = "https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9/" + cliFileName
+            }
+        }
 	}
 	return downloadUrl
 }

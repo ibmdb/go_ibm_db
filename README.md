@@ -23,6 +23,9 @@ yum install go git tar libpam
 
 * **SQL1598N Error** - It is expected in absence of valid db2connect license. Please click [here](#Licenserequirements) and read instructions about license requirement and how to apply the license.
 
+* go_ibm_db@v0.5.1 is the last version to download v11.5.9 clidriver by defualt and first version to support MacOS arm64 platform using v12.1.0 clidriver.
+* There is no MacOS Intel Chip clidriver from v12.1.0 onwards.
+
 ## How to Install in Windows
 
 - You may install go_ibm_db using either of below commands
@@ -30,7 +33,7 @@ yum install go git tar libpam
 ```
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.1
 ```
 
 - You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment variable
@@ -74,7 +77,7 @@ setenvwin.bat
 ```
 go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
-go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.1
 ```
 
 - You can optionally specify a specific cli driver by setting the IBM_DB_DOWNLOAD_URL environment
@@ -127,15 +130,15 @@ source setenv.sh
 ```
 yum install -y gcc git go wget tar xz make gcc-c++
 cd /root
-curl -OL https://golang.org/dl/go1.23.1.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.23.1.linux-amd64.tar.gz
+curl -OL https://golang.org/dl/go1.23.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz
 
 rm /usr/bin/go
 rm /usr/bin/gofmt
 cp /usr/local/go/bin/go /usr/bin/
 cp /usr/local/go/bin/gofmt /usr/bin/
 
-go install github.com/ibmdb/go_ibm_db/installer@v0.5.0
+go install github.com/ibmdb/go_ibm_db/installer@v0.5.1
 or 
 go install github.com/ibmdb/go_ibm_db/installer@latest
 ```

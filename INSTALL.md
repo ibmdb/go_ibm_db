@@ -107,7 +107,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
 cd .../go_ibm_db/installer
 source setenv.sh
 ```
-## <a name="insmac"></a> 3. Go_ibm_db Installation on MacOS.
+## <a name="insmac"></a> 3. Go_ibm_db Installation on MacOS x64 and arm64 Systems
 
 ### 3.1 Install GoLang for Mac
 
@@ -133,14 +133,23 @@ It's Done.
 1. mkdir goapp
 2. cd goapp
 3. git clone https://github.com/ibmdb/go_ibm_db/
+4. cd go_ibm_db/installer
+5. go run setup.go
 ```
 
 ### 3.3 Download clidriver
 
-Download clidriver in your system, use below command:
-go to installer folder where go_ibm_db is downloaded in your system 
+To download clidriver in your system, use below command:
+Cd to installer folder where go_ibm_db is downloaded in your system 
 (Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/goapp/go_ibm_db/installer 
-where uname is the username) and run setup.go file (go run setup.go)
+where uname is the username) and run setup.go file (`go run setup.go`)
+
+#### 3.3.1 downloaded driver version
+
+* Latest version of clidriver available for MacOS x64 system is: v11.5.9
+* By default on Intel Chip Macos, clidriver of v11.5.9 will get downloaded.
+* First version of clidriver supported on MacOS ARM64 system is: v12.1.0
+* On MacOS M1/M2/M3 Chip system, by default clidriver of v12.1.0 will get downloaded.
 
 
 ### 3.4 Set environment variables to clidriver directory path
@@ -161,6 +170,16 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
 cd .../go_ibm_db/installer
 source setenv.sh
 ```
+
+#### 3.4.3 Disable SIP or create symlink of libdb2 on MacARM64 sysem
+
+* New MacOS systems comes with System Integrity Protection(SIP) enabled which discards setting of DYLD_LIBRARY_PATH env variable
+* Disable SIP if your Go app gives error that: file `libdb2.dylib` not found.
+* If you can not disable SIP, create softlink of `.../clidriver/lib/libdb2.dylib` file under your applications home directory.
+```
+    ln -s .../clidriver/lib/libdb2.dylib libdb2.dylib
+```
+* If you see `libdb2.dylib` file under `go_ibm_db` directory, you can copy it too in your app root directory.
 
 ## <a name="inswin"></a> 4. Go_ibm_db Installation on Windows.
 
@@ -216,39 +235,3 @@ It's Done.
 
 4. Download platform specific clidriver from https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/ , untar/unzip it and set `IBM_DB_HOME` environmental variable to full path of extracted 'clidriver' directory, for example if clidriver is extracted as: `/home/mysystem/clidriver`, then set system level environment variable `IBM_DB_HOME=/home/mysystem/clidriver`.
 
-
-
-## <a name="m1chip"></a> 5. Steps to install ibm_db on MacOS M1/M2 Chip system (arm64 architecture)
-**Warning:** If you use the ARM version of homebrew (as recommended for M1/M2 chip systems) you will get the following error message:
-```
-$ brew install gcc-12
-Error: Cannot install in Homebrew on ARM processor in Intel default prefix (/usr/local)!
-Please create a new installation in /opt/homebrew using one of the
-"Alternative Installs" from:
-  https://docs.brew.sh/Installation
-You can migrate your previously installed formula list with:
-  brew bundle dump
-```
-Install `gcc@12` using homebrew `(note: the x86_64 version of homebrew is needed for this, not the recommended ARM based homebrew)`. The clearest instructions on how to install and use the `x86_64` version of `homebrew` is by following below steps:
-*	My arm64/M1 brew is installed here:
-```
-	$ which brew
-	/opt/homebrew/bin/brew
-```
-*	Step 1. Install x86_64 brew under /usr/local/bin/brew
-	`arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
-*	Step 2. Create an alias for the x86_64 brew
-	I added this to my ~/.bashrc as below:
-```
-	# brew hack for x86_64
-	alias brew64='arch -x86_64 /usr/local/bin/brew'
-```
-* Then install gcc@12 using the x86_64 homebrew:
-```
-	brew64 install gcc@12
-```
-* Now find location of `lib/gcc/12/libstdc++.6.dylib` file in your system. It should be inside `/usr/local/homebrew/lib/gcc/12` or `/usr/local/lib/gcc/12` or `/usr/local/homebrew/Cellar/gcc@12/12.2.0/lib/gcc/12` or something similar. You need to find the correct path.
-Suppose path of gcc lib is `/usr/local/homebrew/lib/gcc/12`. Then update your .bashrc/.zshrc file with below line
-```
-export DYLD_LIBRARY_PATH=/usr/local/homebrew/lib/gcc/12:$DYLD_LIBRARY_PATH
-```
