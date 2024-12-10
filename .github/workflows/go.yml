@@ -19,14 +19,14 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.22.5'
+        go-version: '1.23.4'
         
     - name: Install clidriver
       run: |
          pwd
          go run installer/setup.go
          pwd
-         ibm_db_home=/home/runner/work/clidriver
+         ibm_db_home=/home/runner/work/go_ibm_db/clidriver
          cgo_cflags=-I$ibm_db_home/include
          cgo_ldflags=-L$ibm_db_home/lib
          ld_library_path=$ibm_db_home/lib
