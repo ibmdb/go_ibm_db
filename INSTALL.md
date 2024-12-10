@@ -123,7 +123,12 @@ extract the file.
 2. cd goapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
    or
-   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   go install github.com/ibmdb/go_ibm_db/installer@v0.5.1
+4. go env GOPATH
+5. cd $GOPATH/pkg/mod/github.com/ibmdb/go_ibm_db@v0.5.1/installer
+6. go run setup.go
+7. export IBM_DB_HOME=$GOPATH/pkg/mod/github.com/ibmdb/clidriver
+8. source ./setenv.sh
 ```
 
 It's Done.
@@ -135,6 +140,12 @@ It's Done.
 3. git clone https://github.com/ibmdb/go_ibm_db/
 4. cd go_ibm_db/installer
 5. go run setup.go
+6. source ./setenv.sh
+7. cd ../testdata
+8. Edit config.json file and update database connection info, save it.
+9. go mod init testdata
+10. go mod tidy
+11. go run main.go
 ```
 
 ### 3.3 Download clidriver
@@ -175,11 +186,11 @@ source setenv.sh
 
 * New MacOS systems comes with System Integrity Protection(SIP) enabled which discards setting of DYLD_LIBRARY_PATH env variable
 * Disable SIP if your Go app gives error that: file `libdb2.dylib` not found.
-* If you can not disable SIP, create softlink of `.../clidriver/lib/libdb2.dylib` file under your applications home directory.
+* OR, if you can not disable SIP, create softlink of `.../clidriver/lib/libdb2.dylib` file under your applications home directory.
 ```
     ln -s .../clidriver/lib/libdb2.dylib libdb2.dylib
 ```
-* If you see `libdb2.dylib` file under `go_ibm_db` directory, you can copy it too in your app root directory.
+* OR, if you see `libdb2.dylib` file under `go_ibm_db` directory, you can copy it too in your app root directory.
 
 ## <a name="inswin"></a> 4. Go_ibm_db Installation on Windows.
 

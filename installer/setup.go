@@ -65,7 +65,7 @@ func Unzipping(sourcefile string, targetDirectory string) {
 	}
 }
 
-func linux_untar(clidriver string, targetDirectory string) error {
+func linux_untar(clidriver string, targetDirectory string, ibmdbDir string) error {
 	fmt.Printf("Extracting with tar -xzf %s -C %s\n", clidriver, targetDirectory)
 	out, err := exec.Command("tar", "xzf", "./../../" + clidriver, "-C", targetDirectory).Output()
 
@@ -73,12 +73,18 @@ func linux_untar(clidriver string, targetDirectory string) error {
 	if err != nil {
 		fmt.Println("Error while running tar: " + err.Error())
 		return err
-	}
+	} else {
+        fmt.Println("clidriver path = " + targetDirectory + "/clidriver")
+        fmt.Println("Now run below commands:")
+        fmt.Println("export IBM_DB_HOME=" + targetDirectory + "/clidriver")
+        fmt.Println("source " + ibmdbDir + "/installer/setenv.sh")
+    }
+
 	if runtime.GOOS == "darwin" {
         // Create symlinks for libdb2
         _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/libdb2.dylib").Output()
-        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/go_ibm_db/libdb2.dylib").Output()
-        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", targetDirectory + "/go_ibm_db/testdata/libdb2.dylib").Output()
+        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", ibmdbDir + "/libdb2.dylib").Output()
+        _, _ = exec.Command("ln", "-s", targetDirectory + "/clidriver/lib/libdb2.dylib", ibmdbDir + "/testdata/libdb2.dylib").Output()
     }
 
 	return nil
@@ -103,6 +109,12 @@ func aix_untar(clidriver string, targetDirectory string) error {
 	if err != nil {
 		fmt.Println("Error while running tar: " + err.Error())
 		return err
+	} else {
+        fmt.Println("clidriver path = " + targetDirectory + "/clidriver")
+        fmt.Println("Now run below commands:")
+        fmt.Println("export IBM_DB_HOME=" + targetDirectory + "/clidriver")
+        fmt.Println("export CGO_CFLAGS==\"-I$IBM_DB_HOME/include\"")
+        fmt.Println("export CGO_LDFLAGS==\"-L$IBM_DB_HOME/lib\"")
 	}
 
 	return nil
@@ -140,7 +152,7 @@ func checkincludepath(includepath string) bool {
 }
 
 func main() {
-    var target, cliFileName string
+    var target, ibmdbDir, cliFileName string
     var unpackageType int
     var err11 error
     var out []byte
@@ -156,7 +168,7 @@ func main() {
     if err11 != nil {
         _, ok := os.LookupEnv("IBM_DB_HOME")
         if !ok {
-        if runtime.GOOS == "windows" {
+            if runtime.GOOS == "windows" {
                 fmt.Println("Please set IBM_DB_HOME and add %IBM_DB_HOME%/bin to PATH and %IBM_DB_HOME%/lib to LIB environment variables after clidriver installation")
             } else if runtime.GOOS == "aix" {
                 fmt.Println("Please set IBM_DB_HOME, CGO_CFLAGS, CGO_LDFLAGS and LIBPATH environment variables after clidriver installation")
@@ -181,13 +193,17 @@ func main() {
     }
 
     _, setupFile, _, ok := runtime.Caller(0)
+    if ok {
+        ibmdbDir = filepath.Dir(setupFile) + "/.."
+    } else {
+        ibmdbDir = "./.."
+    }
+    target = ibmdbDir + "/.."
+    ibmdbDir, _ = filepath.Abs(ibmdbDir)
+    target, _ = filepath.Abs(target)
+
     if len(os.Args) == 2 {
         target = os.Args[1]
-    } else if ok {
-        target = filepath.Dir(setupFile) + "/../.."
-        target, _ = filepath.Abs(target)
-    } else {
-        target = "./../.."
     }
 
 	if _, err1 := os.Stat(target + "/clidriver"); !os.IsNotExist(err1) {
@@ -197,13 +213,13 @@ func main() {
 			//fmt.Println("clidriver/include folder exists in the path")
 
 			if _, err3 := os.Stat(target + "/clidriver/lib"); !os.IsNotExist(err3) {
-				//fmt.Println("clidriver/lib folder exists in the path")
+				fmt.Println("==> Direcotry \"" + target + "/clidriver\" exists.")
 				os.Exit(2)
 			} else {
-				fmt.Println("clidriver/lib folder is not exist, installing clidriver ....")
+				fmt.Println(target+"/clidriver/lib folder does not exist, installing clidriver ....")
 			}
 		} else {
-			fmt.Println("clidriver/include folder is not exist, installing clidriver ....")
+			fmt.Println(target+"/clidriver/include folder does not exist, installing clidriver ....")
 		}
 	}
 
@@ -301,7 +317,7 @@ func main() {
 	} else if unpackageType == 3 {
 		aix_untar(cliFileName, target)
 	} else {
-		linux_untar(cliFileName, target)
+		linux_untar(cliFileName, target, ibmdbDir)
 	}
 }
 
