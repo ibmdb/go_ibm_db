@@ -1,3 +1,11 @@
+2024-12-11, Version 0.5.2
+=========================
+
+ * doc: update installation and SSL connection info (Bimal Jha)
+
+ * update: install script and install.md doc (Bimal Jha)
+
+
 2024-12-10, Version 0.5.1
 =========================
 

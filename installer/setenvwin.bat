@@ -7,5 +7,8 @@ echo off
 cd ../../clidriver
 set clidrvpath=%cd%
 set IBM_DB_HOME=%clidrvpath%
-set PATH=%PATH%;%IBM_DB_HOME%\bin
+set PATH=%IBM_DB_HOME%\bin;%PATH%
+set LIB=%IBM_DB_HOME%\lib;%LIB%
+set CGO_CFLAGS=%IBM_DB_HOME%\include
+set CGO_LDFLAGS=%IBM_DB_HOME%\lib
 

@@ -22,5 +22,5 @@ else
     export LD_LIBRARY_PATH=$IBM_DB_HOME/lib:$LD_LIBRARY_PATH
 fi
 
-export PATH=$PATH:$IBM_DB_HOME/bin
+export PATH=$IBM_DB_HOME/bin:$PATH
 
