@@ -34,9 +34,24 @@ Following are the steps to installation in your system.
 
 This go_ibm_db driver has been tested on 64-bit/32-bit IBM Linux, MacOS and Windows.
 
+### 1.1 clidriver info for MacOS
 
+* Latest version of clidriver available for MacOS x64 system is: v11.5.9
+* By default on Intel Chip Macos, clidriver of v11.5.9 will get downloaded.
+* First version of clidriver supported on MacOS ARM64 system is: v12.1.0
+* On MacOS M1/M2/M3 Chip system, by default clidriver of v12.1.0 will get downloaded.
 
+### 1.2 License requirement to connect to Db2 for z/OS and Db2 for iSeries servers
 
+* Please read [this doc](https://github.com/ibmdb/go_ibm_db/blob/master/README.md#for-zos-and-iseries-connectivity-and-sql1598n-error) for detail info about license requiremnet and resolving SQL1598N error during connection.
+* clidriver v12.1.0 requires db2connect v12.1 license to connect z/OS or iSeries severs.
+* MacOS Silicon Chip (arm64 processor) is supported using v12.1 clidriver only and  hence require db2connect v12.1 license.
+* You can force go_ibm_db driver to use older version of clidirver by setting system level environment varialbe CLIDRIVER_DOWNLOAD_VERSION or explicitly setting IBM_DB_DOWNLOAD_URL to point path of clidriver.tar.gz file.
+```
+    export CLIDRIVER_DOWNLOAD_VERSION=v11.5.9
+    export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9/linuxx64_odbc_cli.tar.gz
+    go run setup.go
+```
 
 ## <a name="inslnx"></a> 2. Go_ibm_db Installation on Linux.
 
@@ -44,12 +59,14 @@ This go_ibm_db driver has been tested on 64-bit/32-bit IBM Linux, MacOS and Wind
 
 Download the
 [GoLang Linux binaries](https://golang.org/dl) or [Go Latest binaries](https://go.dev/dl) and
-extract the file, for example into `/mygo`:
+extract the file, for example into `$HOME/mygo`:
 
 ```
-cd /mygo
-wget -c https://golang.org/dl/go1.20.5.linux-amd64.tar.gz
-tar -xzf go1.20.5.linux-amd64.tar.gz
+cd $HOME/mygo
+wget -c https://golang.org/dl/go1.22.1.linux-amd64.tar.gz
+tar -xzf go1.22.1.linux-amd64.tar.gz
+export GOROOT=$HOME/mygo/go
+export GOPATH=$HOME/mygo
 ```
 
 Set PATH to include Go:
@@ -69,7 +86,13 @@ using directory `/goapp` for example.
 2. cd goapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
    or
-   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   go install github.com/ibmdb/go_ibm_db/installer@v0.5.2
+4. ls $GOPATH/pkg/mod/github.com/ibmdb
+   go_ibm_db@v0.5.2
+5. cd $GOPATH/pkg/mod/github.com/ibmdb/go_ibm_db@v0.5.2/installer
+6. go run ./setup.go
+7. export IBM_DB_HOME=$GOPATH/pkg/mod/github.com/ibmdb/clidriver
+8. source ./setenv.sh
 ```
 
 It's Done.
@@ -77,36 +100,23 @@ It's Done.
 #### 2.2.2 Manual Installation by using git clone.
 
 ```
-1. mkdir goapp
+1. mkdir $HOME/goapp
 2. cd goapp
 3. git clone https://github.com/ibmdb/go_ibm_db/
+4. go env GOPATH
+5. cd go_ibm_db/installer
+6. go run ./setup.go
+7. export IBM_DB_HOME=$HOME/goapp/clidriver
+8. source ./setenv.sh
 ```
 
-### 2.3 Download clidriver
-
-Download clidriver in your system, use below command:
-go to installer folder where go_ibm_db is downloaded in your system 
-(Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/goapp/go_ibm_db/installer 
-where uname is the username) and run setup.go file (go run setup.go)
-
-
-### 2.4 Set environment variables to clidriver directory path
-
-#### 2.4.1 Manual
+If IBM_DB_HOME is already set or, sourcing setenv.sh fails, create below environment variables:
 ```
-export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
-export LD_LIBRARY_PATH=/home/uname/clidriver/lib
-or
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
+export LD_LIBRARY_PATH=$IBM_DB_HOME/lib:$LD_LIBRARY_PATH
 ```
 
-#### 2.4.2 Script file
-```
-cd .../go_ibm_db/installer
-source setenv.sh
-```
 ## <a name="insmac"></a> 3. Go_ibm_db Installation on MacOS x64 and arm64 Systems
 
 ### 3.1 Install GoLang for Mac
@@ -123,9 +133,9 @@ extract the file.
 2. cd goapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
    or
-   go install github.com/ibmdb/go_ibm_db/installer@v0.5.1
+   go install github.com/ibmdb/go_ibm_db/installer@v0.5.2
 4. go env GOPATH
-5. cd $GOPATH/pkg/mod/github.com/ibmdb/go_ibm_db@v0.5.1/installer
+5. cd $GOPATH/pkg/mod/github.com/ibmdb/go_ibm_db@v0.5.2/installer
 6. go run setup.go
 7. export IBM_DB_HOME=$GOPATH/pkg/mod/github.com/ibmdb/clidriver
 8. source ./setenv.sh
@@ -148,41 +158,23 @@ It's Done.
 11. go run main.go
 ```
 
-### 3.3 Download clidriver
+### 3.3 Set environment variables to clidriver directory path
 
-To download clidriver in your system, use below command:
-Cd to installer folder where go_ibm_db is downloaded in your system 
-(Example: /home/uname/go/src/github.com/ibmdb/go_ibm_db/installer or /home/uname/goapp/go_ibm_db/installer 
-where uname is the username) and run setup.go file (`go run setup.go`)
-
-#### 3.3.1 downloaded driver version
-
-* Latest version of clidriver available for MacOS x64 system is: v11.5.9
-* By default on Intel Chip Macos, clidriver of v11.5.9 will get downloaded.
-* First version of clidriver supported on MacOS ARM64 system is: v12.1.0
-* On MacOS M1/M2/M3 Chip system, by default clidriver of v12.1.0 will get downloaded.
-
-
-### 3.4 Set environment variables to clidriver directory path
-
-#### 3.4.1 Manual
+#### 3.3.1 Manual
 ```
 export IBM_DB_HOME=/home/uname/clidriver
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
-
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
-or
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
 ```
 
-#### 3.4.2 Script file
+#### 3.3.2 Script file
 ```
 cd .../go_ibm_db/installer
 source setenv.sh
 ```
 
-#### 3.4.3 Disable SIP or create symlink of libdb2 on MacARM64 sysem
+#### 3.3.3 Disable SIP or create symlink of libdb2 on MacARM64 sysem
 
 * New MacOS systems comes with System Integrity Protection(SIP) enabled which discards setting of DYLD_LIBRARY_PATH env variable
 * Disable SIP if your Go app gives error that: file `libdb2.dylib` not found.
@@ -210,34 +202,33 @@ using directory `/goapp` for example.
 2. cd gopapp
 3. go install github.com/ibmdb/go_ibm_db/installer@latest
    or
-   go install github.com/ibmdb/go_ibm_db/installer@v0.4.3
+   go install github.com/ibmdb/go_ibm_db/installer@v0.5.2
+4. go env GOPATH
+5. cd %GOPATH%\pkg\mod\github.com\ibmdb\go_ibm_db@v0.5.2\installer
+6. go run setup.go
+7.
+    set IBM_DB_HOME=%GOPATH%\pkg\mod\github.com\ibmdb\clidriver
+    set CGO_CFLAGS=-I%IBM_DB_HOME%\include
+    set CGO_LDFLAGS=-L%IBM_DB_HOME%\lib
+    set LIB=%IBM_DB_HOME%\lib;%LIB%
 ```
 
 #### 4.2.2 Manual Installation by using git clone.
 ```
-1. mkdir goapp
+1. mkdir %HOME%\goapp
 2. cd goapp
 3. git clone https://github.com/ibmdb/go_ibm_db/
+4. go env GOPATH
+5. cd go_ibm_db\installer
+6. go run setup.go
+7.
+    set IBM_DB_HOME=%HOME%\goapp\clidriver
+    set CGO_CFLAGS=-I%IBM_DB_HOME%\include
+    set CGO_LDFLAGS=-L%IBM_DB_HOME%\lib
+    set LIB=%IBM_DB_HOME%\lib;%LIB%
 ```
 
-### 4.3 Download clidriver
-
-Download clidriver in your system, go to installer folder where go_ibm_db is downloaded in your system, use below command: 
-(Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer or C:\goapp\go_ibm_db\installer 
- where uname is the username ) and run setup.go file (go run setup.go).
-
-
-### 4.4 Set environment variables to clidriver directory path
-
-#### 4.4.1 Manual
-```
-set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
-set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
-or 
-set PATH=%PATH%;%IBM_DB_HOME%\bin
-```
-
-### 4.4.2 Script file 
+### 4.3 Script file
 ```
 cd .../go_ibm_db/installer
 Run setenvwin.bat
