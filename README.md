@@ -93,11 +93,13 @@ Please check https://github.com/ibmdb/go_ibm_db/blob/master/INSTALL.md for detai
 
 - If you have a clidriver in your system, use below commands
 ```
+Set IBM_DB_HOME to clidriver downloaded path and
+set the environment variables
 export IBM_DB_HOME=<clidriver path>/clidriver
+export PATH=$PATH:$IBM_DB_HOME/bin
 export CGO_CFLAGS=-I$IBM_DB_HOME/include
 export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
-export PATH=$PATH:$IBM_DB_HOME/bin
 ```
 
 
@@ -280,9 +282,11 @@ func main() {
 }
 ```
 To run the sample:-
+```
     go mod init example1
     go mod tidy
     go run example1.go
+```
 
 For complete list of connection parameters please check [this.](https://www.ibm.com/docs/en/db2/11.5?topic=file-data-server-driver-configuration-keywords)
 
@@ -390,9 +394,11 @@ func main() {
 }
 ```
 To run the sample:-
+```
     go mod init example2
     go mod tidy
     go run example2.go
+```
 
 ### example3.go:-(POOLING)
 
@@ -435,9 +441,11 @@ func main() {
 }
 ```
 To run the sample:-
+```
     go mod init example3
     go mod tidy
     go run example3.go
+```
 
 ### example4.go:-(POOLING- Limit on the number of connections)
 
@@ -496,9 +504,11 @@ func main() {
 }
 ```
 To run the sample:-
+```
     go mod init example4
     go mod tidy
     go run example4.go
+```
 
 For Running the Tests:
 ======================
