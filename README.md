@@ -31,7 +31,6 @@ yum install go git tar libpam
 - You may install go_ibm_db using either of below commands
 
 ```
-go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.5.2
 ```
@@ -49,8 +48,8 @@ export IBM_DB_DOWNLOAD_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/
 PATH windows environment variable.
 Example:
 ```
-    set PATH="C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin";%PATH%
-    set LIB="C:\Program Files\IBM\IBM DATA SERVER DRIVER\lib";%LIB%
+set PATH="C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin";%PATH%
+set LIB="C:\Program Files\IBM\IBM DATA SERVER DRIVER\lib";%LIB%
 ```
 
 - Note that the `clidriver` or Runtime Client (RTCL) downloaded from IBM Fix Central do not have `include` directory and do not work with `go_ibm_db` driver. Download `IBM Data Sever Driver Package` or `IBM Data Server Client` (CLNT) from fix central and install.
@@ -58,10 +57,12 @@ Example:
 - If you do not have a clidriver in your system, go to installer folder where `go_ibm_db`
 is downloaded in your system, use below command:
 (Example: C:\Users\uname\go\src\github.com\ibmdb\go_ibm_db\installer
- or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer
- where uname is the username ) and run setup.go file (`go run setup.go`).
- setup.go file will automatically download clidriver from IBM hosted site under parent directory of go_ibm_db.
+or C:\Users\uname\go\pkg\mod\github.com\ibmdb\go_ibm_db\installer
+where uname is the username ) and run setup.go file (`go run setup.go`).
+setup.go file will automatically download clidriver from IBM hosted site under parent directory of go_ibm_db.
 
+
+- If you have a clidriver in your system, use below commands
 ```
 Set IBM_DB_HOME to clidriver downloaded path and
 set this path to your PATH windows environment variable
@@ -84,12 +85,23 @@ setenvwin.bat
 - You may install go_ibm_db using either of below commands
 
 ```
-go get -d github.com/ibmdb/go_ibm_db
 go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@v0.5.2
 ```
 
 Please check https://github.com/ibmdb/go_ibm_db/blob/master/INSTALL.md for detailed installation instructions.
+
+- If you have a clidriver in your system, use below commands
+```
+Set IBM_DB_HOME to clidriver downloaded path and
+set the environment variables
+export IBM_DB_HOME=<clidriver path>/clidriver
+export PATH=$PATH:$IBM_DB_HOME/bin
+export CGO_CFLAGS=-I$IBM_DB_HOME/include
+export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
+```
+
 
 - For Docker Linux Container, use below commands:
 ```
@@ -269,7 +281,12 @@ func main() {
 	db.Close()
 }
 ```
-To run the sample:- go run example1.go
+To run the sample:-
+```
+    go mod init example1
+    go mod tidy
+    go run example1.go
+```
 
 For complete list of connection parameters please check [this.](https://www.ibm.com/docs/en/db2/11.5?topic=file-data-server-driver-configuration-keywords)
 
@@ -376,7 +393,12 @@ func main() {
 	}
 }
 ```
-To run the sample:- go run example2.go
+To run the sample:-
+```
+    go mod init example2
+    go mod tidy
+    go run example2.go
+```
 
 ### example3.go:-(POOLING)
 
@@ -418,7 +440,12 @@ func main() {
 	fmt.Println("success")
 }
 ```
-To run the sample:- go run example3.go
+To run the sample:-
+```
+    go mod init example3
+    go mod tidy
+    go run example3.go
+```
 
 ### example4.go:-(POOLING- Limit on the number of connections)
 
@@ -476,7 +503,12 @@ func main() {
         pool.Release()
 }
 ```
-To run the sample:- go run example4.go
+To run the sample:-
+```
+    go mod init example4
+    go mod tidy
+    go run example4.go
+```
 
 For Running the Tests:
 ======================
