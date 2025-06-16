@@ -210,7 +210,7 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		t := (*api.SQL_TIMESTAMP_STRUCT)(p)
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
-			time.Local)
+			time.UTC)
 		return r, nil
 	case api.SQL_C_TYPE_DATE:
 		t := (*api.SQL_DATE_STRUCT)(p)
