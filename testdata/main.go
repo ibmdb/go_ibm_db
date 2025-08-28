@@ -1,15 +1,15 @@
 package main
 
 import (
-    "database/sql"
-    "fmt"
-    "time"
-    "context"
-    "strings"
-    "os"
-    "encoding/json"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+	"time"
 
-    a "github.com/ibmdb/go_ibm_db"
+	a "github.com/ibmdb/go_ibm_db"
 )
 
 var ctx = context.Background()
@@ -21,994 +21,978 @@ var uid string
 var pwd string
 var connStr string
 
-//Read Config variable from json file
-type Config  struct {
-    Host string `json:"HOSTNAME"`
-    Port string `json:"PORT"`
-    Database string `json:"DATABASE"`
-    Uid string `json:"UID"`
-    Pwd string `json:"PWD"`
+// Read Config variable from json file
+type Config struct {
+	Host     string `json:"HOSTNAME"`
+	Port     string `json:"PORT"`
+	Database string `json:"DATABASE"`
+	Uid      string `json:"UID"`
+	Pwd      string `json:"PWD"`
 }
 
 func LoadConfiguration(filename string) (Config, error) {
-    var config Config
-    configFile, err := os.Open(filename)
-    defer configFile.Close()
-    if err != nil {
-        return config, err
-    }
-    jsonParser := json.NewDecoder(configFile)
-    err = jsonParser.Decode(&config)
-    return config, err
+	var config Config
+	configFile, err := os.Open(filename)
+	if err != nil {
+		return config, err
+	}
+	defer configFile.Close()
+	jsonParser := json.NewDecoder(configFile)
+	err = jsonParser.Decode(&config)
+	return config, err
 }
 
-//Get connection information from config.json
+// Get connection information from config.json
 func GetConnectionInfoFromConfigFile() {
-    config, _:= LoadConfiguration("config.json")
-    host = config.Host
-    port = config.Port
-    database = config.Database
-    uid = config.Uid
-    pwd =  config.Pwd
+	config, _ := LoadConfiguration("config.json")
+	host = config.Host
+	port = config.Port
+	database = config.Database
+	uid = config.Uid
+	pwd = config.Pwd
 }
 
-
-//Get connection information from environment variables 
+// Get connection information from environment variables
 func UpdateConnectionVariables() {
-    var databaseFound bool
-    var hostFound bool
-    var portFound bool
-    var uidFound bool
-    var pwdFound bool
-    config, _:= LoadConfiguration("config.json")
+	var databaseFound bool
+	var hostFound bool
+	var portFound bool
+	var uidFound bool
+	var pwdFound bool
+	config, _ := LoadConfiguration("config.json")
 
-    database, databaseFound = os.LookupEnv("DB2_DATABASE")
-    if !databaseFound{
-        database = config.Database
-        if len(database) == 0 {
-            fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
-        }
-    }
+	database, databaseFound = os.LookupEnv("DB2_DATABASE")
+	if !databaseFound {
+		database = config.Database
+		if len(database) == 0 {
+			fmt.Println("Warning: Environment variable DB2_DATABASE is not set.")
+		}
+	}
 
-    host, hostFound = os.LookupEnv("DB2_HOSTNAME")
-    if !hostFound{
-        host = config.Host
-        if len(host)==0 {
-            fmt.Println("Warning: Environment variable DB2_HOSTNAME is not set.")
-        }
-    }
+	host, hostFound = os.LookupEnv("DB2_HOSTNAME")
+	if !hostFound {
+		host = config.Host
+		if len(host) == 0 {
+			fmt.Println("Warning: Environment variable DB2_HOSTNAME is not set.")
+		}
+	}
 
-    port, portFound = os.LookupEnv("DB2_PORT")
-    if !portFound{
-        port = config.Port
-        if len(port)==0 {
-            fmt.Println("Warning: Environment variable DB2_PORT not set.")
-        }
-    }
+	port, portFound = os.LookupEnv("DB2_PORT")
+	if !portFound {
+		port = config.Port
+		if len(port) == 0 {
+			fmt.Println("Warning: Environment variable DB2_PORT not set.")
+		}
+	}
 
-    uid, uidFound = os.LookupEnv("DB2_USER")
-    if !uidFound{
-        uid = config.Uid
-        if len(uid)==0 {
-            fmt.Println("Warning: Environment variable DB2_USER is not set.")
-        }
-    }
+	uid, uidFound = os.LookupEnv("DB2_USER")
+	if !uidFound {
+		uid = config.Uid
+		if len(uid) == 0 {
+			fmt.Println("Warning: Environment variable DB2_USER is not set.")
+		}
+	}
 
-    pwd, pwdFound = os.LookupEnv("DB2_PASSWD")
-    if !pwdFound{
-       pwd = config.Pwd
-       fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
-       fmt.Println("Please set it before running test file and avoid")
-       fmt.Println("hardcoded password in config.json file.")
-    }
+	pwd, pwdFound = os.LookupEnv("DB2_PASSWD")
+	if !pwdFound {
+		pwd = config.Pwd
+		fmt.Println("Warning: Environment variable DB2_PASSWD is not set.")
+		fmt.Println("Please set it before running test file and avoid")
+		fmt.Println("hardcoded password in config.json file.")
+	}
 }
 
-//Createconnection will return the db instance
+// Createconnection will return the db instance
 func Createconnection() (db *sql.DB) {
-    var connStrFound bool
-    connStr, connStrFound = os.LookupEnv("DB2_CONNSTR")
-    if !connStrFound{
-        UpdateConnectionVariables()
-        connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
-    }
-
-    db, _ = sql.Open("go_ibm_db", connStr)
-    return db
+	var connStrFound bool
+	connStr, connStrFound = os.LookupEnv("DB2_CONNSTR")
+	if !connStrFound {
+		UpdateConnectionVariables()
+		connStr = "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+	}
+	fmt.Println("using connStr: ", connStr)
+	db, _ = sql.Open("go_ibm_db", connStr)
+	return db
 }
 
-//Createtable will create the tables
+// Createtable will create the tables
 func Createtable() error {
-    db := Createconnection()
-    defer db.Close()
-    db.Exec("DROP table rocket")
-    db.Exec("DROP table rocket1")
-    _, err1 := db.Exec("create table rocket(a int)")
-    if err1 != nil {
-        fmt.Println("Exec error: ", err1)
-        return err1
-    }
+	db := Createconnection()
+	defer db.Close()
+	db.Exec("DROP table rocket")
+	db.Exec("DROP table rocket1")
+	_, err1 := db.Exec("create table rocket(a int)")
+	if err1 != nil {
+		fmt.Println("Exec error: ", err1)
+		return err1
+	}
 
-    _, err2 := db.Exec("create table rocket1(a int)")
-    if err2 != nil {
-        fmt.Println("Exec error: ", err2)
-        return err2
-    }
+	_, err2 := db.Exec("create table rocket1(a int)")
+	if err2 != nil {
+		fmt.Println("Exec error: ", err2)
+		return err2
+	}
 
-    return nil
+	return nil
 }
 
-//Createtable will create the tables
+// Createtable will create the tables
 func Createtable_ExecContext() error {
-    db := Createconnection()
-    defer db.Close()
-    db.ExecContext(ctx, "DROP table rocket2")
-    _, err := db.ExecContext(ctx, "create table rocket2(a int)")
-    if err != nil {
-        fmt.Println("ExecContext error: ", err)
-        return err
-    }
+	db := Createconnection()
+	defer db.Close()
+	db.ExecContext(ctx, "DROP table rocket2")
+	_, err := db.ExecContext(ctx, "create table rocket2(a int)")
+	if err != nil {
+		fmt.Println("ExecContext error: ", err)
+		return err
+	}
 
-    _, err = db.ExecContext(ctx, "drop table rocket2")
-    if err != nil {
-        fmt.Println("ExecContex error: ", err)
-        return err
-    }
-    return nil
+	_, err = db.ExecContext(ctx, "drop table rocket2")
+	if err != nil {
+		fmt.Println("ExecContex error: ", err)
+		return err
+	}
+	return nil
 }
 
-//Insert will insert data in to the table
+// Insert will insert data in to the table
 func Insert() error {
-    db := Createconnection()
-    defer db.Close()
-    _, errExec := db.Exec("insert into rocket values(1)")
-    if errExec != nil {
-        fmt.Println("Exec error: ", errExec)
-        return errExec
-    }
-    return nil
+	db := Createconnection()
+	defer db.Close()
+	_, errExec := db.Exec("insert into rocket values(1)")
+	if errExec != nil {
+		fmt.Println("Exec error: ", errExec)
+		return errExec
+	}
+	return nil
 }
 
-//Drop will drop the table
+// Drop will drop the table
 func Drop() error {
-    db := Createconnection()
-    defer db.Close()
-    _, err := db.Exec("drop table rocket1")
-    if err != nil {
-        fmt.Println("Exec error: ", err)
-        return err
-    }
-    return nil
+	db := Createconnection()
+	defer db.Close()
+	_, err := db.Exec("drop table rocket1")
+	if err != nil {
+		fmt.Println("Exec error: ", err)
+		return err
+	}
+	return nil
 }
 
-//Prepare will prepare the statement
+// Prepare will prepare the statement
 func Prepare() error {
-    db := Createconnection()
-    defer db.Close()
-    _, err := db.Prepare("select * from rocket")
-    if err != nil {
-        fmt.Println("Prepare error: ", err)
-        return err
-    }
-    return nil
+	db := Createconnection()
+	defer db.Close()
+	_, err := db.Prepare("select * from rocket")
+	if err != nil {
+		fmt.Println("Prepare error: ", err)
+		return err
+	}
+	return nil
 }
 
-//Query will execute the prepared statement
+// Query will execute the prepared statement
 func Query() error {
-    db := Createconnection()
-    defer db.Close()
-    st, errPrepare := db.Prepare("select * from rocket")
-    if errPrepare != nil {
-        fmt.Println("Prepare erro: ", errPrepare)
-        return errPrepare
-    }
+	db := Createconnection()
+	defer db.Close()
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare erro: ", errPrepare)
+		return errPrepare
+	}
 
-    _, errQuery := st.Query()
-    if errQuery != nil {
-        fmt.Println("Query error: ", errQuery)
-        return errQuery
-    }
-    return nil
+	_, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error: ", errQuery)
+		return errQuery
+	}
+	return nil
 }
 
-//Scan will Scan the data in the rows
+// Scan will Scan the data in the rows
 func Scan() error {
-    db := Createconnection()
-    defer db.Close()
-    st, errPrepare := db.Prepare("select * from rocket")
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
+	db := Createconnection()
+	defer db.Close()
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
 
-    rows, errQuery := st.Query()
-    if errQuery != nil {
-        fmt.Println("Query error:  ", errQuery)
-        return errQuery
-    }
-    for rows.Next() {
-        var a string
-        errScan := rows.Scan(&a)
-        if errScan != nil {
-            fmt.Println("Scan error: ", errScan)
-            return errScan
-        }
-    }
-    return nil
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error:  ", errQuery)
+		return errQuery
+	}
+	for rows.Next() {
+		var a string
+		errScan := rows.Scan(&a)
+		if errScan != nil {
+			fmt.Println("Scan error: ", errScan)
+			return errScan
+		}
+	}
+	return nil
 }
 
-//Next will fetch the data from the result set
+// Next will fetch the data from the result set
 func Next() error {
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    st, errPrepare := db.Prepare("select * from rocket")
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
-    rows, errQuery := st.Query()
-    if errQuery != nil {
-        fmt.Println("Query error: ", errQuery)
-        return errQuery
-    }
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query error: ", errQuery)
+		return errQuery
+	}
 
-    for rows.Next() {
-        var a string
-        errScan := rows.Scan(&a)
-        if errScan != nil {
-            fmt.Println("Scan error: ", errScan)
-            return errScan
-        }
-    }
-    return nil
+	for rows.Next() {
+		var a string
+		errScan := rows.Scan(&a)
+		if errScan != nil {
+			fmt.Println("Scan error: ", errScan)
+			return errScan
+		}
+	}
+	return nil
 }
 
-//Columns will return the names of the cols
+// Columns will return the names of the cols
 func Columns() error {
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    st, errPrepare := db.Prepare("select * from rocket")
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
+	st, errPrepare := db.Prepare("select * from rocket")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
 
-    rows, errQuery := st.Query()
-    if errQuery != nil {
-        fmt.Println("Query errir: ", errQuery)
-        return errQuery
-    }
+	rows, errQuery := st.Query()
+	if errQuery != nil {
+		fmt.Println("Query errir: ", errQuery)
+		return errQuery
+	}
 
-    _, err := rows.Columns()
-    if err != nil {
-        fmt.Println("err: ", err)
-        return err
-    }
-    for rows.Next() {
-        var a string
-        _ = rows.Scan(&a)
-    }
-    return nil
+	_, err := rows.Columns()
+	if err != nil {
+		fmt.Println("err: ", err)
+		return err
+	}
+	for rows.Next() {
+		var a string
+		_ = rows.Scan(&a)
+	}
+	return nil
 }
 
-//Queryrow will return the frirst row it matches
+// Queryrow will return the frirst row it matches
 func Queryrow() error {
-    a := 1
-    var uname int
+	a := 1
+	var uname int
 
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    st, errPrepare := db.Prepare("select a from rocket where a=?")
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
-    err := st.QueryRow(a).Scan(&uname)
-    if err != nil {
-        fmt.Println("Query error: ", err)
-        return err
-    }
-    return nil
+	st, errPrepare := db.Prepare("select a from rocket where a=?")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	err := st.QueryRow(a).Scan(&uname)
+	if err != nil {
+		fmt.Println("Query error: ", err)
+		return err
+	}
+	return nil
 }
 
-//Begin will start a transaction
+// Begin will start a transaction
 func Begin() error {
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    _, err := db.Begin()
-    if err != nil {
-        fmt.Println("Error: ", err)
-        return err
-    }
+	_, err := db.Begin()
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return err
+	}
 
-    return nil
+	return nil
 }
 
-//Commit will commit the uncommited transactions
+// Commit will commit the uncommited transactions
 func Commit() error {
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    bg, err := db.Begin()
-    if err != nil {
-        fmt.Println("Error: ", err)
-        return err
-    }
+	bg, err := db.Begin()
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return err
+	}
 
-    db.Exec("DROP table u")
-    _, errExec := bg.Exec("create table u(id int)")
-    if errExec != nil {
-        fmt.Println("Exec error: ", errExec)
-        return errExec
-    }
+	db.Exec("DROP table u")
+	_, errExec := bg.Exec("create table u(id int)")
+	if errExec != nil {
+		fmt.Println("Exec error: ", errExec)
+		return errExec
+	}
 
-    errCommit := bg.Commit()
-    if errCommit != nil {
-        fmt.Println("Commit error: ", errCommit)
-        return errCommit
-    }
+	errCommit := bg.Commit()
+	if errCommit != nil {
+		fmt.Println("Commit error: ", errCommit)
+		return errCommit
+	}
 
-    return nil
+	return nil
 }
 
-//Close will close the active connection
+// Close will close the active connection
 func Close() error {
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    errClose := db.Close()
-    if errClose != nil {
-        fmt.Println("Close error: ", errClose)
-        return errClose
-    }
+	errClose := db.Close()
+	if errClose != nil {
+		fmt.Println("Close error: ", errClose)
+		return errClose
+	}
 
-    return nil
+	return nil
 }
 
-//PoolOpen creates a pool and makes a connection.
+// PoolOpen creates a pool and makes a connection.
 func PoolOpen() int {
-    pool := a.Pconnect("PoolSize=50")
-    db := pool.Open(connStr)
-    if db == nil {
-        return 0
-    }
-    return 1
+	pool := a.Pconnect("PoolSize=50")
+	db := pool.Open(connStr)
+	if db == nil {
+		return 0
+	}
+	return 1
 }
 
 // A large integer is binary integer with a precision of 31 bits. The range is -2147483648 to +2147483647.
 func IntegerArray() error {
-    var tableOne string= "goarr"
-    var errStr string
+	var tableOne string = "goarr"
+	var errStr string
 
-    db := Createconnection()
-    defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-    db.Query("DROP table " + tableOne)
+	db.Query("DROP table " + tableOne)
 
-    _, errExec := db.Exec("CREATE table " + tableOne + "(col1 int, col2 integer)")
-    if errExec != nil {
-        fmt.Println("Exec error: ", errExec)
-        return errExec
-    }
+	_, errExec := db.Exec("CREATE table " + tableOne + "(col1 int, col2 integer)")
+	if errExec != nil {
+		fmt.Println("Exec error: ", errExec)
+		return errExec
+	}
 
-    a :=  []int{1, 2, 3, 4, 5}
-    b :=  []int{-2147483648, -32769, 0, 32768,  2147483647}
+	a := []int{1, 2, 3, 4, 5}
+	b := []int{-2147483648, -32769, 0, 32768, 2147483647}
 
-    st, errPrepare := db.Prepare("Insert into " +tableOne+ " values(?, ?)")
-    defer st.Close()
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
+	st, errPrepare := db.Prepare("Insert into " + tableOne + " values(?, ?)")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	defer st.Close()
 
-    _, errQuery := st.Query(a, b)
-    if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
-        fmt.Println("Error while inserting []integer")
-        return errQuery
-    }
+	_, errQuery := st.Query(a, b)
+	if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
+		fmt.Println("Error while inserting []integer")
+		return errQuery
+	}
 
-    substring := "SQLSTATE=22003"
-    c :=  []int{6}
-    d :=  []int{-2147483649}
+	substring := "SQLSTATE=22003"
+	c := []int{6}
+	d := []int{-2147483649}
 
-    st, errPrepare = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
-    defer st.Close()
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
+	st, errPrepare = db.Prepare("Insert into " + tableOne + " values(?, ?)")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	defer st.Close()
 
-    _, errQuery = st.Query(c, d)
-    if errQuery != nil {
-        errStr = fmt.Sprintf("%s", errQuery)
-        if !strings.Contains(errStr, substring) {
-            fmt.Println("Query error: ", errQuery)
-            return errQuery
-        }
-    }
+	_, errQuery = st.Query(c, d)
+	if errQuery != nil {
+		errStr = fmt.Sprintf("%s", errQuery)
+		if !strings.Contains(errStr, substring) {
+			fmt.Println("Query error: ", errQuery)
+			return errQuery
+		}
+	}
 
+	e := []int{7}
+	f := []int{2147483648}
+	st, errPrepare = db.Prepare("Insert into " + tableOne + " values(?, ?)")
+	if errPrepare != nil {
+		fmt.Println("Prepare error: ", errPrepare)
+		return errPrepare
+	}
+	defer st.Close()
 
-    e :=  []int{7}
-    f :=  []int{2147483648}
-     st, errPrepare = db.Prepare("Insert into " +tableOne+ " values(?, ?)")
-    defer st.Close()
-    if errPrepare != nil {
-        fmt.Println("Prepare error: ", errPrepare)
-        return errPrepare
-    }
-    _, errQuery = st.Query(e, f)
-    if errQuery != nil {
-        errStr = fmt.Sprintf("%s", errQuery)
-        if !strings.Contains(errStr, substring) {
-            fmt.Println("Query error: ", errQuery)
-            return errQuery
-        }
-    }
+	_, errQuery = st.Query(e, f)
+	if errQuery != nil {
+		errStr = fmt.Sprintf("%s", errQuery)
+		if !strings.Contains(errStr, substring) {
+			fmt.Println("Query error: ", errQuery)
+			return errQuery
+		}
+	}
 
+	rows, errQuery1 := db.Query("SELECT * from " + tableOne)
+	if errQuery1 != nil {
+		fmt.Println("Query error: ", errQuery1)
+		return errQuery1
+	}
 
-    rows, errQuery1 := db.Query("SELECT * from " + tableOne)
-    if errQuery1 != nil {
-        fmt.Println("Query error: ", errQuery1)
-        return errQuery1
-    }
+	defer rows.Close()
+	for rows.Next() {
+		var c1, c2 string
+		err := rows.Scan(&c1, &c2)
+		if err != nil {
+			fmt.Println("Scan error: ", err)
+			return err
+		}
 
-    defer rows.Close()
-    for rows.Next() {
-          var c1, c2  string
-          err := rows.Scan(&c1, &c2)
-          if err != nil {
-              fmt.Println("Scan error: ", err)
-              return err
-          }
+		//fmt.Printf("%v  %v \n", c1, c2)
+	}
 
-          //fmt.Printf("%v  %v \n", c1, c2)
-    }
+	db.Query("DROP table " + tableOne)
 
-    db.Query("DROP table " + tableOne)
-
-    return nil
+	return nil
 }
 
-//FloatArray function performs inserting float32,float64 datatypes.
+// FloatArray function performs inserting float32,float64 datatypes.
 func FloatArray() error {
-    db := Createconnection()
-    defer db.Close()
-    db.Exec("Drop table arr")
-    _, err := db.Exec("create table arr(var1 double)")
-    if err != nil {
-        fmt.Println("Exec error: ", err)
-        return err
-    }
-    a := []float32{1.232, 2.34245, 3}
-    b := []float64{3.43214321, 4.3243214645763235, 0}
-    st, err := db.Prepare("Insert into arr values(?)")
-    defer st.Close()
-    if err != nil {
-        fmt.Println("Prepare error: ", err)
-        return err
-    }
-    _, err = st.Query(a)
-    if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-        fmt.Println("Error while inserting []float32")
-        return err
-    }
-    _, err = st.Query(b)
-    if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-        fmt.Println("Error while inserting []float64")
-        return err
-    }
-    return nil
+	db := Createconnection()
+	defer db.Close()
+	db.Exec("Drop table arr")
+	_, err := db.Exec("create table arr(var1 double)")
+	if err != nil {
+		fmt.Println("Exec error: ", err)
+		return err
+	}
+	a := []float32{1.232, 2.34245, 3}
+	b := []float64{3.43214321, 4.3243214645763235, 0}
+	st, err := db.Prepare("Insert into arr values(?)")
+	if err != nil {
+		fmt.Println("Prepare error: ", err)
+		return err
+	}
+	defer st.Close()
+	_, err = st.Query(a)
+	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+		fmt.Println("Error while inserting []float32")
+		return err
+	}
+	_, err = st.Query(b)
+	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+		fmt.Println("Error while inserting []float64")
+		return err
+	}
+	return nil
 }
 
-
-//CreateDB create database
+// CreateDB create database
 func CreateDB() bool {
-    res, err := a.CreateDb("Goo", connStr)
-    if err != nil {
-        fmt.Println("CreateDB error: ", err)
-        return true
-    }
-    return res
+	res, err := a.CreateDb("Goo", connStr)
+	if err != nil {
+		fmt.Println("CreateDB error: ", err)
+		return true
+	}
+	return res
 }
 
-//DropDB will drop database
+// DropDB will drop database
 func DropDB() bool {
-    res, err := a.DropDb("Goo", connStr)
-    if err != nil {
-        fmt.Println("DropDB error: ", err)
-        return true
-    }
-    return res
+	res, err := a.DropDb("Goo", connStr)
+	if err != nil {
+		fmt.Println("DropDB error: ", err)
+		return true
+	}
+	return res
 }
-//Execute Query for Connection pool
+
+// Execute Query for Connection pool
 func ExecQuery(st *sql.Stmt) error {
-    res, err := st.Query()
-    if err != nil {
-        fmt.Println("Query error: ", err)
-        return err
-    }
-    defer res.Close()
-    for res.Next() {
-            var a string
-            err = res.Scan(&a)
-            if err != nil {
-                fmt.Println("Scan error: ", err)
-                return err
-            }
-    }
-    return nil
+	res, err := st.Query()
+	if err != nil {
+		fmt.Println("Query error: ", err)
+		return err
+	}
+	defer res.Close()
+	for res.Next() {
+		var a string
+		err = res.Scan(&a)
+		if err != nil {
+			fmt.Println("Scan error: ", err)
+			return err
+		}
+	}
+	return nil
 }
-//Connection pool
+
+// Connection pool
 func ConnectionPool() int {
-    var flag int
-    flag = 0
+	var flag int
+	flag = 0
 
-    errCreatetable := Createtable();
-    if errCreatetable != nil {
-            fmt.Println("Createtable error: ", errCreatetable)
-            return 0
-    }
-    Insert()
+	errCreatetable := Createtable()
+	if errCreatetable != nil {
+		fmt.Println("Createtable error: ", errCreatetable)
+		return 0
+	}
+	Insert()
 
-    pool := a.Pconnect("PoolSize=5")
+	pool := a.Pconnect("PoolSize=5")
 
-    ret := pool.Init(5, connStr)
-    if ret != true {
-        return 0
-    }
+	ret := pool.Init(5, connStr)
+	if !ret {
+		return 0
+	}
 
-    for i:=0; i<20; i++ {
-        db := pool.Open(connStr, "SetConnMaxLifetime=10")
-        if db != nil {
-            st, err := db.Prepare("select * from rocket")
-            if err != nil {
-                fmt.Println("Prepare error: ", err)
-                return 0
-            } else {
-                go func() {
-                    err := ExecQuery(st)
-                    if  err != nil && flag == 0{
-                         flag = 1
-                    }
-                    db.Close()
-                }()
-            }
-        }
-    }
-    time.Sleep(10*time.Second)
-    pool.Release()
+	for i := 0; i < 20; i++ {
+		db := pool.Open(connStr, "SetConnMaxLifetime=10")
+		if db != nil {
+			st, err := db.Prepare("select * from rocket")
+			if err != nil {
+				fmt.Println("Prepare error: ", err)
+				return 0
+			} else {
+				go func() {
+					err := ExecQuery(st)
+					if err != nil && flag == 0 {
+						flag = 1
+					}
+					db.Close()
+				}()
+			}
+		}
+	}
+	time.Sleep(10 * time.Second)
+	pool.Release()
 
-    if flag == 1 {
-        return 0
-    }
-    return 1
+	if flag == 1 {
+		return 0
+	}
+	return 1
 }
 
-
-//Connection pool with Timeout
+// Connection pool with Timeout
 func ConnectionPoolWithTimeout() int {
-    var flag int
-    flag = 0
+	var flag int
+	flag = 0
 
-    errCreatetable := Createtable();
-    if errCreatetable != nil {
-            fmt.Println("Createtable error: ", errCreatetable)
-            return 0
-    }
-    Insert()
+	errCreatetable := Createtable()
+	if errCreatetable != nil {
+		fmt.Println("Createtable error: ", errCreatetable)
+		return 0
+	}
+	Insert()
 
-    pool := a.Pconnect("PoolSize=3")
+	pool := a.Pconnect("PoolSize=3")
 
-    pool.SetConnMaxLifetime(10)
-    ret := pool.Init(3, connStr)
-    if ret != true {
-        return 0
-    }
+	pool.SetConnMaxLifetime(10)
+	ret := pool.Init(3, connStr)
+	if !ret {
+		return 0
+	}
 
-    for i:=0; i<20; i++ {
-        db := pool.Open(connStr, "SetConnMaxLifetime=10")
-        if db != nil {
-            st, err := db.Prepare("select * from rocket")
-            if err != nil {
-                fmt.Println("Prepare error: ", err)
-                return 0
-            } else {
-                go func() {
-                    err := ExecQuery(st)
-                    if  err != nil && flag == 0{
-                         flag = 1
-                    }
-                    db.Close()
-                }()
-            }
-        }
-    }
-    time.Sleep(30*time.Second)
-    pool.SetConnMaxLifetime(0)
+	for i := 0; i < 20; i++ {
+		db := pool.Open(connStr, "SetConnMaxLifetime=10")
+		if db != nil {
+			st, err := db.Prepare("select * from rocket")
+			if err != nil {
+				fmt.Println("Prepare error: ", err)
+				return 0
+			} else {
+				go func() {
+					err := ExecQuery(st)
+					if err != nil && flag == 0 {
+						flag = 1
+					}
+					db.Close()
+				}()
+			}
+		}
+	}
+	time.Sleep(30 * time.Second)
+	pool.SetConnMaxLifetime(0)
 
-    pool.Release()
+	pool.Release()
 
-    if flag == 1 {
-        return 0
-    }
-    return 1
+	if flag == 1 {
+		return 0
+	}
+	return 1
 }
 
-
-//InserttArray function performs inserting int,float, boolean, character and string datatypes.
+// InserttArray function performs inserting int,float, boolean, character and string datatypes.
 func InsertArray() error {
-    db := Createconnection()
-    defer db.Close()
-    db.Exec("Drop table arr")
+	db := Createconnection()
+	defer db.Close()
+	db.Exec("Drop table arr")
 
-    _, err := db.Exec("create table arr(c1 int, c2 float, c3 boolean, c4 character, c5 varchar(20))")
-    if err != nil {
-        fmt.Println("Exec error: ", err)
-        return err
-    }
-    a := []int{2, 3}
-    b := []float32{20.45, 32.89}
-    c := []bool{true, false}
-    d := []string{"A", "B"}
-    e := []string{"Hello!", "World"}
+	_, err := db.Exec("create table arr(c1 int, c2 float, c3 boolean, c4 character, c5 varchar(20))")
+	if err != nil {
+		fmt.Println("Exec error: ", err)
+		return err
+	}
+	a := []int{2, 3}
+	b := []float32{20.45, 32.89}
+	c := []bool{true, false}
+	d := []string{"A", "B"}
+	e := []string{"Hello!", "World"}
 
-    st, err := db.Prepare("Insert into arr values(?, ?, ?, ?, ?)")
-    defer st.Close()
-    if err != nil {
-        fmt.Println("Prepare error: ", err)
-        return err
-    }
+	st, err := db.Prepare("Insert into arr values(?, ?, ?, ?, ?)")
+	if err != nil {
+		fmt.Println("Prepare error: ", err)
+		return err
+	}
+	defer st.Close()
 
-    _, err = st.Query(a, b, c, d, e)
+	_, err = st.Query(a, b, c, d, e)
 
-    if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-        fmt.Println("Error while inserting []int")
-        return err
-    }
+	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+		fmt.Println("Error while inserting []int")
+		return err
+	}
 
-    return nil
+	return nil
 }
-
-
-
 
 func main() {
-    result := Createconnection()
-    if result != nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-0")
-    }
+	result := Createconnection()
+	if result != nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-0")
+	}
 
-    result1 := Createtable()
-    if result1 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-1")
-    }
+	result1 := Createtable()
+	if result1 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-1")
+	}
 
-    result2 := Insert()
-    if result2 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-2")
-    }
+	result2 := Insert()
+	if result2 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-2")
+	}
 
-    result3 := Drop()
-    if result3 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-3")
-    }
+	result3 := Drop()
+	if result3 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-3")
+	}
 
-    result4 := Prepare()
-    if result4 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-4")
-    }
+	result4 := Prepare()
+	if result4 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-4")
+	}
 
-    result5 := Query()
-    if result5 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-5")
-    }
+	result5 := Query()
+	if result5 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-5")
+	}
 
-    result6 := Scan()
-    if result6 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-6")
-    }
+	result6 := Scan()
+	if result6 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-6")
+	}
 
-    result7 := Next()
-    if result7 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-7")
-    }
+	result7 := Next()
+	if result7 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-7")
+	}
 
-    result8 := Columns()
-    if result8 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-8")
-    }
+	result8 := Columns()
+	if result8 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-8")
+	}
 
-    result9 := Queryrow()
-    if result9 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-9")
-    }
+	result9 := Queryrow()
+	if result9 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-9")
+	}
 
-    result10 := Begin()
-    if result10 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-10")
-    }
+	result10 := Begin()
+	if result10 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-10")
+	}
 
-    result11 := Commit()
-    if result11 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-11")
-    }
+	result11 := Commit()
+	if result11 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-11")
+	}
 
-    result12 := Close()
-    if result12 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-12")
-    }
+	result12 := Close()
+	if result12 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-12")
+	}
 
-    result13 := PoolOpen()
-    if result13 == 1 {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-13")
-    }
-    result27 := CreateDB()
-    if result27 == true {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-27")
-    }
+	result13 := PoolOpen()
+	if result13 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-13")
+	}
 
-    result28 := DropDB()
-    if result28 == true {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-28")
-    }
-    result32 := Createtable_ExecContext()
-    if result32 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-32")
-    }
+	result27 := CreateDB()
+	if result27 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-27")
+	}
 
-    result33 := ConnectionPool()
-    if result33 == 1 {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-33")
-    }
+	result28 := DropDB()
+	if result28 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-28")
+	}
+	result32 := Createtable_ExecContext()
+	if result32 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-32")
+	}
 
-    result34 := ConnectionPoolWithTimeout()
-    if result34 == 1 {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-34")
-    }
-    result36 := InsertArray()
-    if result36 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-36")
-    }
-    result39 := BadConnectionString()
-    if result39 == 1 {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-39")
-    }
-    result43 := ConnectionInvalidUserPassword()
-    if result43 == 1  {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-43")
-    }
+	result33 := ConnectionPool()
+	if result33 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-33")
+	}
 
-    result44 := ConnectionInvalidUserID()
-    if result44 == 1  {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-44")
-    }
+	result34 := ConnectionPoolWithTimeout()
+	if result34 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-34")
+	}
+	result36 := InsertArray()
+	if result36 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-36")
+	}
+	result39 := BadConnectionString()
+	if result39 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-39")
+	}
+	result43 := ConnectionInvalidUserPassword()
+	if result43 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-43")
+	}
 
-    result45 := ConnectionInvalidPortNumber()
-    if result45 == 1  {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-45")
-    }
+	result44 := ConnectionInvalidUserID()
+	if result44 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-44")
+	}
 
-    result46 := ConnectionInvalidDatabaseName()
-    if result46 == 1  {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-46")
-    }
-    result54 := IntegerArray()
-    if result54 == nil {
-        fmt.Println("Pass")
-    } else {
-        fmt.Println("Fail-54")
-    }
+	result45 := ConnectionInvalidPortNumber()
+	if result45 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-45")
+	}
+
+	result46 := ConnectionInvalidDatabaseName()
+	if result46 == 1 {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-46")
+	}
+	result54 := IntegerArray()
+	if result54 == nil {
+		fmt.Println("Pass")
+	} else {
+		fmt.Println("Fail-54")
+	}
 }
 
 func BadConnectionString() int {
-    var errStr string
-    UpdateConnectionVariables()
-    badConnStr := "HOSTNAME=hostname1;PORT1234=;DATABASE=sample;UID=uid;PWD=pwd"
-    db, _ := sql.Open("go_ibm_db", badConnStr )
-    _, err := db.Prepare("select * from arr")
-    if err != nil {
-        errStr = fmt.Sprintf("%s", err)
-    }
+	var errStr string
+	UpdateConnectionVariables()
+	badConnStr := "HOSTNAME=hostname1;PORT1234=;DATABASE=sample;UID=uid;PWD=pwd"
+	db, _ := sql.Open("go_ibm_db", badConnStr)
+	_, err := db.Prepare("select * from arr")
+	if err != nil {
+		errStr = fmt.Sprintf("%s", err)
+	}
 
-    substring1 := "SQLSTATE=08001"
-    substring2 := "SQLSTATE=08004"
-    if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
-        return 1
-    }  else {
-        return 0
-    }
-
-    return 1
+	substring1 := "SQLSTATE=08001"
+	substring2 := "SQLSTATE=08004"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 // Creating a table.
 func QueryCreateTable(db *sql.DB) error {
-    db.Query("DROP table VMSAMPLE")
+	db.Query("DROP table VMSAMPLE")
 
-    _, errQuery := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
-    if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
-         fmt.Println("Query error: ", errQuery)
-         return errQuery
-    }
-    fmt.Println("TABLE CREATED Successfully")
-    return nil
+	_, errQuery := db.Query("CREATE table VMSAMPLE(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20))")
+	if !strings.Contains(fmt.Sprint(errQuery), "did not create a result set") {
+		fmt.Println("Query error: ", errQuery)
+		return errQuery
+	}
+	fmt.Println("TABLE CREATED Successfully")
+	return nil
 }
 
 // Drop a table.
 func QueryDropTable(db *sql.DB) error {
-    _, err := db.Query("DROP table VMSAMPLE")
-    if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-         fmt.Println("Query error: ", err)
-         return err
-    }
-    fmt.Println("TABLE DROP Successfully")
-    return nil
+	_, err := db.Query("DROP table VMSAMPLE")
+	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+		fmt.Println("Query error: ", err)
+		return err
+	}
+	fmt.Println("TABLE DROP Successfully")
+	return nil
 }
 func QueryInsertRow(db *sql.DB) error {
-    _, err := db.Query("INSERT into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Vikas','Blr','Developer')")
-    if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-         fmt.Println("Query error: ", err)
-         return err
-     }
-     return nil
+	_, err := db.Query("INSERT into VMSAMPLE(ID,NAME,LOCATION,POSITION) values('3242','Vikas','Blr','Developer')")
+	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
+		fmt.Println("Query error: ", err)
+		return err
+	}
+	return nil
 }
 
 // This api selects the data from the table and prints it.
 func QueryDisplayTable(db *sql.DB) error {
-    rows, err := db.Query("SELECT * from VMSAMPLE")
-    if err != nil {
-        fmt.Println("Query error: ", err)
-        return err
-    }
+	rows, err := db.Query("SELECT * from VMSAMPLE")
+	if err != nil {
+		fmt.Println("Query error: ", err)
+		return err
+	}
 
-    defer rows.Close()
-    for rows.Next() {
-          var t, x, m, n string
-          err = rows.Scan(&t, &x, &m, &n)
-          if err != nil {
-              fmt.Println("Scan error: ", err)
-              return err
-          }
-          fmt.Printf("%v  %v   %v     %v\n", t, x, m, n)
-    }
-    return nil
+	defer rows.Close()
+	for rows.Next() {
+		var t, x, m, n string
+		err = rows.Scan(&t, &x, &m, &n)
+		if err != nil {
+			fmt.Println("Scan error: ", err)
+			return err
+		}
+		fmt.Printf("%v  %v   %v     %v\n", t, x, m, n)
+	}
+	return nil
 }
 
-
 func ConnectionInvalidUserPassword() int {
-    var errStr string
-    UpdateConnectionVariables()
-    badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=abcd"
+	var errStr string
+	UpdateConnectionVariables()
+	badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=" + uid + ";PWD=abcd"
 
-    db, _ := sql.Open("go_ibm_db", badConnStr )
-    _, err := db.Prepare("select * from arr")
-    if err != nil {
-        errStr = fmt.Sprintf("%s", err)
-    }
+	db, _ := sql.Open("go_ibm_db", badConnStr)
+	_, err := db.Prepare("select * from arr")
+	if err != nil {
+		errStr = fmt.Sprintf("%s", err)
+	}
 
-    substring1 := "SQLSTATE=08001"
-    substring2 := "SQLSTATE=08004"
-    if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
-        return 1
-    }  else {
-        return 0
-    }
-
-    return 1
+	substring1 := "SQLSTATE=08001"
+	substring2 := "SQLSTATE=08004"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 func ConnectionInvalidUserID() int {
-    var errStr string
-    UpdateConnectionVariables()
-    badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=uid" + ";PWD=" + pwd
-    db, _ := sql.Open("go_ibm_db", badConnStr )
-    _, err := db.Prepare("select * from arr")
-    if err != nil {
-        errStr = fmt.Sprintf("%s", err)
-    }
+	var errStr string
+	UpdateConnectionVariables()
+	badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=" + database + ";UID=uid" + ";PWD=" + pwd
+	db, _ := sql.Open("go_ibm_db", badConnStr)
+	_, err := db.Prepare("select * from arr")
+	if err != nil {
+		errStr = fmt.Sprintf("%s", err)
+	}
 
-    substring1 := "SQLSTATE=08001"
-    substring2 := "SQLSTATE=08004"
-    if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
-        return 1
-    }  else {
-        return 0
-    }
-
-    return 1
+	substring1 := "SQLSTATE=08001"
+	substring2 := "SQLSTATE=08004"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 func ConnectionInvalidPortNumber() int {
-    var errStr string
-    UpdateConnectionVariables()
-    badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=0" + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
-    db, _ := sql.Open("go_ibm_db", badConnStr )
-    _, err := db.Prepare("select * from arr")
-    if err != nil {
-        errStr = fmt.Sprintf("%s", err)
-    }
+	var errStr string
+	UpdateConnectionVariables()
+	badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=0" + ";DATABASE=" + database + ";UID=" + uid + ";PWD=" + pwd
+	db, _ := sql.Open("go_ibm_db", badConnStr)
+	_, err := db.Prepare("select * from arr")
+	if err != nil {
+		errStr = fmt.Sprintf("%s", err)
+	}
 
-    substring1 := "SQLSTATE=08001"
-    substring2 := "SQLSTATE=08004"
-    if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
-        return 1
-    }  else {
-        return 0
-    }
-
-    return 1
+	substring1 := "SQLSTATE=08001"
+	substring2 := "SQLSTATE=08004"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 func ConnectionInvalidDatabaseName() int {
-    var errStr string
-    UpdateConnectionVariables()
-    badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=database"  + ";UID=" + uid + ";PWD=" + pwd
-    db, _ := sql.Open("go_ibm_db", badConnStr )
-    _, err := db.Prepare("select * from arr")
-    if err != nil {
-        errStr = fmt.Sprintf("%s", err)
-    }
+	var errStr string
+	UpdateConnectionVariables()
+	badConnStr := "PROTOCOL=tcpip;HOSTNAME=" + host + ";PORT=" + port + ";DATABASE=database" + ";UID=" + uid + ";PWD=" + pwd
+	db, _ := sql.Open("go_ibm_db", badConnStr)
+	_, err := db.Prepare("select * from arr")
+	if err != nil {
+		errStr = fmt.Sprintf("%s", err)
+	}
 
-    substring1 := "SQLSTATE=08001"
-    substring2 := "SQLSTATE=08004"
-    if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
-        return 1
-    }  else {
-        return 0
-    }
-
-    return 1
+	substring1 := "SQLSTATE=08001"
+	substring2 := "SQLSTATE=08004"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+		return 1
+	} else {
+		return 0
+	}
 }
