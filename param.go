@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"runtime"
 	"time"
 	"unsafe"
 
@@ -68,7 +69,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		p.Data = b
 		buf = unsafe.Pointer(&b[0])
 		l := len(b)
-		l -= 1 // remove terminating 0
+		if runtime.GOOS != "zos" {
+			l -= 1 // remove terminating 0 added by StringToUTF16 in api.go
+		}
 		size = api.SQLULEN(l)
 		if size < 1 {
 			// size cannot be less then 1 even for empty fields
@@ -305,7 +308,7 @@ func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 	return ps, nil
 }
 
-//SqltoCtype function will convert the sql type to c type
+// SqltoCtype function will convert the sql type to c type
 func SqltoCtype(sqltype api.SQLSMALLINT) api.SQLSMALLINT {
 	trc.Trace1("param.go: SqltoCtype()")
 
