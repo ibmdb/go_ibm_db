@@ -16,20 +16,21 @@ func CreateDb(dbname string, connStr string, options ...string) (bool, error) {
 	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s", dbname, connStr))
 
 	if dbname == "" {
-	    trc.Trace1("Error: Database name cannot be empty")
+		trc.Trace1("Error: Database name cannot be empty")
 		trc.Trace1("database.go: CreateDb() - EXIT")
-		return false, fmt.Errorf("Database name cannot be empty")
+		return false, fmt.Errorf("database name cannot be empty")
 	}
 	var codeset, mode string
 	count := len(options)
 	if count > 0 {
 		for i := 0; i < count; i++ {
 			opt := strings.Split(options[i], "=")
-			if opt[0] == "codeset" {
+			switch opt[0] {
+			case "codeset":
 				codeset = opt[1]
-			} else if opt[0] == "mode" {
+			case "mode":
 				mode = opt[1]
-			} else {
+			default:
 				return false, fmt.Errorf("not a valid parameter")
 			}
 		}
@@ -93,7 +94,7 @@ func DropDb(dbname string, connStr string) (bool, error) {
 	trc.Trace1(fmt.Sprintf("dbname=%s, connStr=%s", dbname, connStr))
 
 	if dbname == "" {
-		return false, fmt.Errorf("Database name cannot be empty")
+		return false, fmt.Errorf("database name cannot be empty")
 	}
 	connStr = connStr + ";" + "ATTACH=true"
 	trc.Trace1("database.go: DropDb() - EXIT")

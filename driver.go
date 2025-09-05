@@ -3,17 +3,17 @@
 // license that can be found in the LICENSE file.
 
 // Package odbc implements database/sql driver to access data via odbc interface.
-//
 package go_ibm_db
 
 import (
 	"database/sql"
-	"fmt"
 	"flag"
+	"fmt"
 	"os"
+	"strings"
+
 	"github.com/ibmdb/go_ibm_db/api"
 	trc "github.com/ibmdb/go_ibm_db/log2"
-	"strings"
 )
 
 var drv Driver
@@ -24,7 +24,7 @@ type Driver struct {
 }
 
 func initDriver() error {
-        trc.Trace1("driver.go:InitDriver() - ENTRY")
+	trc.Trace1("driver.go:InitDriver() - ENTRY")
 
 	//Allocate environment handle
 	var out api.SQLHANDLE
@@ -44,12 +44,12 @@ func initDriver() error {
 		return NewError("SQLSetEnvAttr ODBC v3", drv.h)
 	}
 
-        trc.Trace1("driver.go:InitDriver() - EXIT")
+	trc.Trace1("driver.go:InitDriver() - EXIT")
 	return nil
 }
 
 func (d *Driver) Close() error {
-	 trc.Trace1("driver.go: Close() - ENTRY")
+	trc.Trace1("driver.go: Close() - ENTRY")
 
 	// TODO(brainman): who will call (*Driver).Close (to dispose all opened handles)?
 	h := d.h
@@ -62,10 +62,9 @@ func (d *Driver) Close() error {
 func init() {
 	var cmdStr string = ""
 
-	for e:=0; e<len(os.Args); e++ {
-	    cmdStr = cmdStr + os.Args[e]
+	for e := 0; e < len(os.Args); e++ {
+		cmdStr = cmdStr + os.Args[e]
 	}
-
 
 	if strings.Contains(cmdStr, "trace") {
 		wordPtr := flag.String("trace", "", "log/trace file name")
@@ -76,13 +75,12 @@ func init() {
 		trc.GetPath(*wordPtr, len(os.Args))
 	}
 
-
 	trc.Trace1("driver.go:init() - ENTRY")
 
 	// Recover from panic to avoid stop an application when can't get the db2 cli
 	defer func() {
-	    if err := recover(); err != nil {
-			fmt.Println(fmt.Sprintf("%s\nThe go_ibm_db driver cannot be registered", err))
+		if err := recover(); err != nil {
+			fmt.Printf("%s\nThe go_ibm_db driver cannot be registered\n", err)
 		}
 	}()
 
@@ -93,5 +91,5 @@ func init() {
 	//go's to databse/sql/sql.go 43 line
 	sql.Register("go_ibm_db", &drv)
 
-        trc.Trace1("driver.go:init() - EXIT")
+	trc.Trace1("driver.go:init() - EXIT")
 }

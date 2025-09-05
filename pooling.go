@@ -5,32 +5,34 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 	"sync"
+	"time"
+
 	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
-//DBP struct type contains the timeout, dbinstance and connection string
+// DBP struct type contains the timeout, dbinstance and connection string
 type DBP struct {
 	sql.DB
 	con string
 	n   time.Duration
 }
 
-//Pool struct contais the about the pool like size, used and available connections
+// Pool struct contais the about the pool like size, used and available connections
 type Pool struct {
 	availablePool map[string][]*DBP
 	usedPool      map[string][]*DBP
 	poolSize      int
-        mu            sync.Mutex
+	mu            sync.Mutex
 }
 
 var b *Pool
-var connMaxLifetime, poolSize int
+var connMaxLifetime int
+
 const defaultMaxIdleConns = 2
 const defaultConnMaxLifetime = 60
 
-//Pconnect will return the pool instance
+// Pconnect will return the pool instance
 func Pconnect(poolSize string) *Pool {
 	trc.Trace1("pooling.go: Pconnect() - ENTRY")
 	trc.Trace1(fmt.Sprintf("poolSize=%s", poolSize))
@@ -61,14 +63,14 @@ func Pconnect(poolSize string) *Pool {
 	return p
 }
 
-//Psize sets the size of the pool idf value is passed
+// Psize sets the size of the pool idf value is passed
 var pSize int
 
-//Open will check for the connection in the pool
-//If not opens a new connection and stores in the pool
+// Open will check for the connection in the pool
+// If not opens a new connection and stores in the pool
 func (p *Pool) Open(connStr string, options ...string) *DBP {
 	trc.Trace1("pooling.go: Open() - ENTRY")
-	trc.Trace1(fmt.Sprintf("connStr=%s",connStr))
+	trc.Trace1(fmt.Sprintf("connStr=%s", connStr))
 
 	var Time time.Duration
 	count := len(options)
@@ -127,7 +129,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 			p.mu.Unlock()
 			return dbi
 		}
-        } else {
+	} else {
 		pSize = pSize + 1
 
 		for i := 0; i < connMaxLifetime; i++ {
@@ -148,7 +150,7 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 						p.mu.Unlock()
 						return dbpo
 					} else {
-						dbpo :=  val[0]
+						dbpo := val[0]
 						return dbpo
 					}
 				}
@@ -159,17 +161,15 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 		trc.Trace1("pooling.go: Open() - EXIT")
 		return nil
 	}
-	trc.Trace1("pooling.go: Open() - EXIT")
-	return nil
 }
 
-func (p *Pool) Init(numConn int, connStr string) bool{
+func (p *Pool) Init(numConn int, connStr string) bool {
 	trc.Trace1("pooling.go: Init() - ENTRY")
 	trc.Trace1(fmt.Sprintf("numConn=%d, connStr=%s", numConn, connStr))
 
 	var Time time.Duration
 
-	if  connMaxLifetime  <= 0 {
+	if connMaxLifetime <= 0 {
 		Time = time.Duration(defaultConnMaxLifetime) * time.Second
 	} else {
 		Time = time.Duration(connMaxLifetime) * time.Second
@@ -178,7 +178,7 @@ func (p *Pool) Init(numConn int, connStr string) bool{
 	for i := 0; i < numConn; i++ {
 		db, err := sql.Open("go_ibm_db", connStr)
 		if err != nil {
-		    trc.Trace1("pooling.go: Init() - return false")
+			trc.Trace1("pooling.go: Init() - return false")
 			return false
 		}
 		dbi := &DBP{
@@ -195,14 +195,14 @@ func (p *Pool) Init(numConn int, connStr string) bool{
 	return true
 }
 
-//Close will make the connection available for the next release
+// Close will make the connection available for the next release
 func (d *DBP) Close() {
 	trc.Trace1("pooling.go: Close() - ENTRY")
 
 	pSize = pSize - 1
 	var pos int
 	i := -1
-        b.mu.Lock()
+	b.mu.Lock()
 	if valc, okc := b.usedPool[d.con]; okc {
 		if len(valc) > 1 {
 			for _, b := range valc {
@@ -226,11 +226,11 @@ func (d *DBP) Close() {
 	} else {
 		d.DB.Close()
 	}
-        b.mu.Unlock()
+	b.mu.Unlock()
 	trc.Trace1("pooling.go: Close() - EXIT")
 }
 
-//Timeout for closing the connection in pool
+// Timeout for closing the connection in pool
 func (d *DBP) Timeout() {
 	trc.Trace1("pooling.go: Timeout() - ENTRY")
 
@@ -238,7 +238,7 @@ func (d *DBP) Timeout() {
 	i := -1
 	select {
 	case <-time.After(d.n):
-                b.mu.Lock()
+		b.mu.Lock()
 		if valt, okt := b.availablePool[d.con]; okt {
 			if len(valt) > 1 {
 				for _, b := range valt {
@@ -259,12 +259,12 @@ func (d *DBP) Timeout() {
 				delete(b.availablePool, d.con)
 			}
 		}
-                b.mu.Unlock()
+		b.mu.Unlock()
 	}
 	trc.Trace1("pooling.go: Timeout() - EXIT")
 }
 
-//Release will close all the connections in the pool
+// Release will close all the connections in the pool
 func (p *Pool) Release() {
 	trc.Trace1("pooling.go: Release() - ENTRY")
 
@@ -287,7 +287,7 @@ func (p *Pool) Release() {
 	trc.Trace1("pooling.go: Release() - EXIT")
 }
 
-//Set the connMaxLifetime
+// Set the connMaxLifetime
 func (p *Pool) SetConnMaxLifetime(num int) {
 	trc.Trace1("pooling.go: SetConnMaxLifetime()")
 	trc.Trace1(fmt.Sprintf("connMaxLifetime=%d", num))

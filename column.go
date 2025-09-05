@@ -5,13 +5,13 @@
 package go_ibm_db
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
 	"time"
 	"unsafe"
-        "bytes"
 
 	"github.com/ibmdb/go_ibm_db/api"
 	trc "github.com/ibmdb/go_ibm_db/log2"
@@ -68,8 +68,6 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 	return int(l), sqltype, size, ret
 }
 
-// TODO(brainman): did not check for MS SQL timestamp
-
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	trc.Trace1("column.go: NewColumn() - ENTRY")
 
@@ -85,7 +83,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	}
 	if namelen > len(namebuf) {
 		// still complaining about buffer size
-		return nil, errors.New("Failed to allocate column name buffer")
+		return nil, errors.New("failed to allocate column name buffer")
 	}
 	b := &BaseColumn{
 		name:  api.UTF16ToString(namebuf[:namelen]),
@@ -131,7 +129,6 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	default:
 		return nil, fmt.Errorf("unsupported column type %d", sqltype)
 	}
-	panic("unreachable")
 }
 
 // BaseColumn implements common column functionality.
@@ -170,7 +167,6 @@ func (c *BaseColumn) TypeScan() reflect.Type {
 	default:
 		return reflect.TypeOf(new(interface{}))
 	}
-	return reflect.TypeOf(new(interface{}))
 }
 
 func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
@@ -191,7 +187,7 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		return *((*float64)(p)), nil
 	case api.SQL_C_CHAR:
 		if c.SType == api.SQL_DECIMAL {
-			    return bytes.Replace(buf, []byte(","), []byte("."), 1), nil
+			return bytes.Replace(buf, []byte(","), []byte("."), 1), nil
 		}
 		return buf, nil
 	case api.SQL_C_WCHAR:
@@ -279,8 +275,8 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 		if b.SType == api.SQL_DECIMAL {
 			l = l + 4 // adding 4 as decimal has '.' which takes 1 byte
 		} else {
-			l++     // room for null-termination character
-			l *= 2  //chars take 2 bytes each
+			l++    // room for null-termination character
+			l *= 2 //chars take 2 bytes each
 		}
 	case api.SQL_C_BINARY:
 		// nothing to do
@@ -328,7 +324,7 @@ func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
 	if len(c.Buffer) < bufferLen {
 		bufferLen = len(c.Buffer)
 	}
-    trc.Trace1("column.go: Value() - EXIT")
+	trc.Trace1("column.go: Value() - EXIT")
 	return c.BaseColumn.Value(c.Buffer[:bufferLen])
 }
 

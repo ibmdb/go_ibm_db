@@ -155,7 +155,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 					ArrayCheck = 1
 				} else {
 					ArrayCheck = 0
-					return fmt.Errorf("Parameter's array value length should be same")
+					return fmt.Errorf("parameter's array value length should be same")
 				}
 			case []string:
 				if len(d) == ArrayLength {
@@ -163,7 +163,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 					ArrayCheck = 1
 				} else {
 					ArrayCheck = 0
-					return fmt.Errorf("Parameter's array value length should be same")
+					return fmt.Errorf("parameter's array value length should be same")
 				}
 			case []bool:
 				if len(d) == ArrayLength {
@@ -171,7 +171,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 					ArrayCheck = 1
 				} else {
 					ArrayCheck = 0
-					return fmt.Errorf("Parameter's array value length should be same")
+					return fmt.Errorf("parameter's array value length should be same")
 				}
 			case []float64:
 				if len(d) == ArrayLength {
@@ -179,7 +179,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 					ArrayCheck = 1
 				} else {
 					ArrayCheck = 0
-					return fmt.Errorf("Parameter's array value length should be same")
+					return fmt.Errorf("parameter's array value length should be same")
 				}
 			case []time.Time:
 				if len(d) == ArrayLength {
@@ -187,7 +187,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 					ArrayCheck = 1
 				} else {
 					ArrayCheck = 0
-					return fmt.Errorf("Parameter's array value length should be same")
+					return fmt.Errorf("parameter's array value length should be same")
 				}
 			}
 		}

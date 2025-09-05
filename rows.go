@@ -34,35 +34,36 @@ func (r *Rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok b
 	trc.Trace1("rows.go: ColumnTypePrecisionScale() - ENTRY")
 	trc.Trace1(fmt.Sprintf("index=%d", index))
 
-	ok = false;
+	ok = false
 	var namelen api.SQLSMALLINT
 	namebuf := make([]byte, api.MAX_FIELD_SIZE)
 	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_TYPE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), (api.SQLPOINTER)(unsafe.Pointer(nil)))
 
 	if IsError(ret) {
 		fmt.Println(ret)
-		trc.Trace1(fmt.Sprintf("Error: %s",ret))
+		trc.Trace1(fmt.Sprintf("Error: %d", ret))
 		return 0, 0, false
 	}
 	dbtype := string(namebuf[:namelen])
 	ret = api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_PRECISION, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), (api.SQLPOINTER)(unsafe.Pointer(&precision)))
 	if IsError(ret) {
 		fmt.Println(ret)
-		trc.Trace1(fmt.Sprintf("Error: %s",ret))
+		trc.Trace1(fmt.Sprintf("Error: %d", ret))
 		return 0, 0, false
 	}
 	ret = api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_SCALE, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), (api.SQLPOINTER)(unsafe.Pointer(&scale)))
 	if IsError(ret) {
 		fmt.Println(ret)
-		trc.Trace1(fmt.Sprintf("Error: %s",ret))
+		trc.Trace1(fmt.Sprintf("Error: %d", ret))
 		return 0, 0, false
 	}
-	if dbtype == "DECIMAL" {
-		ok = true;
-	} else if dbtype == "NUMERIC" {
-		ok = true;
-	} else if dbtype == "TIMESTAMP" {
-		ok = true;
+	switch dbtype {
+	case "DECIMAL":
+		ok = true
+	case "NUMERIC":
+		ok = true
+	case "TIMESTAMP":
+		ok = true
 	}
 
 	trc.Trace1(fmt.Sprintf("precision=%d, scale=%d", precision, scale))

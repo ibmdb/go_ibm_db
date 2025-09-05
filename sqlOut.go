@@ -77,7 +77,7 @@ func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
 			data = make([]byte, (parameterSize*2)+2)
 			if len(b) > len(data) {
 				return nil,
-					fmt.Errorf("At param. index %d INOUT string size is greater than the allocated OUT buffer size", idx+1)
+					fmt.Errorf("parameterSize:index %d INOUT string size is greater than the allocated OUT buffer size", idx+1)
 			}
 			copy(data, b)
 			buflen = api.SQLLEN(len(data))
@@ -136,7 +136,7 @@ func newOut(hstmt api.SQLHSTMT, sqlOut *sql.Out, idx int) (*Out, error) {
 		if IsError(ret) {
 			return nil, NewError("SQLDescribeParam", hstmt)
 		}
-		data = make([]byte, parameterSize + 1)
+		data = make([]byte, parameterSize+1)
 		ctype = SqltoCtype(sqltype)
 		buflen = api.SQLLEN(len(data))
 		plen = &buflen
@@ -227,12 +227,12 @@ func (o *Out) ConvertAssign() error {
 	}
 
 	if o.sqlOut.Dest == nil {
-		return fmt.Errorf("Dest is nil at OUT param index %d", o.idx)
+		return fmt.Errorf("variable Dest is nil at OUT param index %d", o.idx)
 	}
 
 	destInfo := reflect.ValueOf(o.sqlOut.Dest)
 	if destInfo.Kind() != reflect.Ptr {
-		return fmt.Errorf("Dest at OUT param index %d is not a pointer", o.idx)
+		return fmt.Errorf("variable Dest at OUT param index %d is not a pointer", o.idx)
 	}
 
 	dv, err := o.Value()
