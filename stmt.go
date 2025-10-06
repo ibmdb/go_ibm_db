@@ -26,7 +26,7 @@ type Stmt struct {
 func (c *Conn) Prepare( query string) (driver.Stmt, error) {
 	trc.Trace1("stmt.go: Prepare()")
 	trc.Trace1(fmt.Sprintf("query=%s", query))
-	
+
     return c.PrepareContext(context.Background(), query)
 }
 
@@ -34,24 +34,24 @@ func (c *Conn) Prepare( query string) (driver.Stmt, error) {
 func (c *Conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	trc.Trace1("stmt.go: PrepareContext() - ENTRY")
 	trc.Trace1(fmt.Sprintf("query=%s", query))
-	
+
 	os, err := c.PrepareODBCStmt(query)
 	if err != nil {
 		return nil, err
 	}
 
-    select {
-    default:
-    case <-ctx.Done():
-         return nil, ctx.Err()
-    }
-    trc.Trace1("stmt.go: PrepareContext() - EXIT")
+        select {
+        default:
+        case <-ctx.Done():
+             return nil, ctx.Err()
+        }
+        trc.Trace1("stmt.go: PrepareContext() - EXIT")
 	return &Stmt{c: c, os: os, query: query}, nil
 }
 
 func (s *Stmt) NumInput() int {
 	trc.Trace1("stmt.go: NumInput()")
-	
+
 	if s.os == nil {
 		return -1
 	}
@@ -60,29 +60,29 @@ func (s *Stmt) NumInput() int {
 
 // Close closes the opened statement
 func (s *Stmt) Close() error {
-    trc.Trace1("stmt.go: Close() - ENTRY")
-	 
+        trc.Trace1("stmt.go: Close() - ENTRY")
+
 	if s.os == nil {
 		return errors.New("Stmt is already closed")
 	}
 	ret := s.os.closeByStmt()
 	s.os = nil
-	
+
 	trc.Trace1("stmt.go: Close() - EXIT")
 	return ret
 }
 
 // Exec executes the the sql but does not return the rows
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
-	trc.Trace1("stmt.go: Exec()")
-	
-    return s.exec(context.Background(), args)
+        trc.Trace1("stmt.go: Exec()")
+
+        return s.exec(context.Background(), args)
 }
 
 // ExecContext implements driver.StmtExecContext interface
 func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
 	trc.Trace1("stmt.go: ExecContext()")
-	
+
 	dargs := make([]driver.Value, len(args))
 	for n, param := range args {
 		dargs[n] = param.Value
@@ -92,7 +92,7 @@ func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (drive
 }
 func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, error) {
 	 trc.Trace1("stmt.go: exec()- ENTRY")
-	 
+
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
 	}
@@ -132,7 +132,7 @@ func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, er
     }
 
      trc.Trace1("stmt.go: exec()- EXIT")
-	return &Result{rowCount: sumRowCount}, nil
+	return &Result{s.c, sumRowCount}, nil
 }
 
 // Query function executes the sql and return rows if rows are present
