@@ -23,6 +23,7 @@
 12.	[.Scan(options)](#ScanApi)
 13.	[.Init(N,connStr)](#InitApi)
 14.	[.SetConnMaxLifetime(N)](#SetConnMaxLifetimeApi)
+15.	[.LastInsertId()](#LastInsertIdApi)
 
 ### <a name="OpenApi"></a> 1) .Open(drivername,ConnectionString)
 
@@ -491,4 +492,46 @@ func main() {
 		fmt.Println("Database dropped successfully.")
 	}
 }
+```
+
+### <a name="LastInsertId"></a> 15) .LastInsertId()
+
+Returns the identifier for the row most recently inserted into a table in the database.
+
+```go
+package main
+
+import (
+        "database/sql"
+        "fmt"
+        "github.com/ibmdb/go_ibm_db"
+)
+
+func main() {
+        var conStr = "HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=password"
+        db, err1 := sql.Open("go_ibm_db", dsn)
+
+        if err1 != nil {
+            fmt.Println("Database connection failed:", err1)
+        }
+        defer db.Close()
+
+        db.Exec("Drop table users")
+        _, err2 := db.Exec("create table users(id integer generated always as identity(start with 1,increment by 1) not null, name varchar(30),Primary key(id))")
+        if err2 != nil {
+                fmt.Println("Exec error: ", err2)
+        }
+
+        sys, err3 := db.Exec("INSERT INTO users(name) VALUES('Name1') ")
+        if err3 != nil {
+            fmt.Println(err3)
+        }
+
+       lastId, err4 := sys.LastInsertId()
+       if err4 != nil {
+        fmt.Println(err4)
+    }
+      fmt.Println("LastInsertId: ", lastId)
+}
+
 ```
