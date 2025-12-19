@@ -17,11 +17,13 @@ func GetPath(filename string) {
 	//fmt.Println("filename = ", filename)
 	//fmt.Println("Args Length = ", argsLen)
 
-	if _, err := os.Stat(filename); err == nil {
-		//fmt.Println("File exits\n")
-		e := os.Remove(filename)
-		if e != nil {
-			fmt.Println("Problem in removing existing log file")
+	if filename != "" && filename != "stdout" {
+		if _, err := os.Stat(filename); err == nil {
+			//fmt.Println("File exits\n")
+			e := os.Remove(filename)
+			if e != nil {
+				fmt.Println("Problem in removing existing log file")
+			}
 		}
 	}
 
