@@ -7,7 +7,6 @@ package go_ibm_db
 
 import (
 	"database/sql"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -60,19 +59,14 @@ func (d *Driver) Close() error {
 }
 
 func init() {
-	var cmdStr string = ""
+	trc.GetPath(os.Getenv("GO_IBM_DB2_TRACE"))
 
+	var cmdStr string = ""
 	for e := 0; e < len(os.Args); e++ {
 		cmdStr = cmdStr + os.Args[e]
 	}
-
 	if strings.Contains(cmdStr, "trace") {
-		wordPtr := flag.String("trace", "", "log/trace file name")
-
-		if len(os.Args) > 2 {
-			flag.Parse()
-		}
-		trc.GetPath(*wordPtr, len(os.Args))
+		fmt.Println("Warning: The trace flag is deprecated. Please use the GO_IBM_DB2_TRACE environment variable instead.")
 	}
 
 	trc.Trace1("driver.go:init() - ENTRY")
