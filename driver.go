@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/ibmdb/go_ibm_db/api"
 	trc "github.com/ibmdb/go_ibm_db/log2"
@@ -59,15 +58,7 @@ func (d *Driver) Close() error {
 }
 
 func init() {
-	trc.GetPath(os.Getenv("GO_IBM_DB2_TRACE"))
-
-	var cmdStr string = ""
-	for e := 0; e < len(os.Args); e++ {
-		cmdStr = cmdStr + os.Args[e]
-	}
-	if strings.Contains(cmdStr, "trace") {
-		fmt.Println("Warning: The trace flag is deprecated. Please use the GO_IBM_DB2_TRACE environment variable instead.")
-	}
+	trc.GetPath(os.Getenv("GO_IBMDB_TRACE"))
 
 	trc.Trace1("driver.go:init() - ENTRY")
 

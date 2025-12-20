@@ -610,9 +610,11 @@ connStr = "DATABASE=database;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=dbus
 
 ```
 # Log on console:
-go run sample.go -trace
+export GO_IBMDB_TRACE=stdout
+go run sample.go
 
 # Log to a file (e.g., log.txt)
-go run sample.go -trace log.txt
+export GO_IBMDB_TRACE=log.txt
+go run sample.go
 
 ```
