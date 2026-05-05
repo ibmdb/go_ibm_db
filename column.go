@@ -104,6 +104,9 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_TYPE_TIMESTAMP:
 		var v api.SQL_TIMESTAMP_STRUCT
 		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP, int(unsafe.Sizeof(v))), nil
+	case api.SQL_TYPE_TIMESTAMP_WITH_TIMEZONE:
+		var v api.SQL_TIMESTAMP_STRUCT_EXT_TZ
+		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP_EXT_TZ, int(unsafe.Sizeof(v))), nil
 	case api.SQL_TYPE_DATE:
 		var v api.SQL_DATE_STRUCT
 		return NewBindableColumn(b, api.SQL_C_TYPE_DATE, int(unsafe.Sizeof(v))), nil
@@ -160,7 +163,7 @@ func (c *BaseColumn) TypeScan() reflect.Type {
 			return reflect.TypeOf(float64(0.0))
 		}
 		return reflect.TypeOf(string(""))
-	case api.SQL_C_TYPE_DATE, api.SQL_C_TYPE_TIME, api.SQL_C_TYPE_TIMESTAMP:
+	case api.SQL_C_TYPE_DATE, api.SQL_C_TYPE_TIME, api.SQL_C_TYPE_TIMESTAMP, api.SQL_C_TYPE_TIMESTAMP_EXT_TZ:
 		return reflect.TypeOf(time.Time{})
 	case api.SQL_C_BINARY:
 		return reflect.TypeOf([]byte(nil))
@@ -207,6 +210,13 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
 			time.UTC)
+		return r, nil
+	case api.SQL_C_TYPE_TIMESTAMP_EXT_TZ:
+		t := (*api.SQL_TIMESTAMP_STRUCT_EXT_TZ)(p)
+		offset := int(t.TimezoneHour)*3600 + int(t.TimezoneMinute)*60
+		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
+			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
+			time.FixedZone("", offset))
 		return r, nil
 	case api.SQL_C_TYPE_DATE:
 		t := (*api.SQL_DATE_STRUCT)(p)

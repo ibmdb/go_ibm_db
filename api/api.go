@@ -28,6 +28,18 @@ type (
 		Second   SQLUSMALLINT
 		Fraction SQLUINTEGER
 	}
+	SQL_TIMESTAMP_STRUCT_EXT_TZ struct {
+		Year           SQLSMALLINT
+		Month          SQLUSMALLINT
+		Day            SQLUSMALLINT
+		Hour           SQLUSMALLINT
+		Minute         SQLUSMALLINT
+		Second         SQLUSMALLINT
+		Fraction       SQLUINTEGER
+		Fraction2      SQLUINTEGER
+		TimezoneHour   SQLSMALLINT
+		TimezoneMinute SQLSMALLINT
+	}
 	SQL_TIME_STRUCT struct {
 		Hour   SQLUSMALLINT
 		Minute SQLUSMALLINT
