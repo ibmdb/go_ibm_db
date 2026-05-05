@@ -4,11 +4,11 @@
 package api
 
 import (
+	"fmt"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 	"os"
 	"syscall"
 	"unsafe"
-	trc "github.com/ibmdb/go_ibm_db/log2"
-	"fmt"
 )
 
 var (
@@ -41,7 +41,7 @@ var (
 	procSQLSetStmtAttr     = mododbc32.NewProc("SQLSetStmtAttr")
 	procSQLSetStmtAttrW    = mododbc32.NewProc("SQLSetStmtAttrW")
 	procSQLGetStmtAttr     = mododbc32.NewProc("SQLGetStmtAttr")
-	procSQLSetPos	       = mododbc32.NewProc("SQLSetPos")
+	procSQLSetPos          = mododbc32.NewProc("SQLSetPos")
 	procSQLBulkOperations  = mododbc32.NewProc("SQLBulkOperations")
 	procSQLCreateDb        = mododbc32.NewProc("SQLCreateDbW")
 	procSQLDropDb          = mododbc32.NewProc("SQLDropDbW")
@@ -50,10 +50,10 @@ var (
 func GetDllName() string {
 	trc.Trace1("api/zapi_windows.go GetDllName()")
 	if winArch := os.Getenv("PROCESSOR_ARCHITECTURE"); winArch == "x86" {
-	    trc.Trace1("winArch is x86 and db2cli.dll")
+		trc.Trace1("winArch is x86 and db2cli.dll")
 		return "db2cli.dll"
 	} else {
-	    trc.Trace1("db2cli64.dll")
+		trc.Trace1("db2cli64.dll")
 		return "db2cli64.dll"
 	}
 }
@@ -187,7 +187,7 @@ func SQLFetch(statementHandle SQLHSTMT) (ret SQLRETURN) {
 }
 
 func SQLFetchScroll(statementHandle SQLHSTMT, fetchOrientation SQLUSMALLINT, fetchOffset SQLLEN) (ret SQLRETURN) {
-        trc.Trace1("api/zapi_windows.go SQLFetchScroll() - ENTRY")
+	trc.Trace1("api/zapi_windows.go SQLFetchScroll() - ENTRY")
 	trc.Trace1(fmt.Sprintf("fetchOrientation=%d, fetchOffset=%d", fetchOrientation, fetchOffset))
 
 	r0, _, _ := syscall.Syscall(procSQLFetch.Addr(), 3, uintptr(statementHandle), uintptr(fetchOrientation), uintptr(fetchOffset))
@@ -200,7 +200,7 @@ func SQLFetchScroll(statementHandle SQLHSTMT, fetchOrientation SQLUSMALLINT, fet
 
 func SQLFreeHandle(handleType SQLSMALLINT, handle SQLHANDLE) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLFreeHandle() - ENTRY")
-	trc.Trace1(fmt.Sprintf("handleType=%d",  handleType))
+	trc.Trace1(fmt.Sprintf("handleType=%d", handleType))
 
 	r0, _, _ := syscall.Syscall(procSQLFreeHandle.Addr(), 2, uintptr(handleType), uintptr(handle), 0)
 	ret = SQLRETURN(r0)
@@ -342,7 +342,7 @@ func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQL
 }
 
 func SQLGetStmtAttr(environmentHandle SQLHSTMT, attribute SQLINTEGER, targetValuePtr []byte, stringLength SQLINTEGER) (ret SQLRETURN) {
-        trc.Trace1("api/zapi_windows.go SQLGetStmtAttr() - ENTRY")
+	trc.Trace1("api/zapi_windows.go SQLGetStmtAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, stringLength=%d", attribute, stringLength))
 
 	r0, _, _ := syscall.Syscall6(procSQLGetStmtAttr.Addr(), 4, uintptr(environmentHandle), uintptr(attribute), uintptr(unsafe.Pointer(&targetValuePtr[0])), uintptr(stringLength), 0, 0)

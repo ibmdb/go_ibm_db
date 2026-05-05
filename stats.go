@@ -33,7 +33,7 @@ func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) {
 	case api.SQL_HANDLE_STMT:
 		s.StmtCount += change
 	default:
-	    trc.Trace1(fmt.Sprintf("unexpected handle type %d", handleType))
+		trc.Trace1(fmt.Sprintf("unexpected handle type %d", handleType))
 		panic(fmt.Errorf("unexpected handle type %d", handleType))
 	}
 

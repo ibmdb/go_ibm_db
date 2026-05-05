@@ -5,9 +5,9 @@
 package api
 
 import (
-	"syscall"
-	trc "github.com/ibmdb/go_ibm_db/log2"
 	"fmt"
+	trc "github.com/ibmdb/go_ibm_db/log2"
+	"syscall"
 )
 
 const (
@@ -113,35 +113,35 @@ const (
 	SQL_AUTOCOMMIT_DEFAULT = SQL_AUTOCOMMIT_ON
 	SQL_ATTR_PARAMSET_SIZE = 22
 	//  Statement attributes
-	SQL_ROW_NUMBER	       = 14
+	SQL_ROW_NUMBER = 14
 
 	//	Statement attributes for ODBC 3.0
-	SQL_ATTR_CURSOR_TYPE		= 6
+	SQL_ATTR_CURSOR_TYPE = 6
 	//SQL_ATTR_PARAMSET_SIZE 		= 22
-	SQL_ATTR_ROW_NUMBER		= SQL_ROW_NUMBER
-	SQL_ATTR_ROW_ARRAY_SIZE		= 27
-	SQL_ATTR_ROW_STATUS_PTR		= 25
-	SQL_ATTR_ROWS_FETCHED_PTR	= 26
+	SQL_ATTR_ROW_NUMBER       = SQL_ROW_NUMBER
+	SQL_ATTR_ROW_ARRAY_SIZE   = 27
+	SQL_ATTR_ROW_STATUS_PTR   = 25
+	SQL_ATTR_ROWS_FETCHED_PTR = 26
 
 	// SQL_CURSOR_TYPE options
-	SQL_CURSOR_FORWARD_ONLY	 = 0
+	SQL_CURSOR_FORWARD_ONLY  = 0
 	SQL_CURSOR_KEYSET_DRIVEN = 1
-	SQL_CURSOR_DYNAMIC	 = 2
-	SQL_CURSOR_STATIC	 = 3
+	SQL_CURSOR_DYNAMIC       = 2
+	SQL_CURSOR_STATIC        = 3
 	SQL_CURSOR_TYPE_DEFAULT  = SQL_CURSOR_FORWARD_ONLY
 
 	// Operations in SQLSetPos
-	SQL_POSITION	= 0
-	SQL_REFRESH	= 1
-	SQL_UPDATE	= 2
-	SQL_DELETE	= 3
+	SQL_POSITION = 0
+	SQL_REFRESH  = 1
+	SQL_UPDATE   = 2
+	SQL_DELETE   = 3
 
 	// Operations in SQLBulkOperations
-	SQL_ADD				= 4
-	SQL_SETPOS_MAX_OPTION_VALUE	= SQL_ADD
-	SQL_UPDATE_BY_BOOKMARK		= 5    // Check if to be removed
-	SQL_DELETE_BY_BOOKMARK		= 6
-	SQL_FETCH_BY_BOOKMARK		= 7
+	SQL_ADD                     = 4
+	SQL_SETPOS_MAX_OPTION_VALUE = SQL_ADD
+	SQL_UPDATE_BY_BOOKMARK      = 5 // Check if to be removed
+	SQL_DELETE_BY_BOOKMARK      = 6
+	SQL_FETCH_BY_BOOKMARK       = 7
 
 	//	Lock options in SQLSetPos
 	SQL_LOCK_NO_CHANGE = 0
@@ -149,13 +149,13 @@ const (
 	SQL_IS_UINTEGER = -5
 	SQL_IS_INTEGER  = -6
 
-	// Fetch Orientation in SQLFetchScroll 
-	SQL_FETCH_NEXT		= 1
-	SQL_FETCH_FIRST		= 2
-	SQL_FETCH_LAST		= 3
-	SQL_FETCH_PRIOR		= 4
-	SQL_FETCH_ABSOLUTE	= 5
-	SQL_FETCH_RELATIVE	= 6
+	// Fetch Orientation in SQLFetchScroll
+	SQL_FETCH_NEXT     = 1
+	SQL_FETCH_FIRST    = 2
+	SQL_FETCH_LAST     = 3
+	SQL_FETCH_PRIOR    = 4
+	SQL_FETCH_ABSOLUTE = 5
+	SQL_FETCH_RELATIVE = 6
 
 	//Connection pooling
 	SQL_ATTR_CONNECTION_POOLING = 201

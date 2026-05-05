@@ -5,11 +5,11 @@
 package api
 
 import (
+	"fmt"
+	trc "github.com/ibmdb/go_ibm_db/log2"
+	"runtime"
 	"unicode/utf16"
 	"unsafe"
-	"runtime"
-	trc "github.com/ibmdb/go_ibm_db/log2"
-	"fmt"
 )
 
 type (
@@ -72,18 +72,17 @@ func UTF16ToString(s []uint16) string {
 
 // StringToUTF16 returns the UTF-16 encoding of the UTF-8 string s,
 // with a terminating NUL added.
-//func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")) }
+// func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")) }
 func StringToUTF16(s string) []uint16 {
 	trc.Trace1("api/api.go StringToUTF16()")
 	trc.Trace1(fmt.Sprintf("api/api.go StringToUTF16() - s = %s", s))
 
-	if runtime.GOOS == "zos"{
+	if runtime.GOOS == "zos" {
 		return utf16.Encode([]rune(s))
-	}else {
+	} else {
 		return utf16.Encode([]rune(s + "\u0000"))
-		}
+	}
 }
-
 
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.

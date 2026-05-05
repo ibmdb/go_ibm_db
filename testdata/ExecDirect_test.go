@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestExecDirect(t *testing.T) {
@@ -11,16 +11,15 @@ func TestExecDirect(t *testing.T) {
 	}
 }
 
-//ExecDirect will execute the query without prepare
+// ExecDirect will execute the query without prepare
 func ExecDirect() error {
-        db := Createconnection()
-        defer db.Close()
+	db := Createconnection()
+	defer db.Close()
 
-        _, err := db.Query("select * from rocket")
-        if err != nil {
-                fmt.Println("Query error: ", err)
-                return err
-        }
-        return nil
+	_, err := db.Query("select * from rocket")
+	if err != nil {
+		fmt.Println("Query error: ", err)
+		return err
+	}
+	return nil
 }
-

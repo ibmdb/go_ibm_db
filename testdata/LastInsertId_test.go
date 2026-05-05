@@ -29,11 +29,11 @@ func LastInsertId() error {
 		return err
 	}
 	lastId, err := sys.LastInsertId()
-        if err != nil {
+	if err != nil {
 		fmt.Println(" Last insert id error: ", err)
-                return(err)
-        }
-        fmt.Println("LastInsertId: ", lastId)
+		return (err)
+	}
+	fmt.Println("LastInsertId: ", lastId)
 
 	return nil
 }

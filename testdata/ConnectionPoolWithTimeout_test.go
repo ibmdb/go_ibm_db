@@ -1,12 +1,11 @@
 package main
 
 import (
-    "testing"
+	"testing"
 )
 
-func TestConnectionPoolWithTimeout(t *testing.T){
-    if(ConnectionPoolWithTimeout() == 0){
-        t.Error("Error in Connection pool with timeout")
-    }
+func TestConnectionPoolWithTimeout(t *testing.T) {
+	if ConnectionPoolWithTimeout() == 0 {
+		t.Error("Error in Connection pool with timeout")
+	}
 }
-

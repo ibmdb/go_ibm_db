@@ -5,6 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build (aix || darwin || linux) && cgo
 // +build aix darwin linux
 // +build cgo
 
@@ -12,8 +13,8 @@ package api
 
 import (
 	"fmt"
-	"unsafe"
 	trc "github.com/ibmdb/go_ibm_db/log2"
+	"unsafe"
 )
 
 // #cgo aix LDFLAGS: -ldb2
@@ -141,7 +142,7 @@ func SQLFetch(statementHandle SQLHSTMT) (ret SQLRETURN) {
 
 func SQLFreeHandle(handleType SQLSMALLINT, handle SQLHANDLE) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_unix.go SQLFreeHandle() - ENTRY")
-	trc.Trace1(fmt.Sprintf("handleType=%d",  handleType))
+	trc.Trace1(fmt.Sprintf("handleType=%d", handleType))
 
 	r := C.SQLFreeHandle(C.SQLSMALLINT(handleType), C.SQLHANDLE(handle))
 
@@ -230,7 +231,7 @@ func SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr 
 	trc.Trace1("api/zapi_unix.go SQLSetConnectAttr() - ENTRY")
 	trc.Trace1(fmt.Sprintf("attribute=%d, valuePtr=0x%x, stringLength=%d", attribute, valuePtr, stringLength))
 
-        r := C.SQLSetConnectAttrW(C.SQLHDBC(connectionHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
+	r := C.SQLSetConnectAttrW(C.SQLHDBC(connectionHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
 
 	trc.Trace1(fmt.Sprintf("r = %d", r))
 	trc.Trace1("api/zapi_unix.go SQLSetConnectAttr() - EXIT")
@@ -241,7 +242,7 @@ func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldI
 	trc.Trace1("api/zapi_unix.go SQLColAttribute() - ENTRY")
 	trc.Trace1(fmt.Sprintf("ColumnNumber=%d, FieldIdentifier=%d, CharacterAttributePtr=0x%x, BufferLength=%d, StringLengthPtr=0x%x, NumericAttributePtr=0x%x", ColumnNumber, FieldIdentifier, CharacterAttributePtr, BufferLength, StringLengthPtr, NumericAttributePtr))
 
-        r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(ColumnNumber), C.SQLUSMALLINT(FieldIdentifier), C.SQLPOINTER(CharacterAttributePtr), C.SQLSMALLINT(BufferLength),(*C.SQLSMALLINT)(unsafe.Pointer(StringLengthPtr)), (C.SQLPOINTER)(NumericAttributePtr))
+	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(ColumnNumber), C.SQLUSMALLINT(FieldIdentifier), C.SQLPOINTER(CharacterAttributePtr), C.SQLSMALLINT(BufferLength), (*C.SQLSMALLINT)(unsafe.Pointer(StringLengthPtr)), (C.SQLPOINTER)(NumericAttributePtr))
 
 	trc.Trace1(fmt.Sprintf("r = %d", r))
 	trc.Trace1("api/zapi_unix.go SQLColAttribute() - EXIT")

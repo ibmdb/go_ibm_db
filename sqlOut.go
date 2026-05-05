@@ -510,4 +510,3 @@ func asBytes(buf []byte, rv reflect.Value) (b []byte, ok bool) {
 	}
 	return
 }
-

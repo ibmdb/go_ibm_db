@@ -1,10 +1,11 @@
 package main
 
 import (
-    "testing"
+	"testing"
 )
-func TestPoolOpen(t *testing.T){
-    if(PoolOpen() == 0){
-        t.Error("pool connection not opened")
-    }
+
+func TestPoolOpen(t *testing.T) {
+	if PoolOpen() == 0 {
+		t.Error("pool connection not opened")
+	}
 }

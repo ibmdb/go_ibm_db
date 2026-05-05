@@ -7,12 +7,12 @@
 package api
 
 import (
+	"fmt"
+	trc "github.com/ibmdb/go_ibm_db/log2"
+	"github.com/ibmruntimes/go-recordio/v2/utils"
 	"log"
 	"runtime"
 	"unsafe"
-	"github.com/ibmruntimes/go-recordio/v2/utils"
-	trc "github.com/ibmdb/go_ibm_db/log2"
-	"fmt"
 )
 
 func getFunc(dll *utils.Dll, str string) uintptr {

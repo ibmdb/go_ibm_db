@@ -1,7 +1,7 @@
 package main
 
 import (
-        "testing"
+	"testing"
 )
 
 func TestBadConnectionString(t *testing.T) {
