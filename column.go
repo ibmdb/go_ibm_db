@@ -53,6 +53,7 @@ type Column interface {
 	TypeScan() reflect.Type
 	Bind(h api.SQLHSTMT, idx int) (bool, error)
 	Value(h api.SQLHSTMT, idx int) (driver.Value, error)
+	ValueRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error)
 }
 
 func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, ret api.SQLRETURN) {
@@ -68,7 +69,7 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 	return int(l), sqltype, size, ret
 }
 
-func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
+func NewColumn(h api.SQLHSTMT, idx int, fetchSize int) (Column, error) {
 	trc.Trace1("column.go: NewColumn() - ENTRY")
 
 	namebuf := make([]uint16, 150)
@@ -94,41 +95,41 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 
 	switch sqltype {
 	case api.SQL_BIT, api.SQL_BOOLEAN:
-		return NewBindableColumn(b, api.SQL_C_BIT, 1), nil
+		return NewBindableColumn(b, api.SQL_C_BIT, 1, fetchSize), nil
 	case api.SQL_TINYINT, api.SQL_SMALLINT, api.SQL_INTEGER:
-		return NewBindableColumn(b, api.SQL_C_LONG, 4), nil
+		return NewBindableColumn(b, api.SQL_C_LONG, 4, fetchSize), nil
 	case api.SQL_BIGINT:
-		return NewBindableColumn(b, api.SQL_C_SBIGINT, 8), nil
+		return NewBindableColumn(b, api.SQL_C_SBIGINT, 8, fetchSize), nil
 	case api.SQL_NUMERIC, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE:
-		return NewBindableColumn(b, api.SQL_C_DOUBLE, 8), nil
+		return NewBindableColumn(b, api.SQL_C_DOUBLE, 8, fetchSize), nil
 	case api.SQL_TYPE_TIMESTAMP:
 		var v api.SQL_TIMESTAMP_STRUCT
-		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP, int(unsafe.Sizeof(v))), nil
+		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP, int(unsafe.Sizeof(v)), fetchSize), nil
 	case api.SQL_TYPE_TIMESTAMP_WITH_TIMEZONE:
 		var v api.SQL_TIMESTAMP_STRUCT_EXT_TZ
-		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP_EXT_TZ, int(unsafe.Sizeof(v))), nil
+		return NewBindableColumn(b, api.SQL_C_TYPE_TIMESTAMP_EXT_TZ, int(unsafe.Sizeof(v)), fetchSize), nil
 	case api.SQL_TYPE_DATE:
 		var v api.SQL_DATE_STRUCT
-		return NewBindableColumn(b, api.SQL_C_TYPE_DATE, int(unsafe.Sizeof(v))), nil
+		return NewBindableColumn(b, api.SQL_C_TYPE_DATE, int(unsafe.Sizeof(v)), fetchSize), nil
 	case api.SQL_TYPE_TIME:
 		var v api.SQL_TIME_STRUCT
-		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v))), nil
+		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v)), fetchSize), nil
 	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_CLOB, api.SQL_DECFLOAT, api.SQL_DECIMAL:
-		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size, fetchSize), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
-		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size, fetchSize), nil
 	case api.SQL_BINARY, api.SQL_VARBINARY, api.SQL_BLOB:
-		return NewVariableWidthColumn(b, api.SQL_C_BINARY, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_BINARY, size, fetchSize), nil
 	case api.SQL_LONGVARCHAR:
-		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size, fetchSize), nil
 	case api.SQL_WLONGVARCHAR, api.SQL_SS_XML:
-		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size, fetchSize), nil
 	case api.SQL_LONGVARBINARY:
-		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0), nil
+		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0, fetchSize), nil
 	case api.SQL_DBCLOB:
-		return NewVariableWidthColumn(b, api.SQL_C_DBCHAR, size), nil
+		return NewVariableWidthColumn(b, api.SQL_C_DBCHAR, size, fetchSize), nil
 	case api.SQL_XML:
-		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 31457280), nil
+		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 31457280, fetchSize), nil
 	default:
 		return nil, fmt.Errorf("unsupported column type %d", sqltype)
 	}
@@ -248,28 +249,38 @@ type BindableColumn struct {
 	IsBound         bool
 	IsVariableWidth bool
 	Size            int
-	Len             BufferLen
+	fetchSize       int
+	Len             []BufferLen
 	Buffer          []byte
 	smallBuf        [8]byte // small inline memory buffer, so we do not need allocate external memory all the time
 }
 
-func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *BindableColumn {
+func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int, fetchSize int) *BindableColumn {
 	trc.Trace1("column.go: NewBindableColumn() - ENTRY")
-	trc.Trace1(fmt.Sprintf("bufSize = %d", bufSize))
+	trc.Trace1(fmt.Sprintf("bufSize = %d, fetchSize = %d", bufSize, fetchSize))
 
+	if fetchSize <= 0 {
+		fetchSize = 1
+	}
 	b.CType = ctype
-	c := &BindableColumn{BaseColumn: b, Size: bufSize}
-	if c.Size <= len(c.smallBuf) {
+	c := &BindableColumn{
+		BaseColumn: b,
+		Size:       bufSize,
+		fetchSize:  fetchSize,
+		Len:        make([]BufferLen, fetchSize),
+	}
+	totalBufSize := c.Size * c.fetchSize
+	if totalBufSize <= len(c.smallBuf) {
 		// use inline buffer
-		c.Buffer = c.smallBuf[:c.Size]
+		c.Buffer = c.smallBuf[:totalBufSize]
 	} else {
-		c.Buffer = make([]byte, c.Size)
+		c.Buffer = make([]byte, totalBufSize)
 	}
 	trc.Trace1("column.go: NewBindableColumn() - EXIT")
 	return c
 }
 
-func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.SQLULEN) Column {
+func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.SQLULEN, fetchSize int) Column {
 	trc.Trace1("column.go: NewVariableWidthColumn() - ENTRY")
 
 	if colWidth == 0 {
@@ -293,7 +304,7 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 	default:
 		panic(fmt.Errorf("do not know how wide column of ctype %d is", ctype))
 	}
-	c := NewBindableColumn(b, ctype, l)
+	c := NewBindableColumn(b, ctype, l, fetchSize)
 	c.IsVariableWidth = true
 	trc.Trace1("column.go: NewVariableWidthColumn() - EXIT")
 	return c
@@ -303,7 +314,16 @@ func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 	trc.Trace1("column.go: Bind() - ENTRY")
 	trc.Trace1(fmt.Sprintf("idx = %d", idx))
 
-	ret := c.Len.Bind(h, idx, c.CType, c.Buffer)
+	var ret api.SQLRETURN
+	if c.Size <= 2147483647 {
+		ret = api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), c.CType,
+			c.Buffer, api.SQLLEN(c.Size),
+			(*api.SQLLEN)(&c.Len[0]))
+	} else {
+		ret = api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), c.CType,
+			c.Buffer, api.SQLLEN(c.Size-1),
+			(*api.SQLLEN)(&c.Len[0]))
+	}
 	if IsError(ret) {
 		return false, NewError("SQLBindCol", h)
 	}
@@ -312,30 +332,44 @@ func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 	return true, nil
 }
 
-func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
-	trc.Trace1("column.go: Value() - ENTRY")
-	trc.Trace1(fmt.Sprintf("idx = %d", idx))
+func (c *BindableColumn) ValueRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error) {
+	trc.Trace1("column.go: ValueRow() - ENTRY")
+	trc.Trace1(fmt.Sprintf("idx = %d, row = %d", idx, row))
+
+	if row < 0 || row >= c.fetchSize {
+		return nil, fmt.Errorf("row index %d out of bounds (fetchSize %d)", row, c.fetchSize)
+	}
 
 	if !c.IsBound {
-		ret := c.Len.GetData(h, idx, c.CType, c.Buffer)
+		start := row * c.Size
+		end := start + c.Size
+		ret := c.Len[row].GetData(h, idx, c.CType, c.Buffer[start:end])
 		if IsError(ret) {
 			return nil, NewError("SQLGetData", h)
 		}
 	}
-	if c.Len.IsNull() {
+	if c.Len[row].IsNull() {
 		// is NULL
 		return nil, nil
 	}
-	if !c.IsVariableWidth && int(c.Len) != c.Size {
-		panic(fmt.Errorf("wrong column #%d length %d returned, %d expected", idx, c.Len, c.Size))
+	if !c.IsVariableWidth && int(c.Len[row]) != c.Size {
+		panic(fmt.Errorf("wrong column #%d length %d returned, %d expected", idx, c.Len[row], c.Size))
 	}
-	// check buffer len
-	bufferLen := int(c.Len)
-	if len(c.Buffer) < bufferLen {
-		bufferLen = len(c.Buffer)
+	start := row * c.Size
+	bufferLen := int(c.Len[row])
+	if c.IsVariableWidth {
+		if bufferLen < 0 || bufferLen > c.Size {
+			bufferLen = c.Size
+		}
+	} else {
+		bufferLen = c.Size
 	}
-	trc.Trace1("column.go: Value() - EXIT")
-	return c.BaseColumn.Value(c.Buffer[:bufferLen])
+	trc.Trace1("column.go: ValueRow() - EXIT")
+	return c.BaseColumn.Value(c.Buffer[start : start+bufferLen])
+}
+
+func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
+	return c.ValueRow(h, idx, 0)
 }
 
 // NonBindableColumn provide access to columns, that can't be bound.
@@ -347,6 +381,10 @@ type NonBindableColumn struct {
 
 func (c *NonBindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 	return false, nil
+}
+
+func (c *NonBindableColumn) ValueRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error) {
+	return c.Value(h, idx)
 }
 
 func (c *NonBindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {

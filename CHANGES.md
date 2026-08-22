@@ -1,3 +1,7 @@
+# 2026-08-22, Version 0.5.5
+
+- fea: support batch row fetching via FETCHSIZE / ROWARRAYSIZE in connection string, issue #281 (Nill Rezende)
+
 # 2025-10-16, Version 0.5.4
 
 - Added LastInsertId methods and Testcase. (#272) (Vikas Mathur)

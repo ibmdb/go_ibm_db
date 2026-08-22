@@ -587,6 +587,20 @@ connStr = "DATABASE=database;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=user
 
 > We just need to add **Security=SSL** in connection string to have a secure connection against Db2 server in IBM Cloud.
 
+## Batch Row Fetching (`FETCHSIZE` / `ROWARRAYSIZE`)
+
+To optimize performance and eliminate CGO roundtrip overhead when reading large datasets (e.g. millions of rows), `go_ibm_db` supports block fetching via the DB2 CLI array fetching capability (`SQL_ATTR_ROW_ARRAY_SIZE`).
+
+You can configure the fetch size by adding `FETCHSIZE=<n>` or `ROWARRAYSIZE=<n>` to your connection string:
+
+```go
+connStr := "DATABASE=database;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=passwd;FETCHSIZE=1000;"
+db, err := sql.Open("go_ibm_db", connStr)
+```
+
+- When `FETCHSIZE` is omitted or set to `1`, the driver fetches rows one by one (default behavior).
+- When `FETCHSIZE > 1`, `rows.Next()` fetches rows in batches of $N$ into Go memory buffers, drastically speeding up queries over millions of rows.
+
 ## <a name="digicert-g5-certificate-migration"></a>DigiCert G5 Certificate Migration
 
 IBM has migrated Db2 SSL certificates from DigiCert G1 to DigiCert G5. If you encounter `SQL30081N` errors related to `sqlccSSLSocketSetup` with protocol specific error code `414` when connecting over SSL to BLUDB, it is likely due to this certificate change.

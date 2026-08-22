@@ -136,6 +136,18 @@ const (
 
 	MAX_FIELD_SIZE = 1024
 	SQL_BOOLEAN    = 16
+
+	SQL_ATTR_ROW_ARRAY_SIZE   = 27
+	SQL_ATTR_ROW_STATUS_PTR   = 25
+	SQL_ATTR_ROWS_FETCHED_PTR = 26
+
+	SQL_ROW_SUCCESS           = 0
+	SQL_ROW_SUCCESS_WITH_INFO = 1
+	SQL_ROW_ERROR             = 2
+	SQL_ROW_NOROW             = 3
+	SQL_ROW_ADDED             = 4
+	SQL_ROW_UPDATED           = 5
+	SQL_ROW_DELETED           = 6
 )
 
 type (

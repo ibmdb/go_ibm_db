@@ -16,7 +16,23 @@ import (
 )
 
 type Rows struct {
-	os *ODBCStmt
+	os           *ODBCStmt
+	batchSize    int
+	rowsInBatch  int
+	currentIndex int
+}
+
+func newRows(os *ODBCStmt) *Rows {
+	batchSize := os.fetchSize
+	if batchSize <= 0 {
+		batchSize = 1
+	}
+	return &Rows{
+		os:           os,
+		batchSize:    batchSize,
+		rowsInBatch:  0,
+		currentIndex: 0,
+	}
 }
 
 func (r *Rows) Columns() []string {
@@ -132,20 +148,37 @@ func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 func (r *Rows) Next(dest []driver.Value) error {
 	trc.Trace1("rows.go: Next() - ENTRY")
 
-	ret := api.SQLFetch(r.os.h)
-	if ret == api.SQL_NO_DATA {
-		return io.EOF
+	if r.currentIndex >= r.rowsInBatch {
+		ret := api.SQLFetch(r.os.h)
+		if ret == api.SQL_NO_DATA {
+			return io.EOF
+		}
+		if IsError(ret) {
+			// If no partial valid rows were fetched in batch, return the error immediately
+			if r.batchSize <= 1 || r.os.rowsFetched == 0 {
+				return NewError("SQLFetch", r.os.h)
+			}
+		}
+		if r.batchSize > 1 {
+			r.rowsInBatch = int(r.os.rowsFetched)
+			if r.rowsInBatch == 0 {
+				return io.EOF
+			}
+		} else {
+			r.rowsInBatch = 1
+		}
+		r.currentIndex = 0
 	}
-	if IsError(ret) {
-		return NewError("SQLFetch", r.os.h)
-	}
+
 	for i := range dest {
-		v, err := r.os.Cols[i].Value(r.os.h, i)
+		v, err := r.os.Cols[i].ValueRow(r.os.h, i, r.currentIndex)
 		if err != nil {
 			return err
 		}
 		dest[i] = v
 	}
+	r.currentIndex++
+
 	trc.Trace1("rows.go: Next() - EXIT")
 	return nil
 }
@@ -171,6 +204,8 @@ func (r *Rows) NextResultSet() error {
 	if err != nil {
 		return err
 	}
+	r.rowsInBatch = 0
+	r.currentIndex = 0
 	trc.Trace1("rows.go: NextResultSet() - EXIT")
 	return nil
 }

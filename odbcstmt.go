@@ -20,13 +20,50 @@ import (
 // TODO(brainman): see if I could use SQLExecDirect anywhere
 
 type ODBCStmt struct {
-	h          api.SQLHSTMT
-	Parameters []Parameter
-	Cols       []Column
+	h           api.SQLHSTMT
+	Parameters  []Parameter
+	Cols        []Column
+	fetchSize   int
+	rowsFetched api.SQLULEN
+	rowStatus   []api.SQLUSMALLINT
 	// locking/lifetime
 	mu         sync.Mutex
 	usedByStmt bool
 	usedByRows bool
+}
+
+func (s *ODBCStmt) setFetchSize(fetchSize int) error {
+	trc.Trace1("odbcstmt.go: setFetchSize() - ENTRY")
+	trc.Trace1(fmt.Sprintf("fetchSize=%d", fetchSize))
+
+	if fetchSize <= 1 {
+		s.fetchSize = 1
+		return nil
+	}
+	s.fetchSize = fetchSize
+	s.rowStatus = make([]api.SQLUSMALLINT, fetchSize)
+	s.rowsFetched = 0
+
+	ret := api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROW_ARRAY_SIZE,
+		api.SQLPOINTER(uintptr(s.fetchSize)), api.SQL_IS_UINTEGER)
+	if IsError(ret) {
+		return NewError("SQLSetStmtAttr(SQL_ATTR_ROW_ARRAY_SIZE)", s.h)
+	}
+
+	ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROWS_FETCHED_PTR,
+		api.SQLPOINTER(unsafe.Pointer(&s.rowsFetched)), 0)
+	if IsError(ret) {
+		return NewError("SQLSetStmtAttr(SQL_ATTR_ROWS_FETCHED_PTR)", s.h)
+	}
+
+	ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROW_STATUS_PTR,
+		api.SQLPOINTER(unsafe.Pointer(&s.rowStatus[0])), 0)
+	if IsError(ret) {
+		return NewError("SQLSetStmtAttr(SQL_ATTR_ROW_STATUS_PTR)", s.h)
+	}
+
+	trc.Trace1("odbcstmt.go: setFetchSize() - EXIT")
+	return nil
 }
 
 func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
@@ -60,12 +97,21 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 		return nil, err
 	}
 
-	trc.Trace1("odbcstmt.go: PrepareODBCStmt() - EXIT")
-	return &ODBCStmt{
+	stmt := &ODBCStmt{
 		h:          h,
 		Parameters: ps,
 		usedByStmt: true,
-	}, nil
+		fetchSize:  c.fetchSize,
+	}
+	if c.fetchSize > 1 {
+		if err := stmt.setFetchSize(c.fetchSize); err != nil {
+			defer releaseHandle(h)
+			return nil, err
+		}
+	}
+
+	trc.Trace1("odbcstmt.go: PrepareODBCStmt() - EXIT")
+	return stmt, nil
 }
 
 func (s *ODBCStmt) closeByStmt() error {
@@ -244,7 +290,7 @@ func (s *ODBCStmt) BindColumns() error {
 	s.Cols = make([]Column, n)
 	binding := true
 	for i := range s.Cols {
-		c, err := NewColumn(s.h, i)
+		c, err := NewColumn(s.h, i, s.fetchSize)
 		if err != nil {
 			return err
 		}
