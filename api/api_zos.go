@@ -8,11 +8,12 @@ package api
 
 import (
 	"fmt"
-	trc "github.com/ibmdb/go_ibm_db/log2"
-	"github.com/ibmruntimes/go-recordio/v2/utils"
 	"log"
 	"runtime"
 	"unsafe"
+
+	trc "github.com/ibmdb/go_ibm_db/log2"
+	"github.com/ibmruntimes/go-recordio/v2/utils"
 )
 
 func getFunc(dll *utils.Dll, str string) uintptr {
@@ -136,6 +137,15 @@ const (
 
 	MAX_FIELD_SIZE = 1024
 	SQL_BOOLEAN    = 16
+
+	SQL_ATTR_ROW_ARRAY_SIZE   = 27
+	SQL_ATTR_ROW_STATUS_PTR   = 25
+	SQL_ATTR_ROWS_FETCHED_PTR = 26
+
+	SQL_ROW_SUCCESS           = 0
+	SQL_ROW_SUCCESS_WITH_INFO = 6
+	SQL_ROW_NOROW             = 3
+	SQL_ROW_ERROR             = 5
 )
 
 type (

@@ -10,10 +10,11 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"github.com/ibmdb/go_ibm_db/api"
-	trc "github.com/ibmdb/go_ibm_db/log2"
 	"sync"
 	"time"
+
+	"github.com/ibmdb/go_ibm_db/api"
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 type Stmt struct {
@@ -186,7 +187,7 @@ func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, er
 		return nil, ctx.Err()
 	}
 
-	return &Rows{os: s.os}, nil
+	return newRows(s.os), nil
 }
 
 // CheckNamedValue implementes driver.NamedValueChecker.

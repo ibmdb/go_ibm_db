@@ -29,14 +29,15 @@
 
 open a connection to database
 * **connectionString** - The connection string for your database.
-* For distributed platforms, the connection string is typically defined   as: `DATABASE=dbname;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=passwd`
+* For distributed platforms, the connection string is typically defined as: `DATABASE=dbname;HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=passwd`
+* **Batch Row Fetching (`FETCHSIZE` / `ROWARRAYSIZE`)**: You can specify `FETCHSIZE=<n>` or `ROWARRAYSIZE=<n>` in the connection string to enable batch/array row fetching (default is `1`). This significantly improves performance and reduces CGO overhead when iterating over large result sets with `rows.Next()`. Example: `...;UID=username;PWD=passwd;FETCHSIZE=1000;`
 
 ```go
-var connStr = flag.String("conn", "HOSTNAME=hostname;PORT=port;DATABASE=dbname;UID=uid;PWD=Pass", "connection string")
+var connStr = flag.String("conn", "HOSTNAME=hostname;PORT=port;DATABASE=dbname;UID=uid;PWD=Pass;FETCHSIZE=1000", "connection string")
 
 func dboper() error {
 	fmt.Println("connecting to driver")
-	db, err := sql.Open("drivername", *connStr)
+	db, err := sql.Open("go_ibm_db", *connStr)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"runtime"
+	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/ibmdb/go_ibm_db/api"
@@ -15,13 +17,47 @@ import (
 )
 
 type Conn struct {
-	h  api.SQLHDBC
-	tx *Tx
+	h         api.SQLHDBC
+	tx        *Tx
+	fetchSize int
+}
+
+// parseDSN extracts FETCHSIZE/ROWARRAYSIZE from the connection string and
+// returns a cleaned DSN (without those keys) plus the parsed fetch size.
+func parseDSN(dsn string) (string, int) {
+	fetchSize := 1
+	var cleanParts []string
+	parts := strings.Split(dsn, ";")
+	for _, p := range parts {
+		trimmed := strings.TrimSpace(p)
+		if trimmed == "" {
+			continue
+		}
+		kv := strings.SplitN(trimmed, "=", 2)
+		if len(kv) == 2 {
+			k := strings.TrimSpace(kv[0])
+			v := strings.TrimSpace(kv[1])
+			if strings.EqualFold(k, "FETCHSIZE") || strings.EqualFold(k, "ROWARRAYSIZE") {
+				if size, err := strconv.Atoi(v); err == nil && size > 0 {
+					fetchSize = size
+				}
+				continue
+			}
+		}
+		cleanParts = append(cleanParts, trimmed)
+	}
+	cleanDSN := strings.Join(cleanParts, ";")
+	if len(cleanParts) > 0 {
+		cleanDSN += ";"
+	}
+	return cleanDSN, fetchSize
 }
 
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	trc.Trace1("conn.go: Open() - ENTRY")
 	trc.Trace1(fmt.Sprintf("dsn = %s", dsn))
+
+	cleanDSN, fetchSize := parseDSN(dsn)
 
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_DBC, api.SQLHANDLE(d.h), &out)
@@ -31,10 +67,10 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	h := api.SQLHDBC(out)
 	drv.Stats.updateHandleCount(api.SQL_HANDLE_DBC, 1)
 
-	b := api.StringToUTF16(dsn)
+	b := api.StringToUTF16(cleanDSN)
 	if runtime.GOOS == "zos" {
 		ret = api.SQLDriverConnect(h, 0,
-			(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQLSMALLINT(2*len(b)), // odbc api on zos doesn't handle null terminated strings, the exact size is passed
+			(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQLSMALLINT(2*len(b)),
 			nil, 0, nil, api.SQL_DRIVER_NOPROMPT)
 	} else {
 		ret = api.SQLDriverConnect(h, 0,
@@ -46,7 +82,7 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 		return nil, NewError("SQLDriverConnect", h)
 	}
 	trc.Trace1("conn.go: Open() - EXIT")
-	return &Conn{h: h}, nil
+	return &Conn{h: h, fetchSize: fetchSize}, nil
 }
 
 func (c *Conn) Close() error {
@@ -101,11 +137,13 @@ func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 	os = &ODBCStmt{
 		h:          h,
 		Parameters: ps,
-		usedByRows: true}
+		usedByRows: true,
+		fetchSize:  c.fetchSize,
+	}
 	err = os.BindColumns()
 	if err != nil {
 		return nil, err
 	}
 	trc.Trace1("conn.go: Query() - EXIT")
-	return &Rows{os: os}, nil
+	return newRows(os), nil
 }

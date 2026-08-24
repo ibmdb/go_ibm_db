@@ -6,8 +6,9 @@ package api
 
 import (
 	"fmt"
-	trc "github.com/ibmdb/go_ibm_db/log2"
 	"syscall"
+
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 const (
@@ -125,6 +126,11 @@ const (
 	SQL_ATTR_ROW_ARRAY_SIZE   = 27
 	SQL_ATTR_ROW_STATUS_PTR   = 25
 	SQL_ATTR_ROWS_FETCHED_PTR = 26
+
+	SQL_ROW_SUCCESS           = 0
+	SQL_ROW_SUCCESS_WITH_INFO = 6
+	SQL_ROW_NOROW             = 3
+	SQL_ROW_ERROR             = 5
 
 	// SQL_CURSOR_TYPE options
 	SQL_CURSOR_FORWARD_ONLY  = 0
