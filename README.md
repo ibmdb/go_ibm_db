@@ -637,3 +637,4 @@ export GO_IBMDB_TRACE=log.txt
 go run sample.go
 
 ```
+For complete Bun ORM integration with IBM DB2, including examples, type mappings, and advanced features, please refer to the [Bun ORM Integration Guide](BUN_INTEGRATION.md).

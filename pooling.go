@@ -14,8 +14,9 @@ import (
 // DBP struct type contains the timeout, dbinstance pointer and connection string
 type DBP struct {
 	*sql.DB
-	con string
-	n   time.Duration
+	con  string
+	n    time.Duration
+	pool *Pool // owning pool; avoids relying on the shared global pool pointer
 }
 
 // Pool struct contais the about the pool like size, used and available connections
@@ -26,7 +27,6 @@ type Pool struct {
 	mu            sync.Mutex
 }
 
-var b *Pool
 var connMaxLifetime int
 
 const defaultMaxIdleConns = 2
@@ -57,7 +57,6 @@ func Pconnect(poolSize string) *Pool {
 		usedPool:      make(map[string][]*DBP),
 		poolSize:      size,
 	}
-	b = p
 
 	trc.Trace1("pooling.go: Pconnect() - EXIT")
 	return p
@@ -119,9 +118,10 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 				return nil
 			}
 			dbi := &DBP{
-				DB:  db,
-				con: connStr,
-				n:   Time,
+				DB:   db,
+				con:  connStr,
+				n:    Time,
+				pool: p,
 			}
 			p.mu.Lock()
 			p.usedPool[connStr] = append(p.usedPool[connStr], dbi)
@@ -152,7 +152,12 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 					p.mu.Unlock()
 					return dbpo
 				} else {
+					p.mu.Lock()
 					dbpo := val[0]
+					delete(p.availablePool, connStr)
+					p.usedPool[connStr] = append(p.usedPool[connStr], dbpo)
+					dbpo.DB.SetConnMaxLifetime(Time)
+					p.mu.Unlock()
 					return dbpo
 				}
 			}
@@ -183,9 +188,10 @@ func (p *Pool) Init(numConn int, connStr string) bool {
 			return false
 		}
 		dbi := &DBP{
-			DB:  db,
-			con: connStr,
-			n:   Time,
+			DB:   db,
+			con:  connStr,
+			n:    Time,
+			pool: p,
 		}
 		p.mu.Lock()
 		p.availablePool[connStr] = append(p.availablePool[connStr], dbi)
@@ -201,33 +207,43 @@ func (d *DBP) Close() {
 	trc.Trace1("pooling.go: Close() - ENTRY")
 
 	pSize = pSize - 1
+	p := d.pool
+	if p == nil {
+		d.DB.Close()
+		return
+	}
+	found := false
 	var pos int
-	i := -1
-	b.mu.Lock()
-	if valc, okc := b.usedPool[d.con]; okc {
-		if len(valc) > 1 {
-			for _, b := range valc {
-				i = i + 1
-				if b == d {
-					pos = i
-				}
+	p.mu.Lock()
+	if valc, okc := p.usedPool[d.con]; okc {
+		for i, v := range valc {
+			if v == d {
+				pos = i
+				found = true
+				break
 			}
-			dbpc := valc[pos]
-			copy(valc[pos:], valc[pos+1:])
-			valc[len(valc)-1] = nil
-			valc = valc[:len(valc)-1]
-			b.usedPool[d.con] = valc
-			b.availablePool[d.con] = append(b.availablePool[d.con], dbpc)
-		} else {
-			dbpc := valc[0]
-			b.availablePool[d.con] = append(b.availablePool[d.con], dbpc)
-			delete(b.usedPool, d.con)
 		}
-		go d.Timeout()
+		if found {
+			if len(valc) > 1 {
+				dbpc := valc[pos]
+				copy(valc[pos:], valc[pos+1:])
+				valc[len(valc)-1] = nil
+				valc = valc[:len(valc)-1]
+				p.usedPool[d.con] = valc
+				p.availablePool[d.con] = append(p.availablePool[d.con], dbpc)
+			} else {
+				dbpc := valc[0]
+				p.availablePool[d.con] = append(p.availablePool[d.con], dbpc)
+				delete(p.usedPool, d.con)
+			}
+			go d.Timeout()
+		} else {
+			d.DB.Close()
+		}
 	} else {
 		d.DB.Close()
 	}
-	b.mu.Unlock()
+	p.mu.Unlock()
 	trc.Trace1("pooling.go: Close() - EXIT")
 }
 
@@ -235,31 +251,36 @@ func (d *DBP) Close() {
 func (d *DBP) Timeout() {
 	trc.Trace1("pooling.go: Timeout() - ENTRY")
 
-	var pos int
-	i := -1
+	p := d.pool
 	<-time.After(d.n)
-	b.mu.Lock()
-	if valt, okt := b.availablePool[d.con]; okt {
-		if len(valt) > 1 {
-			for _, b := range valt {
-				i = i + 1
-				if b == d {
-					pos = i
-				}
+	if p == nil {
+		return
+	}
+	found := false
+	var pos int
+	p.mu.Lock()
+	if valt, okt := p.availablePool[d.con]; okt {
+		for i, v := range valt {
+			if v == d {
+				pos = i
+				found = true
+				break
 			}
+		}
+		if found {
 			dbpt := valt[pos]
 			copy(valt[pos:], valt[pos+1:])
 			valt[len(valt)-1] = nil
 			valt = valt[:len(valt)-1]
-			b.availablePool[d.con] = valt
+			if len(valt) == 0 {
+				delete(p.availablePool, d.con)
+			} else {
+				p.availablePool[d.con] = valt
+			}
 			dbpt.DB.Close()
-		} else {
-			dbpt := valt[0]
-			dbpt.DB.Close()
-			delete(b.availablePool, d.con)
 		}
 	}
-	b.mu.Unlock()
+	p.mu.Unlock()
 	trc.Trace1("pooling.go: Timeout() - EXIT")
 }
 

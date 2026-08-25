@@ -153,7 +153,7 @@ func (c *BaseColumn) TypeScan() reflect.Type {
 	case api.SQL_C_BIT:
 		return reflect.TypeOf(false)
 	case api.SQL_C_LONG:
-		return reflect.TypeOf(int32(0))
+		return reflect.TypeOf(int64(0))
 	case api.SQL_C_SBIGINT:
 		return reflect.TypeOf(int64(0))
 	case api.SQL_C_DOUBLE:
@@ -183,7 +183,8 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	case api.SQL_C_BIT:
 		return buf[0] != 0, nil
 	case api.SQL_C_LONG:
-		return *((*int32)(p)), nil
+		// driver.Value only allows int64 (not int32), per database/sql/driver contract
+		return int64(*((*int32)(p))), nil
 	case api.SQL_C_SBIGINT:
 		return *((*int64)(p)), nil
 	case api.SQL_C_DOUBLE:

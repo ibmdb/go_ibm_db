@@ -374,6 +374,8 @@ func PoolOpen() int {
 	if db == nil {
 		return 0
 	}
+	db.Close()
+	pool.Release()
 	return 1
 }
 
