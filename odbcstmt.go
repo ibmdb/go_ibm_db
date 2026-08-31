@@ -27,6 +27,11 @@ type ODBCStmt struct {
 	mu         sync.Mutex
 	usedByStmt bool
 	usedByRows bool
+	// bulk fetch support
+	fetchSize   int
+	rowsFetched api.SQLULEN
+	rowStatus   []api.SQLUSMALLINT
+	currentRow  int
 }
 
 func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
@@ -65,6 +70,7 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 		h:          h,
 		Parameters: ps,
 		usedByStmt: true,
+		fetchSize:  c.fetchSize,
 	}, nil
 }
 
@@ -231,6 +237,9 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 func (s *ODBCStmt) BindColumns() error {
 	trc.Trace1("odbcstmt.go: BindColumns() - ENTRY")
 
+	s.currentRow = 0
+	s.rowsFetched = 0
+
 	// count columns
 	var n api.SQLSMALLINT
 	ret := api.SQLNumResultCols(s.h, &n)
@@ -240,6 +249,27 @@ func (s *ODBCStmt) BindColumns() error {
 	if n < 1 {
 		return errors.New("Query executed successfully but did not create a result set")
 	}
+
+	// Set up block cursor if fetchSize > 1
+	if s.fetchSize > 1 {
+		ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROW_ARRAY_SIZE,
+			(api.SQLPOINTER)(uintptr(s.fetchSize)), api.SQL_IS_UINTEGER)
+		if IsError(ret) {
+			return NewError("SQLSetStmtAttr SQL_ATTR_ROW_ARRAY_SIZE", s.h)
+		}
+		ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROWS_FETCHED_PTR,
+			(api.SQLPOINTER)(unsafe.Pointer(&s.rowsFetched)), 0)
+		if IsError(ret) {
+			return NewError("SQLSetStmtAttr SQL_ATTR_ROWS_FETCHED_PTR", s.h)
+		}
+		s.rowStatus = make([]api.SQLUSMALLINT, s.fetchSize)
+		ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROW_STATUS_PTR,
+			(api.SQLPOINTER)(unsafe.Pointer(&s.rowStatus[0])), 0)
+		if IsError(ret) {
+			return NewError("SQLSetStmtAttr SQL_ATTR_ROW_STATUS_PTR", s.h)
+		}
+	}
+
 	// fetch column descriptions
 	s.Cols = make([]Column, n)
 	binding := true
@@ -255,12 +285,29 @@ func (s *ODBCStmt) BindColumns() error {
 		if !binding {
 			continue
 		}
-		bound, err := s.Cols[i].Bind(s.h, i)
-		if err != nil {
-			return err
-		}
-		if !bound {
-			binding = false
+		if s.fetchSize > 1 {
+			bound, err := s.Cols[i].BindArray(s.h, i, s.fetchSize)
+			if err != nil {
+				return err
+			}
+			if !bound {
+				// Fall back to single-row fetch if a column can't be array-bound
+				binding = false
+				s.fetchSize = 1
+				ret = api.SQLSetStmtAttr(s.h, api.SQL_ATTR_ROW_ARRAY_SIZE,
+					(api.SQLPOINTER)(uintptr(1)), api.SQL_IS_UINTEGER)
+				if IsError(ret) {
+					return NewError("SQLSetStmtAttr SQL_ATTR_ROW_ARRAY_SIZE reset", s.h)
+				}
+			}
+		} else {
+			bound, err := s.Cols[i].Bind(s.h, i)
+			if err != nil {
+				return err
+			}
+			if !bound {
+				binding = false
+			}
 		}
 	}
 	trc.Trace1("odbcstmt.go: BindColumns() - EXIT")

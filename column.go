@@ -52,7 +52,9 @@ type Column interface {
 	Name() string
 	TypeScan() reflect.Type
 	Bind(h api.SQLHSTMT, idx int) (bool, error)
+	BindArray(h api.SQLHSTMT, idx int, fetchSize int) (bool, error)
 	Value(h api.SQLHSTMT, idx int) (driver.Value, error)
+	ValueAtRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error)
 }
 
 func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, ret api.SQLRETURN) {
@@ -252,6 +254,9 @@ type BindableColumn struct {
 	Len             BufferLen
 	Buffer          []byte
 	smallBuf        [8]byte // small inline memory buffer, so we do not need allocate external memory all the time
+	// Multi-row (bulk fetch) support
+	fetchSize int
+	Lens      []BufferLen
 }
 
 func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *BindableColumn {
@@ -339,6 +344,47 @@ func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
 	return c.BaseColumn.Value(c.Buffer[:bufferLen])
 }
 
+// BindArray binds the column with an array buffer for bulk fetching.
+func (c *BindableColumn) BindArray(h api.SQLHSTMT, idx int, fetchSize int) (bool, error) {
+	trc.Trace1("column.go: BindArray() - ENTRY")
+
+	c.fetchSize = fetchSize
+	c.Buffer = make([]byte, fetchSize*c.Size)
+	c.Lens = make([]BufferLen, fetchSize)
+
+	ret := api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), c.CType,
+		c.Buffer, api.SQLLEN(c.Size),
+		(*api.SQLLEN)(&c.Lens[0]))
+	if IsError(ret) {
+		return false, NewError("SQLBindCol", h)
+	}
+	c.IsBound = true
+	trc.Trace1("column.go: BindArray() - EXIT")
+	return true, nil
+}
+
+// ValueAtRow extracts the value for a specific row within a bulk-fetched block.
+func (c *BindableColumn) ValueAtRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error) {
+	trc.Trace1("column.go: ValueAtRow() - ENTRY")
+
+	if row >= c.fetchSize {
+		return nil, fmt.Errorf("row %d out of range (fetchSize=%d)", row, c.fetchSize)
+	}
+	if c.Lens[row].IsNull() {
+		return nil, nil
+	}
+	offset := row * c.Size
+	if !c.IsVariableWidth && int(c.Lens[row]) != c.Size {
+		panic(fmt.Errorf("wrong column #%d row %d length %d returned, %d expected", idx, row, c.Lens[row], c.Size))
+	}
+	bufferLen := int(c.Lens[row])
+	if bufferLen > c.Size {
+		bufferLen = c.Size
+	}
+	trc.Trace1("column.go: ValueAtRow() - EXIT")
+	return c.BaseColumn.Value(c.Buffer[offset : offset+bufferLen])
+}
+
 // NonBindableColumn provide access to columns, that can't be bound.
 // These are of character or binary type, and, usually, there is no
 // limit for their width.
@@ -348,6 +394,14 @@ type NonBindableColumn struct {
 
 func (c *NonBindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 	return false, nil
+}
+
+func (c *NonBindableColumn) BindArray(h api.SQLHSTMT, idx int, fetchSize int) (bool, error) {
+	return false, nil
+}
+
+func (c *NonBindableColumn) ValueAtRow(h api.SQLHSTMT, idx int, row int) (driver.Value, error) {
+	return c.Value(h, idx)
 }
 
 func (c *NonBindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
