@@ -32,6 +32,15 @@ func (d *Dialect) mapFieldType(field *schema.Field) {
 		typ = typ.Elem()
 	}
 
+	// Special handling for the custom SMALLINT helper types, which would
+	// otherwise be misclassified as INTEGER (int32 kind) or VARCHAR (struct kind)
+	switch typ {
+	case reflect.TypeOf(SmallInt(0)), reflect.TypeOf(SmallIntBool(0)),
+		reflect.TypeOf(NullSmallInt{}), reflect.TypeOf(NullSmallIntBool{}):
+		field.CreateTableSQLType = "SMALLINT"
+		return
+	}
+
 	// Map based on Go type
 	switch typ.Kind() {
 	case reflect.Bool:
@@ -65,9 +74,21 @@ func (d *Dialect) mapFieldType(field *schema.Field) {
 		}
 
 	case reflect.Struct:
-		// Special handling for time.Time
-		if typ == reflect.TypeOf(time.Time{}) {
+		// Special handling for time.Time and the custom time-based types
+		switch typ {
+		case reflect.TypeOf(time.Time{}):
 			field.CreateTableSQLType = "TIMESTAMP"
+		case reflect.TypeOf(Date{}):
+			field.CreateTableSQLType = "DATE"
+		case reflect.TypeOf(TimeOfDay{}):
+			field.CreateTableSQLType = "TIME"
+		case reflect.TypeOf(Timestamp{}):
+			field.CreateTableSQLType = "TIMESTAMP"
+		default:
+			// Catch any other named type whose underlying type is time.Time
+			if typ.ConvertibleTo(reflect.TypeOf(time.Time{})) {
+				field.CreateTableSQLType = "TIMESTAMP"
+			}
 		}
 	}
 }

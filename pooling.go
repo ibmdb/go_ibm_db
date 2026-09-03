@@ -62,8 +62,18 @@ func Pconnect(poolSize string) *Pool {
 	return p
 }
 
-// Psize sets the size of the pool idf value is passed
-var pSize int
+// size returns the total number of connections (used + available) currently
+// owned by this pool. Callers must hold p.mu.
+func (p *Pool) size() int {
+	total := 0
+	for _, v := range p.usedPool {
+		total += len(v)
+	}
+	for _, v := range p.availablePool {
+		total += len(v)
+	}
+	return total
+}
 
 // Open will check for the connection in the pool
 // If not opens a new connection and stores in the pool
@@ -89,8 +99,10 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 	} else {
 		Time = time.Duration(defaultConnMaxLifetime) * time.Second
 	}
-	if pSize < p.poolSize {
-		pSize = pSize + 1
+	p.mu.Lock()
+	underCapacity := p.size() < p.poolSize
+	p.mu.Unlock()
+	if underCapacity {
 		if val, ok := p.availablePool[connStr]; ok {
 			if len(val) > 1 {
 				p.mu.Lock()
@@ -130,8 +142,6 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 			return dbi
 		}
 	} else {
-		pSize = pSize + 1
-
 		timeout := time.Duration(connMaxLifetime) * time.Second
 		deadline := time.Now().Add(timeout)
 		for time.Now().Before(deadline) {
@@ -206,7 +216,6 @@ func (p *Pool) Init(numConn int, connStr string) bool {
 func (d *DBP) Close() {
 	trc.Trace1("pooling.go: Close() - ENTRY")
 
-	pSize = pSize - 1
 	p := d.pool
 	if p == nil {
 		d.DB.Close()

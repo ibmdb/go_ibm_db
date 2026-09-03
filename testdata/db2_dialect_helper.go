@@ -27,4 +27,3 @@ func getDialectImpl() *db2dialect.Dialect {
 	// import "github.com/uptrace/bun/dialect/db2dialect" as bundb2
 	// return bundb2.New()
 }
-
