@@ -2,6 +2,7 @@
 package db2dialect
 
 import (
+	"database/sql/driver"
 	"reflect"
 	"testing"
 	"time"
@@ -47,10 +48,10 @@ func TestMapFieldTypeBasicTypes(t *testing.T) {
 
 			d.mapFieldType(field)
 
-			if field.CreateTableSQLType != test.expected {
-				t.Errorf("Expected %q, got %q", test.expected, field.CreateTableSQLType)
+			if field.DiscoveredSQLType != test.expected {
+				t.Errorf("Expected %q, got %q", test.expected, field.DiscoveredSQLType)
 			} else {
-				t.Logf("✓ %s -> %s", test.name, field.CreateTableSQLType)
+				t.Logf("✓ %s -> %s", test.name, field.DiscoveredSQLType)
 			}
 		})
 	}
@@ -88,11 +89,79 @@ func TestMapFieldTypePointerTypes(t *testing.T) {
 
 			d.mapFieldType(field)
 
-			if field.CreateTableSQLType != test.expected {
-				t.Errorf("Expected %q, got %q", test.expected, field.CreateTableSQLType)
+			if field.DiscoveredSQLType != test.expected {
+				t.Errorf("Expected %q, got %q", test.expected, field.DiscoveredSQLType)
 			} else {
-				t.Logf("✓ Pointer %s -> %s", test.name, field.CreateTableSQLType)
+				t.Logf("✓ Pointer %s -> %s", test.name, field.DiscoveredSQLType)
 			}
 		})
+	}
+}
+
+// TestOnTablePreservesUserSQLType verifies an explicit `type:` tag is not overwritten.
+// Bun resolves CreateTableSQLType from UserSQLType/DiscoveredSQLType only after OnTable returns.
+func TestOnTablePreservesUserSQLType(t *testing.T) {
+	d := New()
+
+	tagged := &schema.Field{
+		StructField: reflect.StructField{Type: reflect.TypeOf("")},
+		UserSQLType: "VARCHAR(100)",
+	}
+	untagged := &schema.Field{
+		StructField: reflect.StructField{Type: reflect.TypeOf("")},
+	}
+
+	d.OnTable(&schema.Table{Fields: []*schema.Field{tagged, untagged}})
+
+	if tagged.DiscoveredSQLType != "" {
+		t.Errorf("user-tagged field should be left untouched, got DiscoveredSQLType=%q", tagged.DiscoveredSQLType)
+	}
+	if tagged.UserSQLType != "VARCHAR(100)" {
+		t.Errorf("expected UserSQLType %q, got %q", "VARCHAR(100)", tagged.UserSQLType)
+	}
+	if untagged.DiscoveredSQLType != "VARCHAR(255)" {
+		t.Errorf("expected untagged field to map to VARCHAR(255), got %q", untagged.DiscoveredSQLType)
+	}
+}
+
+// TestValuersReturnDriverValueTypes verifies Value() returns types allowed by
+// database/sql/driver (int64, not int32).
+func TestValuersReturnDriverValueTypes(t *testing.T) {
+	valuers := []struct {
+		name string
+		v    driver.Valuer
+	}{
+		{"SmallIntBool", SmallIntBool(1)},
+		{"SmallInt", SmallInt(7)},
+		{"NullSmallIntBool", NullSmallIntBool{SmallIntBool: 1, Valid: true}},
+		{"NullSmallInt", NullSmallInt{SmallInt: 7, Valid: true}},
+	}
+
+	for _, test := range valuers {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.v.Value()
+			if err != nil {
+				t.Fatalf("Value() returned error: %v", err)
+			}
+			if !driver.IsValue(got) {
+				t.Errorf("Value() returned non-driver.Value type %T", got)
+			}
+			if _, ok := got.(int64); !ok {
+				t.Errorf("expected int64, got %T", got)
+			}
+		})
+	}
+}
+
+// TestNullValuersReturnNilWhenInvalid verifies nullable helpers emit SQL NULL.
+func TestNullValuersReturnNilWhenInvalid(t *testing.T) {
+	for _, v := range []driver.Valuer{NullSmallIntBool{}, NullSmallInt{}} {
+		got, err := v.Value()
+		if err != nil {
+			t.Fatalf("Value() returned error: %v", err)
+		}
+		if got != nil {
+			t.Errorf("expected nil for invalid %T, got %v", v, got)
+		}
 	}
 }

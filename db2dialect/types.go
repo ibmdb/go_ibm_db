@@ -62,9 +62,10 @@ func (s *SmallIntBool) Scan(val interface{}) error {
 	return nil
 }
 
-// Value implements driver.Valuer interface to convert SmallIntBool back to int32.
+// Value implements driver.Valuer interface to convert SmallIntBool back to int64.
+// driver.Value only allows int64 (not int32), per database/sql/driver contract.
 func (s SmallIntBool) Value() (driver.Value, error) {
-	return int32(s), nil
+	return int64(s), nil
 }
 
 // Bool converts SmallIntBool to native Go bool.
@@ -154,8 +155,9 @@ func (si *SmallInt) Scan(val interface{}) error {
 }
 
 // Value implements driver.Valuer interface for SmallInt.
+// driver.Value only allows int64 (not int32), per database/sql/driver contract.
 func (si SmallInt) Value() (driver.Value, error) {
-	return int32(si), nil
+	return int64(si), nil
 }
 
 // NullSmallInt represents a nullable DB2 SMALLINT value.
