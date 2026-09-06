@@ -25,6 +25,7 @@ type Pool struct {
 	usedPool      map[string][]*DBP
 	poolSize      int
 	maxLifetime   time.Duration
+	closed        bool
 	mu            sync.Mutex
 }
 
@@ -119,6 +120,10 @@ func (p *Pool) Open(connStr string, options ...string) *DBP {
 		}
 	}
 	p.mu.Lock()
+	if p.closed {
+		p.mu.Unlock()
+		return nil
+	}
 	if configuredLifetime {
 		p.maxLifetime = Time
 	} else {
@@ -169,6 +174,10 @@ func (p *Pool) Init(numConn int, connStr string) bool {
 	var Time time.Duration
 
 	p.mu.Lock()
+	if p.closed {
+		p.mu.Unlock()
+		return false
+	}
 	Time = p.maxLifetime
 	p.mu.Unlock()
 
@@ -278,6 +287,12 @@ func (d *DBP) Timeout() {
 func (p *Pool) Release() {
 	trc.Trace1("pooling.go: Release() - ENTRY")
 
+	p.mu.Lock()
+	if p.closed {
+		p.mu.Unlock()
+		return
+	}
+	p.closed = true
 	if p.availablePool != nil {
 		for _, vala := range p.availablePool {
 			for _, dbpr := range vala {
@@ -294,6 +309,7 @@ func (p *Pool) Release() {
 		}
 		p.usedPool = nil
 	}
+	p.mu.Unlock()
 	trc.Trace1("pooling.go: Release() - EXIT")
 }
 

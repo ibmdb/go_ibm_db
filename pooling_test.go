@@ -94,3 +94,15 @@ func TestPoolLifetimeIsIndependent(t *testing.T) {
 		t.Fatalf("expected poolB to retain the default lifetime, got %s", lifetimeB)
 	}
 }
+
+func TestPoolReleasePreventsNewConnections(t *testing.T) {
+	p := Pconnect("PoolSize=1")
+	p.Release()
+
+	if got := p.Open("dsn"); got != nil {
+		t.Fatal("expected Open to return nil after Release")
+	}
+	if p.Init(1, "dsn") {
+		t.Fatal("expected Init to fail after Release")
+	}
+}

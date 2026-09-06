@@ -114,7 +114,7 @@ func TestDefaultSchema(t *testing.T) {
 	d := New()
 	schema := d.DefaultSchema()
 
-	expected := "USER"
+	expected := ""
 	if schema != expected {
 		t.Errorf("Expected default schema %q, got %q", expected, schema)
 	}

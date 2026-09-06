@@ -15,6 +15,8 @@ The `db2dialect` package provides seamless integration between **Bun ORM** (v1.2
 
 ### Installation
 
+This integration requires Go 1.24 or newer because Bun v1.2.18 requires that toolchain version.
+
 1. **Install Bun ORM**:
    ```bash
    go get github.com/uptrace/bun@latest
@@ -31,14 +33,14 @@ The `db2dialect` package provides seamless integration between **Bun ORM** (v1.2
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
 
-	"github.com/ibmdb/go_ibm_db"
+	_ "github.com/ibmdb/go_ibm_db"
 	"github.com/ibmdb/go_ibm_db/db2dialect"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/fixture"
 )
 
 // Define your model
@@ -75,7 +77,7 @@ func main() {
 
 	// Insert
 	user := &User{Name: "Alice", Email: "alice@example.com", Active: true}
-	res, err := db.NewInsert().Model(user).Exec(ctx)
+	_, err = db.NewInsert().Model(user).Exec(ctx)
 	if err != nil {
 		panic(err)
 	}

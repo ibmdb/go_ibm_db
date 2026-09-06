@@ -58,9 +58,9 @@ func (d *Dialect) DefaultVarcharLen() int {
 	return 255
 }
 
-// DefaultSchema returns the default schema name for DB2
+// DefaultSchema returns an empty schema so DB2 uses the current authorization ID.
 func (d *Dialect) DefaultSchema() string {
-	return "USER"
+	return ""
 }
 
 // Init initializes the dialect with a database connection
