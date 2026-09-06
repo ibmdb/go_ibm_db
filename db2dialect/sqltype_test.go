@@ -165,3 +165,27 @@ func TestNullValuersReturnNilWhenInvalid(t *testing.T) {
 		}
 	}
 }
+
+func TestNullScansRemainInvalidAfterError(t *testing.T) {
+	boolValue := NullSmallIntBool{SmallIntBool: 1}
+	if err := boolValue.Scan("not-a-number"); err == nil {
+		t.Fatal("expected invalid boolean scan to fail")
+	}
+	if boolValue.Valid {
+		t.Fatal("boolean value should remain invalid after a failed scan")
+	}
+	if got, err := boolValue.Value(); err != nil || got != nil {
+		t.Fatalf("failed boolean scan should emit NULL, got value=%v err=%v", got, err)
+	}
+
+	intValue := NullSmallInt{SmallInt: 7}
+	if err := intValue.Scan("not-a-number"); err == nil {
+		t.Fatal("expected invalid integer scan to fail")
+	}
+	if intValue.Valid {
+		t.Fatal("integer value should remain invalid after a failed scan")
+	}
+	if got, err := intValue.Value(); err != nil || got != nil {
+		t.Fatalf("failed integer scan should emit NULL, got value=%v err=%v", got, err)
+	}
+}

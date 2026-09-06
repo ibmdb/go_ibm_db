@@ -93,8 +93,13 @@ func (ns *NullSmallIntBool) Scan(val interface{}) error {
 		ns.Valid = false
 		return nil
 	}
+	var scanned SmallIntBool
+	if err := scanned.Scan(val); err != nil {
+		return err
+	}
+	ns.SmallIntBool = scanned
 	ns.Valid = true
-	return ns.SmallIntBool.Scan(val)
+	return nil
 }
 
 // Value implements driver.Valuer interface for NullSmallIntBool.
@@ -173,8 +178,13 @@ func (ns *NullSmallInt) Scan(val interface{}) error {
 		ns.Valid = false
 		return nil
 	}
+	var scanned SmallInt
+	if err := scanned.Scan(val); err != nil {
+		return err
+	}
+	ns.SmallInt = scanned
 	ns.Valid = true
-	return ns.SmallInt.Scan(val)
+	return nil
 }
 
 // Value implements driver.Valuer interface for NullSmallInt.
