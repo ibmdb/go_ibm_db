@@ -194,6 +194,12 @@ func (p *Pool) Init(numConn int, connStr string) bool {
 			pool: p,
 		}
 		p.mu.Lock()
+		if p.closed {
+			p.mu.Unlock()
+			db.Close()
+			trc.Trace1("pooling.go: Init() - return false")
+			return false
+		}
 		p.availablePool[connStr] = append(p.availablePool[connStr], dbi)
 		dbi.DB.SetConnMaxLifetime(Time)
 		p.mu.Unlock()
