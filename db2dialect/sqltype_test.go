@@ -2,6 +2,7 @@
 package db2dialect
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"reflect"
 	"testing"
@@ -35,6 +36,11 @@ func TestMapFieldTypeBasicTypes(t *testing.T) {
 		{"SmallIntBool", reflect.TypeOf(SmallIntBool(0)), "SMALLINT"},
 		{"NullSmallInt", reflect.TypeOf(NullSmallInt{}), "SMALLINT"},
 		{"NullSmallIntBool", reflect.TypeOf(NullSmallIntBool{}), "SMALLINT"},
+		{"sql.NullBool", reflect.TypeOf(sql.NullBool{}), "SMALLINT"},
+		{"sql.NullString", reflect.TypeOf(sql.NullString{}), "VARCHAR(255)"},
+		{"sql.NullInt64", reflect.TypeOf(sql.NullInt64{}), "BIGINT"},
+		{"sql.NullFloat64", reflect.TypeOf(sql.NullFloat64{}), "DOUBLE PRECISION"},
+		{"sql.NullTime", reflect.TypeOf(sql.NullTime{}), "TIMESTAMP"},
 	}
 
 	for _, test := range tests {

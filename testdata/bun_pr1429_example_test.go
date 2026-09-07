@@ -42,13 +42,16 @@ func TestBun_PR1429_Example(t *testing.T) {
 	if _, err := db.NewCreateTable().Model((*PR1429User)(nil)).ModelTableExpr("?", table).Exec(ctx); err != nil {
 		t.Fatalf("create table failed: %v", err)
 	}
-	defer db.NewDropTable().Model((*PR1429User)(nil)).ModelTableExpr("?", table).IfExists().Exec(ctx)
+	defer func() {
+		_, _ = db.NewDropTable().Model((*PR1429User)(nil)).ModelTableExpr("?", table).Exec(ctx)
+	}()
 	t.Logf("created table %s", strings.ToUpper(tableName))
 	printPR1429Users(t, ctx, db, table, "after create")
 
 	user := &PR1429User{
-		Name:  "Alice",
-		Email: fmt.Sprintf("alice+%d@example.com", time.Now().UnixNano()),
+		Name:      "Alice",
+		Email:     fmt.Sprintf("alice+%d@example.com", time.Now().UnixNano()),
+		CreatedAt: time.Now(),
 	}
 	if _, err := db.NewInsert().Model(user).ModelTableExpr("?", table).Exec(ctx); err != nil {
 		t.Fatalf("insert failed: %v", err)
@@ -72,8 +75,8 @@ func printPR1429Users(t *testing.T, ctx context.Context, db *bun.DB, table bun.I
 	var users []PR1429User
 	if err := db.NewSelect().
 		Model(&users).
-		ModelTableExpr("? AS ?", table, bun.Ident("user")).
-		OrderExpr(`"user"."id" ASC`).
+		ModelTableExpr("? AS ?", table, bun.Ident("pr1429_user")).
+		OrderExpr(`"pr1429_user"."id" ASC`).
 		Limit(10).
 		Scan(ctx); err != nil {
 		t.Fatalf("select failed: %v", err)

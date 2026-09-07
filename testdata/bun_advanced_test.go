@@ -55,8 +55,7 @@ func TestBun_MultipleDataTypes(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*DataTypeTest)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*DataTypeTest)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*DataTypeTest)(nil))
 
 	// Insert record with various types
 	record := &DataTypeTest{
@@ -82,10 +81,13 @@ func TestBun_MultipleDataTypes(t *testing.T) {
 
 	// Retrieve and verify
 	var retrieved DataTypeTest
-	err = db.NewSelect().
-		Model(&retrieved).
-		Where(`"id" = ?`, lastID).
-		Scan(ctx)
+	qSelect := db.NewSelect().Model(&retrieved)
+	if lastID > 0 {
+		qSelect = qSelect.Where(`"id" = ?`, lastID)
+	} else {
+		qSelect = qSelect.Where(`"string_field" = ?`, record.StringField)
+	}
+	err = qSelect.Scan(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to retrieve: %v", err)
@@ -112,8 +114,7 @@ func TestBun_NullableFields(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*NullableFields)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*NullableFields)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*NullableFields)(nil))
 
 	// Insert with NULL values
 	record := &NullableFields{
@@ -133,10 +134,13 @@ func TestBun_NullableFields(t *testing.T) {
 
 	// Retrieve and verify NULL handling
 	var retrieved NullableFields
-	err = db.NewSelect().
-		Model(&retrieved).
-		Where(`"id" = ?`, lastID).
-		Scan(ctx)
+	qSelect := db.NewSelect().Model(&retrieved)
+	if lastID > 0 {
+		qSelect = qSelect.Where(`"id" = ?`, lastID)
+	} else {
+		qSelect = qSelect.Order("id DESC").Limit(1)
+	}
+	err = qSelect.Scan(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to retrieve NULL values: %v", err)
@@ -157,8 +161,7 @@ func TestBun_ComplexWhereConditions(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -200,8 +203,7 @@ func TestBun_GroupByAggregation(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -247,8 +249,7 @@ func TestBun_StringOperations(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -285,8 +286,7 @@ func TestBun_InOperator(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -325,8 +325,7 @@ func TestBun_BetweenOperator(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -364,8 +363,7 @@ func TestBun_Distinct(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data with duplicates
 	records := []ComplexQuery{
@@ -408,8 +406,7 @@ func TestBun_UpdateConditional(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -422,7 +419,7 @@ func TestBun_UpdateConditional(t *testing.T) {
 	// Update records based on condition
 	res, err := db.NewUpdate().
 		Model((*ComplexQuery)(nil)).
-		Set(`"is_active" = ?`, false).
+		Set(`"is_active" = ?`, db2dialect.SmallIntBool(0)).
 		Where(`"amount" > ?`, 100.00).
 		Exec(ctx)
 
@@ -446,8 +443,7 @@ func TestBun_Aggregations(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -507,8 +503,7 @@ func TestBun_OffsetPagination(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -566,8 +561,7 @@ func TestBun_RawSQL(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{
@@ -603,8 +597,7 @@ func TestBun_PreparedStatements(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert multiple records for prepared statement test
 	for i := 1; i <= 3; i++ {
@@ -643,8 +636,7 @@ func TestBun_CaseHandling(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*ComplexQuery)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*ComplexQuery)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*ComplexQuery)(nil))
 
 	// Insert test data
 	records := []ComplexQuery{

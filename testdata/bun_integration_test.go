@@ -61,6 +61,16 @@ func getBunDB(t *testing.T) *bun.DB {
 	return db
 }
 
+// Helper to cleanly reset a table for tests
+func resetTable(t *testing.T, ctx context.Context, db *bun.DB, model interface{}) {
+	t.Helper()
+
+	_, _ = db.NewDropTable().Model(model).Exec(ctx)
+	if _, err := db.NewCreateTable().Model(model).Exec(ctx); err != nil {
+		t.Fatalf("Failed to create table: %v", err)
+	}
+}
+
 // Test: Create table with Bun ORM
 func TestBun_CreateTable(t *testing.T) {
 	db := getBunDB(t)
@@ -69,7 +79,7 @@ func TestBun_CreateTable(t *testing.T) {
 	ctx := context.Background()
 
 	// Drop if exists
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
+	_, _ = db.NewDropTable().Model((*Employee)(nil)).Exec(ctx)
 
 	// Create table
 	_, err := db.NewCreateTable().Model((*Employee)(nil)).Exec(ctx)
@@ -88,8 +98,7 @@ func TestBun_InsertSingleRecord(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	// Insert
 	employee := &Employee{
@@ -104,12 +113,25 @@ func TestBun_InsertSingleRecord(t *testing.T) {
 		t.Fatalf("Failed to insert: %v", err)
 	}
 
-	lastID, _ := res.LastInsertId()
-	if lastID <= 0 {
-		t.Error("Expected positive LastInsertId")
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		t.Fatalf("Failed to read affected row count: %v", err)
 	}
 
-	t.Logf("✓ Inserted employee with ID: %d", lastID)
+	if rowsAffected != 1 {
+		t.Errorf("Expected one inserted employee, got %d", rowsAffected)
+	}
+
+	var inserted Employee
+	if err := db.NewSelect().Model(&inserted).Where("\"email\" = ?", employee.Email).Scan(ctx); err != nil {
+		t.Fatalf("Failed to retrieve inserted employee: %v", err)
+	}
+
+	if inserted.Name != employee.Name {
+		t.Errorf("Expected inserted employee name %q, got %q", employee.Name, inserted.Name)
+	}
+
+	t.Log("✓ Inserted employee successfully")
 }
 
 // Test: Bulk insert with Bun ORM
@@ -120,8 +142,7 @@ func TestBun_BulkInsert(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	// Bulk insert
 	products := []Product{
@@ -153,8 +174,7 @@ func TestBun_SelectAll(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	employees := []Employee{
 		{Name: "Alice Johnson", Email: "alice@example.com", Salary: 85000},
@@ -186,8 +206,7 @@ func TestBun_SelectWithWhere(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Laptop", Price: 999.99, Category: "Electronics", Quantity: db2dialect.SmallInt(5)},
@@ -223,8 +242,7 @@ func TestBun_Update(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	employee := &Employee{
 		Name:   "John Doe",
@@ -273,8 +291,7 @@ func TestBun_BulkUpdate(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Item1", Price: 10.00, Available: db2dialect.SmallIntBool(0)},
@@ -311,8 +328,7 @@ func TestBun_Delete(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	employee := &Employee{
 		Name:   "John Doe",
@@ -348,8 +364,7 @@ func TestBun_BulkDelete(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Laptop", Price: 999.99},
@@ -385,8 +400,7 @@ func TestBun_Count(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Item1", Price: 10.00},
@@ -417,8 +431,7 @@ func TestBun_OrderByAndLimit(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Expensive", Price: 999.99},
@@ -459,8 +472,7 @@ func TestBun_QueryIntoMap(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	products := []Product{
 		{Name: "Laptop", Price: 999.99},
@@ -494,8 +506,7 @@ func TestBun_Transaction(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	// Run in transaction
 	err := db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
@@ -539,8 +550,7 @@ func TestBun_DataTypes(t *testing.T) {
 	ctx := context.Background()
 
 	// Drop and create
-	db.NewDropTable().Model((*Project)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Project)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Project)(nil))
 
 	// Test various data types
 	now := time.Now()
@@ -562,10 +572,13 @@ func TestBun_DataTypes(t *testing.T) {
 
 	// Retrieve and verify
 	var retrieved Project
-	err = db.NewSelect().
-		Model(&retrieved).
-		Where(`"id" = ?`, lastID).
-		Scan(ctx)
+	qSelect := db.NewSelect().Model(&retrieved)
+	if lastID > 0 {
+		qSelect = qSelect.Where(`"id" = ?`, lastID)
+	} else {
+		qSelect = qSelect.Where(`"title" = ?`, project.Title)
+	}
+	err = qSelect.Scan(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to retrieve: %v", err)
@@ -590,8 +603,7 @@ func TestBun_AddColumn(t *testing.T) {
 	ctx := context.Background()
 
 	// Drop and create table
-	db.NewDropTable().Model((*Product)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Product)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Product)(nil))
 
 	// Add column
 	_, err := db.NewAddColumn().
@@ -615,8 +627,7 @@ func TestBun_CreateIndex(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup table
-	db.NewDropTable().Model((*Employee)(nil)).IfExists().Exec(ctx)
-	db.NewCreateTable().Model((*Employee)(nil)).IfNotExists().Exec(ctx)
+	resetTable(t, ctx, db, (*Employee)(nil))
 
 	// Create index
 	_, err := db.NewCreateIndex().

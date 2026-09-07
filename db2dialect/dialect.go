@@ -3,6 +3,7 @@ package db2dialect
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/uptrace/bun/dialect"
 	"github.com/uptrace/bun/dialect/feature"
@@ -12,22 +13,90 @@ import (
 // DB2 dialect name constant
 const db2Name dialect.Name = 10 // Custom value for DB2 dialect
 
+// TargetPlatform represents the target DB2 platform flavor
+type TargetPlatform int
+
+const (
+	// TargetLUW targets DB2 for Linux, Unix, and Windows (default)
+	TargetLUW TargetPlatform = iota
+	// TargetZOS targets DB2 for z/OS (Mainframe)
+	TargetZOS
+	// TargetIBMi targets DB2 for IBM i (AS400/iSeries)
+	TargetIBMi
+)
+
+// String returns the string representation of the target platform
+func (t TargetPlatform) String() string {
+	switch t {
+	case TargetZOS:
+		return "z/OS"
+	case TargetIBMi:
+		return "IBM i"
+	default:
+		return "LUW"
+	}
+}
+
+// Option configures a Dialect instance
+type Option func(*Dialect)
+
+// WithTarget sets the target DB2 platform flavor
+func WithTarget(target TargetPlatform) Option {
+	return func(d *Dialect) {
+		d.target = target
+		d.targetSetExplicitly = true
+	}
+}
+
 // Dialect represents the DB2 SQL dialect for Bun ORM
 type Dialect struct {
 	schema.BaseDialect
-	tables   *schema.Tables  // Registry for table schemas
-	features feature.Feature // Enabled DB2 features
+	tables              *schema.Tables  // Registry for table schemas
+	features            feature.Feature // Enabled DB2 features
+	target              TargetPlatform  // Target DB2 platform flavor
+	targetSetExplicitly bool            // Whether target was set explicitly via WithTarget
+	autoDetected        bool            // Whether target was auto-detected from connection
 }
 
-// New creates a new DB2 dialect instance
-func New() *Dialect {
+// New creates a new DB2 dialect instance with optional functional options
+func New(opts ...Option) *Dialect {
 	d := &Dialect{
 		// Identity is required so Bun emits the GENERATED ... AS IDENTITY clause
 		// (via AppendSequence) and omits autoincrement PK columns from INSERT statements.
 		features: feature.CTE | feature.WithValues | feature.SelectExists | feature.CompositeIn | feature.OffsetFetch | feature.Identity,
+		target:   TargetLUW, // LUW is default for backward compatibility
 	}
+
+	for _, opt := range opts {
+		opt(d)
+	}
+
 	d.tables = schema.NewTables(d)
 	return d
+}
+
+// Target returns the target DB2 platform flavor
+func (d *Dialect) Target() TargetPlatform {
+	return d.target
+}
+
+// DummyTable returns the dummy table name for non-table/dual queries.
+// On z/OS, every SELECT statement strictly requires a FROM clause (SYSIBM.SYSDUMMY1).
+func (d *Dialect) DummyTable() string {
+	return "SYSIBM.SYSDUMMY1"
+}
+
+// CatalogSchema returns the system catalog schema name for the target platform.
+// LUW uses SYSCAT, z/OS uses SYSIBM, and IBM i uses QSYS2.
+func (d *Dialect) CatalogSchema() string {
+	switch d.target {
+	case TargetZOS:
+		return "SYSIBM"
+	case TargetIBMi:
+		return "QSYS2"
+	default:
+		return "SYSCAT"
+	}
 }
 
 // IdentQuote returns the identifier quote character (double quote for DB2)
@@ -63,9 +132,44 @@ func (d *Dialect) DefaultSchema() string {
 	return ""
 }
 
-// Init initializes the dialect with a database connection
-// This is called by Bun during initialization
+// AppendTime formats time.Time into DB2 SQL timestamp format ('YYYY-MM-DD HH:MM:SS.ffffff')
+// DB2 TIMESTAMP columns do not accept RFC3339 timezone offsets (e.g. '+00:00').
+func (d *Dialect) AppendTime(b []byte, tm time.Time) []byte {
+	if tm.IsZero() {
+		return append(b, "NULL"...)
+	}
+	b = append(b, '\'')
+	b = tm.UTC().AppendFormat(b, "2006-01-02 15:04:05.000000")
+	b = append(b, '\'')
+	return b
+}
+
+// Init initializes the dialect with a database connection.
+// Automatically detects the target platform flavor (LUW, z/OS, or IBM i) if not explicitly set.
 func (d *Dialect) Init(db *sql.DB) {
-	// Placeholder for future initialization logic
-	// Currently, lazy initialization in Tables() is sufficient
+	if db == nil || d.targetSetExplicitly || d.autoDetected {
+		return
+	}
+
+	var dummy int
+	// Try LUW check (SYSCAT.TABLES exists only on DB2 LUW)
+	if err := db.QueryRow("SELECT 1 FROM SYSCAT.TABLES FETCH FIRST 1 ROWS ONLY").Scan(&dummy); err == nil {
+		d.target = TargetLUW
+		d.autoDetected = true
+		return
+	}
+
+	// Try z/OS check (SYSIBM.SYSTABLES exists on z/OS)
+	if err := db.QueryRow("SELECT 1 FROM SYSIBM.SYSTABLES FETCH FIRST 1 ROWS ONLY").Scan(&dummy); err == nil {
+		d.target = TargetZOS
+		d.autoDetected = true
+		return
+	}
+
+	// Try IBM i check (QSYS2.SYSTABLES exists on IBM i / AS400)
+	if err := db.QueryRow("SELECT 1 FROM QSYS2.SYSTABLES FETCH FIRST 1 ROWS ONLY").Scan(&dummy); err == nil {
+		d.target = TargetIBMi
+		d.autoDetected = true
+		return
+	}
 }

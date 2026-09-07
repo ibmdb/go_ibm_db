@@ -2,6 +2,7 @@
 package db2dialect
 
 import (
+	"database/sql"
 	"reflect"
 	"time"
 
@@ -12,6 +13,12 @@ import (
 // Maps Go types to appropriate DB2 SQL types
 func (d *Dialect) OnTable(table *schema.Table) {
 	for _, field := range table.Fields {
+		// On z/OS, 'DEFAULT current_timestamp' in CREATE TABLE produces SQL0104N/SQL0199N/SQL0637N syntax error.
+		// Clear SQLDefault on z/OS so Bun emits 'TIMESTAMP' cleanly without an invalid DEFAULT clause.
+		if d.target == TargetZOS && (field.SQLDefault == "current_timestamp" || field.SQLDefault == "CURRENT_TIMESTAMP" || field.SQLDefault == "WITH DEFAULT") {
+			field.SQLDefault = ""
+		}
+
 		// Bun resolves CreateTableSQLType from UserSQLType/DiscoveredSQLType only after
 		// OnTable returns, so an explicit `type:` tag must be preserved here.
 		if field.UserSQLType != "" || field.CreateTableSQLType != "" {
@@ -75,7 +82,7 @@ func (d *Dialect) mapFieldType(field *schema.Field) {
 		}
 
 	case reflect.Struct:
-		// Special handling for time.Time and the custom time-based types
+		// Special handling for time.Time, database/sql Null types, and custom time-based types
 		switch typ {
 		case reflect.TypeOf(time.Time{}):
 			field.DiscoveredSQLType = "TIMESTAMP"
@@ -84,6 +91,22 @@ func (d *Dialect) mapFieldType(field *schema.Field) {
 		case reflect.TypeOf(TimeOfDay{}):
 			field.DiscoveredSQLType = "TIME"
 		case reflect.TypeOf(Timestamp{}):
+			field.DiscoveredSQLType = "TIMESTAMP"
+		case reflect.TypeOf(sql.NullBool{}):
+			field.DiscoveredSQLType = "SMALLINT"
+		case reflect.TypeOf(sql.NullString{}):
+			field.DiscoveredSQLType = "VARCHAR(255)"
+		case reflect.TypeOf(sql.NullInt64{}):
+			field.DiscoveredSQLType = "BIGINT"
+		case reflect.TypeOf(sql.NullInt32{}):
+			field.DiscoveredSQLType = "INTEGER"
+		case reflect.TypeOf(sql.NullInt16{}):
+			field.DiscoveredSQLType = "SMALLINT"
+		case reflect.TypeOf(sql.NullByte{}):
+			field.DiscoveredSQLType = "SMALLINT"
+		case reflect.TypeOf(sql.NullFloat64{}):
+			field.DiscoveredSQLType = "DOUBLE PRECISION"
+		case reflect.TypeOf(sql.NullTime{}):
 			field.DiscoveredSQLType = "TIMESTAMP"
 		default:
 			// Catch any other named type whose underlying type is time.Time

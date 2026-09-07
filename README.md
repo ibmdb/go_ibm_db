@@ -550,6 +550,22 @@ go_ibm_db/testdata/config.json file.
 
 - To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
 
+## Running Bun ORM Tests
+
+To run the Bun ORM integration tests, configure the connection information for the target DB2 server and set `DB2_TARGET_PLATFORM` to `LUW` or `ZOS` before running the tests.
+
+```sh
+export DB2_TARGET_PLATFORM=LUW # or ZOS
+go test -v ./testdata -run "TestBun"
+```
+
+In PowerShell:
+
+```powershell
+$env:DB2_TARGET_PLATFORM = "LUW" # or ZOS
+go test -v ./testdata -run "TestBun"
+```
+
 # For Secure Database Connection using SSL/TSL
 
 > go_ibm_db supports secure connection to Database Server over SSL same as ODBC/CLI driver. If you have SSL Certificate from server or an CA signed certificate, just use it in connection string as below:

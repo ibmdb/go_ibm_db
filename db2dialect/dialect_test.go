@@ -121,6 +121,50 @@ func TestDefaultSchema(t *testing.T) {
 	t.Logf("✓ Default schema: %s", schema)
 }
 
+// TestTargetOptions verifies target platform option configuration and catalog helper methods
+func TestTargetOptions(t *testing.T) {
+	// Default target (LUW)
+	dLuw := New()
+	if dLuw.Target() != TargetLUW {
+		t.Errorf("Expected default target TargetLUW, got %v", dLuw.Target())
+	}
+	if dLuw.Target().String() != "LUW" {
+		t.Errorf("Expected string 'LUW', got %q", dLuw.Target().String())
+	}
+	if dLuw.CatalogSchema() != "SYSCAT" {
+		t.Errorf("Expected catalog schema 'SYSCAT' for LUW, got %q", dLuw.CatalogSchema())
+	}
+
+	// z/OS target
+	dZos := New(WithTarget(TargetZOS))
+	if dZos.Target() != TargetZOS {
+		t.Errorf("Expected target TargetZOS, got %v", dZos.Target())
+	}
+	if dZos.Target().String() != "z/OS" {
+		t.Errorf("Expected string 'z/OS', got %q", dZos.Target().String())
+	}
+	if dZos.CatalogSchema() != "SYSIBM" {
+		t.Errorf("Expected catalog schema 'SYSIBM' for z/OS, got %q", dZos.CatalogSchema())
+	}
+
+	// IBM i target
+	dIbmi := New(WithTarget(TargetIBMi))
+	if dIbmi.Target() != TargetIBMi {
+		t.Errorf("Expected target TargetIBMi, got %v", dIbmi.Target())
+	}
+	if dIbmi.Target().String() != "IBM i" {
+		t.Errorf("Expected string 'IBM i', got %q", dIbmi.Target().String())
+	}
+	if dIbmi.CatalogSchema() != "QSYS2" {
+		t.Errorf("Expected catalog schema 'QSYS2' for IBM i, got %q", dIbmi.CatalogSchema())
+	}
+
+	// Dummy table check
+	if dZos.DummyTable() != "SYSIBM.SYSDUMMY1" {
+		t.Errorf("Expected dummy table 'SYSIBM.SYSDUMMY1', got %q", dZos.DummyTable())
+	}
+}
+
 // TestAppendOffsetLimit verifies pagination SQL generation
 func TestAppendOffsetLimit(t *testing.T) {
 	tests := []struct {
