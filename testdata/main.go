@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"testing"
 	"time"
 
 	a "github.com/ibmdb/go_ibm_db"
@@ -20,6 +21,45 @@ var database string
 var uid string
 var pwd string
 var connStr string
+
+// Supported values for DB2_TARGET_PLATFORM env var.
+const (
+	PlatformLUW   = "LUW"
+	PlatformZOS   = "ZOS"
+	PlatformAS400 = "AS400"
+)
+
+// TargetPlatform returns the normalized DB2_TARGET_PLATFORM env var,
+// defaulting to LUW when unset.
+func TargetPlatform() string {
+	platform, found := os.LookupEnv("DB2_TARGET_PLATFORM")
+	if !found || len(strings.TrimSpace(platform)) == 0 {
+		return PlatformLUW
+	}
+	return strings.ToUpper(strings.TrimSpace(platform))
+}
+
+// SkipOnPlatform skips the current test if DB2_TARGET_PLATFORM matches
+// one of the given platforms (e.g. PlatformAS400, PlatformZOS).
+func SkipOnPlatform(t *testing.T, platforms ...string) {
+	current := TargetPlatform()
+	for _, p := range platforms {
+		if current == strings.ToUpper(p) {
+			t.Skipf("Skipping test: not supported on DB2_TARGET_PLATFORM=%s", current)
+		}
+	}
+}
+
+// CCSIDUnicodeClause returns " ccsid unicode" on z/OS, where graphic/DBCS
+// columns (GRAPHIC, VARGRAPHIC, DBCLOB, CODEUNITS32) need an explicit
+// Unicode table CCSID to avoid EBCDIC conversion errors (SQL0969N/-879).
+// It returns an empty string on other platforms, which don't support the clause.
+func CCSIDUnicodeClause() string {
+	if TargetPlatform() == PlatformZOS {
+		return " ccsid unicode"
+	}
+	return ""
+}
 
 // Read Config variable from json file
 type Config struct {

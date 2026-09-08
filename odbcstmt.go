@@ -59,7 +59,7 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 		defer releaseHandle(h)
 		return nil, NewError("SQLPrepare", h)
 	}
-	ps, err := ExtractParameters(h)
+	ps, err := ExtractParameters(h, query)
 	if err != nil {
 		defer releaseHandle(h)
 		return nil, err
