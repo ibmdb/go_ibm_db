@@ -33,9 +33,8 @@ func TestDialectName(t *testing.T) {
 	d := New()
 	name := d.Name()
 
-	// Just verify it's not the zero value - type safety is at compile-time
-	if name == 0 {
-		t.Errorf("Expected non-zero name, got zero")
+	if name != db2Name {
+		t.Errorf("Expected DB2 dialect name %d, got %d", db2Name, name)
 	}
 	t.Logf("✓ Dialect name: %v", name)
 }
@@ -162,6 +161,34 @@ func TestTargetOptions(t *testing.T) {
 	// Dummy table check
 	if dZos.DummyTable() != "SYSIBM.SYSDUMMY1" {
 		t.Errorf("Expected dummy table 'SYSIBM.SYSDUMMY1', got %q", dZos.DummyTable())
+	}
+}
+
+// TestExplicitConstructors verifies platform-specific constructors avoid auto-detection.
+func TestExplicitConstructors(t *testing.T) {
+	tests := []struct {
+		name   string
+		new    func() *Dialect
+		target TargetPlatform
+	}{
+		{"LUW", NewLUW, TargetLUW},
+		{"z/OS", NewZOS, TargetZOS},
+		{"IBM i", NewIBMi, TargetIBMi},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dialect := test.new()
+			if dialect.Target() != test.target {
+				t.Fatalf("expected target %v, got %v", test.target, dialect.Target())
+			}
+			if !dialect.targetSetExplicitly {
+				t.Fatal("explicit constructor must disable target auto-detection")
+			}
+			if dialect.autoDetected {
+				t.Fatal("explicit constructor should not mark target as auto-detected")
+			}
+		})
 	}
 }
 

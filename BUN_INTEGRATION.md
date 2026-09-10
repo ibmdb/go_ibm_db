@@ -15,17 +15,24 @@ The `db2dialect` package provides seamless integration between **Bun ORM** (v1.2
 
 ### Installation
 
-This integration requires Go 1.24 or newer because Bun v1.2.18 requires that toolchain version.
+The core `go_ibm_db` driver does not require Bun. The optional `db2dialect` module requires Go 1.24 or newer because Bun v1.2.18 requires that toolchain version.
 
 1. **Install Bun ORM**:
    ```bash
    go get github.com/uptrace/bun@latest
    ```
 
-2. **Use go_ibm_db driver** (already part of this repository):
+2. **Install the optional DB2 dialect**:
+	```bash
+	go get github.com/ibmdb/go_ibm_db/db2dialect@latest
+	```
+
+3. **Use go_ibm_db driver**:
    ```bash
    go get github.com/ibmdb/go_ibm_db@latest
    ```
+
+Users who do not use Bun only need the final command. The dialect is maintained as a nested module so Bun is not included in the core driver's dependency graph.
 
 ### Quick Start Example
 
@@ -62,8 +69,8 @@ func main() {
 	}
 	defer sqldb.Close()
 
-	// 2. Wrap with Bun and use db2dialect
-	db := bun.NewDB(sqldb, db2dialect.New())
+	// 2. Wrap with Bun and use the explicitly selected DB2 dialect
+	db := bun.NewDB(sqldb, db2dialect.NewLUW())
 	defer db.Close()
 
 	// 3. Use Bun ORM normally
@@ -98,6 +105,34 @@ func main() {
 }
 ```
 
+### Explicit target platform selection
+
+Use an explicit constructor when the DB2 server platform is known:
+
+```go
+db2dialect.NewLUW()  // DB2 for Linux, UNIX, and Windows
+db2dialect.NewZOS()  // DB2 for z/OS
+db2dialect.NewIBMi() // DB2 for IBM i
+```
+
+For example:
+
+```go
+db := bun.NewDB(sqldb, db2dialect.NewZOS())
+```
+
+These constructors mark the target as explicit. The dialect therefore skips
+the automatic catalog checks against `SYSCAT`, `SYSIBM`, and `QSYS2` during
+initialization, avoiding additional database queries and connection setup
+latency. Use `db2dialect.New()` only when the target platform is unknown and
+automatic detection is desired. The equivalent option form is:
+
+```go
+db := bun.NewDB(sqldb,
+	db2dialect.New(db2dialect.WithTarget(db2dialect.TargetIBMi)),
+)
+```
+
 ### Type Mappings
 
 The db2dialect automatically maps Go types to DB2 SQL types:
@@ -113,6 +148,10 @@ The db2dialect automatically maps Go types to DB2 SQL types:
 | `[]byte` | `BLOB` | Binary Large Object |
 | `time.Time` | `TIMESTAMP` | Date and time with microsecond precision |
 | `*T` (pointer) | Dereferenced type | Nullable variant of base type |
+
+> **Note:** `time.Time` values are always converted to UTC before being sent to
+> DB2, because DB2 `TIMESTAMP` columns reject RFC3339 timezone offsets. A
+> `time.Time` in a local zone will be silently shifted to UTC on insert/update.
 
 ### Pagination in DB2
 

@@ -54,6 +54,11 @@ jobs:
       if: ${{ env.DB2_CONNSTR != '' && env.DB2_CONNSTR != null }}
       run: |
            pwd
-           cd testdata
+           go test ./...
+           cd db2dialect
+           go test .
+           cd integration
+           go test ./...
+           cd ../../testdata
            echo "============TEST CASES ======"
            go test -v

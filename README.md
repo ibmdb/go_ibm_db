@@ -8,7 +8,7 @@ Interface for GoLang to `DB2 for z/OS`, `DB2 for LUW` and `DB2 for i` database s
 
 ## Prerequisite
 
-- Golang should be installed(Golang version should be >=1.12.x and <= 1.24.X)
+- Golang should be installed (Go 1.22.1 or newer is recommended for the core driver; the optional Bun ORM integration requires Go 1.24 or newer)
 
 - Git should be installed in your system.
 
@@ -550,20 +550,65 @@ go_ibm_db/testdata/config.json file.
 
 - To run a particular test case (use "go test sample_test.go main.go", example "go test Arraystring_test.go main.go")
 
-## Running Bun ORM Tests
+## Optional Bun ORM Integration
 
-To run the Bun ORM integration tests, configure the connection information for the target DB2 server and set `DB2_TARGET_PLATFORM` to `LUW` or `ZOS` before running the tests.
+Bun ORM support is maintained separately from the core `go_ibm_db` driver. Users who only use `database/sql` do not need to install Bun or the DB2 Bun dialect, and the core driver does not include those dependencies.
+
+Install the optional modules in an application that uses Bun:
 
 ```sh
-export DB2_TARGET_PLATFORM=LUW # or ZOS
-go test -v ./testdata -run "TestBun"
+go get github.com/ibmdb/go_ibm_db@latest
+go get github.com/ibmdb/go_ibm_db/db2dialect@latest
+go get github.com/uptrace/bun@latest
 ```
 
-In PowerShell:
+Minimal Bun example for a known DB2 for LUW server:
+
+```go
+package main
+
+import (
+	"context"
+	"database/sql"
+
+	_ "github.com/ibmdb/go_ibm_db"
+	"github.com/ibmdb/go_ibm_db/db2dialect"
+	"github.com/uptrace/bun"
+)
+
+func main() {
+	sqlDB, err := sql.Open("go_ibm_db", "DATABASE=testdb;HOSTNAME=localhost;PORT=50000;UID=db2inst1;PWD=password")
+	if err != nil {
+		panic(err)
+	}
+	defer sqlDB.Close()
+
+	// Explicit selection avoids automatic SYSCAT/SYSIBM/QSYS2 catalog checks.
+	db := bun.NewDB(sqlDB, db2dialect.NewLUW())
+	defer db.Close()
+
+	var count int
+	if err := db.NewSelect().ColumnExpr("COUNT(*)").Table("users").Scan(context.Background(), &count); err != nil {
+		panic(err)
+	}
+}
+```
+
+Use `db2dialect.NewZOS()` for DB2 for z/OS or `db2dialect.NewIBMi()` for DB2 for IBM i. Use `db2dialect.New()` only when the server platform is unknown and automatic target detection is desired.
+
+For the complete Bun integration guide, including type mappings and pagination, see [BUN_INTEGRATION.md](BUN_INTEGRATION.md).
+
+## Running Bun ORM Tests
+
+The Bun tests are in the separate `db2dialect/integration` module. Configure the connection information for the target DB2 server and set `DB2_TARGET_PLATFORM` to `LUW`, `ZOS`, or `IBMI` before running them.
+
+From PowerShell:
 
 ```powershell
-$env:DB2_TARGET_PLATFORM = "LUW" # or ZOS
-go test -v ./testdata -run "TestBun"
+$env:DB2_TARGET_PLATFORM = "LUW" # or ZOS or IBMI
+$env:DB2_CONNSTR = "DATABASE=...;HOSTNAME=...;PORT=...;UID=...;PWD=..."
+cd db2dialect/integration
+go test -v -run "TestBun"
 ```
 
 # For Secure Database Connection using SSL/TSL

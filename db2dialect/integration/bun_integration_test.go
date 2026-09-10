@@ -52,10 +52,7 @@ type Product struct {
 
 // Helper function to get DB connection
 func getBunDB(t *testing.T) *bun.DB {
-	sqldb := Createconnection()
-	if sqldb == nil {
-		t.Fatal("Failed to create SQL connection")
-	}
+	sqldb := OpenTestDB(t)
 
 	db := bun.NewDB(sqldb, GetDialect())
 	return db

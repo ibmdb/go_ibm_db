@@ -1,4 +1,12 @@
+# Unreleased
+
+- `Result.LastInsertId()` now accepts `int64`/`float64`/`string`/`nil` in
+  addition to `[]byte`. A `nil` value (non-identity insert) now returns
+  `(0, nil)` instead of an error — update callers that relied on an error
+  for non-identity inserts.
+
 # 2025-10-16, Version 0.5.4
+
 
 - Added LastInsertId methods and Testcase. (#272) (Vikas Mathur)
 

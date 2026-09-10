@@ -10,8 +10,10 @@ import (
 	"github.com/uptrace/bun/schema"
 )
 
-// DB2 dialect name constant
-const db2Name dialect.Name = 10 // Custom value for DB2 dialect
+// db2Name is intentionally outside Bun v1.2.18's built-in dialect range
+// (Invalid through Oracle, values 0-5). Keep this value stable and re-check
+// it when upgrading Bun so a newly added built-in dialect cannot collide.
+const db2Name dialect.Name = 10
 
 // TargetPlatform represents the target DB2 platform flavor
 type TargetPlatform int
@@ -73,6 +75,21 @@ func New(opts ...Option) *Dialect {
 
 	d.tables = schema.NewTables(d)
 	return d
+}
+
+// NewLUW creates a dialect explicitly configured for DB2 for LUW.
+func NewLUW() *Dialect {
+	return New(WithTarget(TargetLUW))
+}
+
+// NewZOS creates a dialect explicitly configured for DB2 for z/OS.
+func NewZOS() *Dialect {
+	return New(WithTarget(TargetZOS))
+}
+
+// NewIBMi creates a dialect explicitly configured for DB2 for IBM i.
+func NewIBMi() *Dialect {
+	return New(WithTarget(TargetIBMi))
 }
 
 // Target returns the target DB2 platform flavor

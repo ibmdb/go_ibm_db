@@ -27,10 +27,7 @@ type PR1429User struct {
 func TestBun_PR1429_Example(t *testing.T) {
 	ctx := context.Background()
 
-	sqldb := Createconnection()
-	if sqldb == nil {
-		t.Fatal("Failed to create SQL connection")
-	}
+	sqldb := OpenTestDB(t)
 	defer sqldb.Close()
 
 	db := bun.NewDB(sqldb, GetDialect())
