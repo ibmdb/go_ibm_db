@@ -46,6 +46,7 @@ func DecimalArray_1() error {
 
 	var errStr string
 	substring := "SQLSTATE=22003"
+	substring2 := "SQLSTATE=22023"
 	c := []int{4}
 	d := []float32{1234.98}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")
@@ -58,7 +59,8 @@ func DecimalArray_1() error {
 	if err != nil {
 		errStr = fmt.Sprintf("%s", err)
 
-		if !strings.Contains(errStr, substring) {
+		if !strings.Contains(errStr, substring) && !strings.Contains(errStr, substring2) &&
+			!strings.Contains(errStr, "{22003}") && !strings.Contains(errStr, "{22023}") {
 			fmt.Println("Query error: ", err)
 			return err
 		}

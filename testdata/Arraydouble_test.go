@@ -33,6 +33,9 @@ func DoubleArray_1() error {
 
 	a := []int{1, 2, 3, 4, 5}
 	b := []float64{-1.79769e308, 1.79769e308, 9876543210.123456789, 2.225e-307, -2.225e-307}
+	if TargetPlatform() == PlatformZOS {
+		b = []float64{-7e75, 7e75, 9876543210.123456789, 1e-75, -1e-75}
+	}
 	st, err := db.Prepare("Insert into " + tableOne + " values(?, ?)")
 	if err != nil {
 		fmt.Println("Prepare error: ", err)
@@ -41,7 +44,7 @@ func DoubleArray_1() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []double")
+		fmt.Println("Error while inserting []double: ", err)
 		return err
 	}
 

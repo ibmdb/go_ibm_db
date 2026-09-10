@@ -33,6 +33,9 @@ func DoublePrecisionArray() error {
 
 	a := []int{1, 2, 3, 4}
 	b := []float64{-1.79769e+308, 1.79769e+308, 2.225e-307, -2.225e-307}
+	if TargetPlatform() == PlatformZOS {
+		b = []float64{-7e75, 7e75, 1e-75, -1e-75}
+	}
 	st, err := db.Prepare("Insert into " + tableOne + " values(?, ?)")
 	if err != nil {
 		fmt.Println("Prepare error: ", err)
@@ -41,7 +44,7 @@ func DoublePrecisionArray() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []double precision")
+		fmt.Println("Error while inserting []double precision: ", err)
 		return err
 	}
 	rows, err2 := db.Query("SELECT * from " + tableOne)

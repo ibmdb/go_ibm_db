@@ -9,6 +9,8 @@ import (
 )
 
 func TestNullValueFloat(t *testing.T) {
+	// Shared table includes a BOOLEAN column, unsupported on Db2 for z/OS.
+	SkipOnPlatform(t, PlatformZOS)
 	if NullValueFloat() != nil {
 		t.Error("Error at NullValueFloat")
 	}

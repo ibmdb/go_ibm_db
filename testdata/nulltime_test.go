@@ -8,6 +8,8 @@ import (
 )
 
 func TestNullValueTime(t *testing.T) {
+	// Shared table includes a BOOLEAN column, unsupported on Db2 for z/OS.
+	SkipOnPlatform(t, PlatformZOS)
 	if NullValueTime() != nil {
 		t.Error("Error at NullValueTime")
 	}

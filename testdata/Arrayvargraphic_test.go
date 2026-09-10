@@ -22,7 +22,7 @@ func VargraphicArray_1() error {
 
 	db.Query("DROP table " + tableOne)
 
-	_, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 vargraphic(20))")
+	_, err := db.Exec("CREATE table " + tableOne + "(col1 int, col2 vargraphic(20))" + CCSIDUnicodeClause())
 	if err != nil {
 		fmt.Println("Exec error: ", err)
 		return err

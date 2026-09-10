@@ -9,6 +9,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"runtime"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -233,34 +234,66 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		buf = unsafe.Pointer(&b[0])
 		buflen = api.SQLLEN(len(b))
 		plen = p.StoreStrLen_or_IndPtr(buflen)
-		size = api.SQLULEN(len(b))
+		size = 8
 		sqltype = api.SQL_DOUBLE
 	case []time.Time:
-		ctype = api.SQL_C_TYPE_TIMESTAMP
-		b := make([]api.SQL_TIMESTAMP_STRUCT, len(d))
-		for i := 0; i < len(d); i++ {
-			y, m, day := d[i].Date()
-			b[i] = api.SQL_TIMESTAMP_STRUCT{
-				Year:     api.SQLSMALLINT(y),
-				Month:    api.SQLUSMALLINT(m),
-				Day:      api.SQLUSMALLINT(day),
-				Hour:     api.SQLUSMALLINT(d[i].Hour()),
-				Minute:   api.SQLUSMALLINT(d[i].Minute()),
-				Second:   api.SQLUSMALLINT(d[i].Second()),
-				Fraction: api.SQLUINTEGER(d[i].Nanosecond()),
+		switch p.SQLType {
+		case api.SQL_TYPE_DATE:
+			ctype = api.SQL_C_TYPE_DATE
+			b := make([]api.SQL_DATE_STRUCT, len(d))
+			for i := 0; i < len(d); i++ {
+				y, m, day := d[i].Date()
+				b[i] = api.SQL_DATE_STRUCT{
+					Year:  api.SQLSMALLINT(y),
+					Month: api.SQLUSMALLINT(m),
+					Day:   api.SQLUSMALLINT(day),
+				}
 			}
+			p.Data = b
+			buf = unsafe.Pointer(&b[0])
+			sqltype = api.SQL_TYPE_DATE
+			size = 10
+		case api.SQL_TYPE_TIME:
+			ctype = api.SQL_C_TYPE_TIME
+			b := make([]api.SQL_TIME_STRUCT, len(d))
+			for i := 0; i < len(d); i++ {
+				b[i] = api.SQL_TIME_STRUCT{
+					Hour:   api.SQLUSMALLINT(d[i].Hour()),
+					Minute: api.SQLUSMALLINT(d[i].Minute()),
+					Second: api.SQLUSMALLINT(d[i].Second()),
+				}
+			}
+			p.Data = b
+			buf = unsafe.Pointer(&b[0])
+			sqltype = api.SQL_TYPE_TIME
+			size = 8
+		default:
+			ctype = api.SQL_C_TYPE_TIMESTAMP
+			b := make([]api.SQL_TIMESTAMP_STRUCT, len(d))
+			for i := 0; i < len(d); i++ {
+				y, m, day := d[i].Date()
+				b[i] = api.SQL_TIMESTAMP_STRUCT{
+					Year:     api.SQLSMALLINT(y),
+					Month:    api.SQLUSMALLINT(m),
+					Day:      api.SQLUSMALLINT(day),
+					Hour:     api.SQLUSMALLINT(d[i].Hour()),
+					Minute:   api.SQLUSMALLINT(d[i].Minute()),
+					Second:   api.SQLUSMALLINT(d[i].Second()),
+					Fraction: api.SQLUINTEGER(d[i].Nanosecond()),
+				}
+			}
+			p.Data = b
+			buf = unsafe.Pointer(&b[0])
+			sqltype = api.SQL_TYPE_TIMESTAMP
+			if p.isDescribed && p.SQLType == api.SQL_TYPE_TIMESTAMP {
+				decimal = p.Decimal
+			}
+			if decimal <= 0 {
+				// represented as yyyy-mm-dd hh:mm:ss.fff format in ms sql server
+				decimal = 3
+			}
+			size = 20 + api.SQLULEN(decimal)
 		}
-		p.Data = b
-		buf = unsafe.Pointer(&b[0])
-		sqltype = api.SQL_TYPE_TIMESTAMP
-		if p.isDescribed && p.SQLType == api.SQL_TYPE_TIMESTAMP {
-			decimal = p.Decimal
-		}
-		if decimal <= 0 {
-			// represented as yyyy-mm-dd hh:mm:ss.fff format in ms sql server
-			decimal = 3
-		}
-		size = 20 + api.SQLULEN(decimal)
 	default:
 		panic(fmt.Errorf("unsupported bind param type %T", v))
 	}
@@ -276,7 +309,7 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 }
 
 // ExtractParameters will describe all the parameters
-func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
+func ExtractParameters(h api.SQLHSTMT, query ...string) ([]Parameter, error) {
 	// count parameters
 	trc.Trace1("param.go: ExtractParameters() - ENTRY")
 
@@ -291,6 +324,10 @@ func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
 		return nil, nil
 	}
 	ps := make([]Parameter, n)
+	if runtime.GOOS == "zos" && len(query) > 0 && strings.HasPrefix(strings.TrimSpace(strings.ToUpper(query[0])), "SELECT") {
+		trc.Trace1("param.go: ExtractParameters() - skipping SQLDescribeParam on z/OS")
+		return ps, nil
+	}
 	//fetch param descriptions
 	for i := range ps {
 		p := &ps[i]

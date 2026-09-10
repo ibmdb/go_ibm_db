@@ -37,7 +37,7 @@ func TimeStampArray() error {
 	defer st.Close()
 	_, err = st.Query(a, a, a)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []timestamp")
+		fmt.Println("Error while inserting []timestamp: ", err)
 		return err
 	}
 	return nil
