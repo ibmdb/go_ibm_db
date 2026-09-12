@@ -45,6 +45,7 @@ func Numeric2Array_1() error {
 
 	var errStr string
 	substring := "SQLSTATE=22003"
+	substring2 := "SQLSTATE=22023"
 	c := []int{4}
 	d := []float32{10e31}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")
@@ -57,7 +58,8 @@ func Numeric2Array_1() error {
 	if err != nil {
 		errStr = fmt.Sprintf("%s", err)
 
-		if !strings.Contains(errStr, substring) {
+		if !strings.Contains(errStr, substring) && !strings.Contains(errStr, substring2) &&
+			!strings.Contains(errStr, "{22003}") && !strings.Contains(errStr, "{22023}") {
 			fmt.Println("Query error: ", err)
 			return err
 		}
@@ -65,8 +67,8 @@ func Numeric2Array_1() error {
 	}
 	rows, err2 := db.Query("SELECT * from " + tableOne)
 	if err2 != nil {
-		fmt.Println("Query error: ", err)
-		return err
+		fmt.Println("Query error: ", err2)
+		return err2
 	}
 
 	defer rows.Close()

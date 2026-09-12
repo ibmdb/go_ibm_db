@@ -7,6 +7,8 @@ import (
 )
 
 func TestAllDataTypes(t *testing.T) {
+	// BOOLEAN is not a valid column data type on Db2 for z/OS.
+	SkipOnPlatform(t, PlatformZOS)
 	if AllDataTypes() != nil {
 		t.Error("Error at AllDataTypes")
 	}
@@ -17,7 +19,7 @@ func AllDataTypes() error {
 	defer db.Close()
 
 	db.Exec("Drop table arr")
-	_, err := db.Exec("create table arr (c1 int, c2 SMALLINT, c3 BIGINT, c4 INTEGER, c5 DECIMAL(4,2), c6 NUMERIC, c7 float, c8 double, c9 decfloat, c10 char(10), c11 varchar(10), c12 char for bit data, c13 clob(10),c14 dbclob(100), c15 date, c16 time, c17 timestamp, c18 blob(10), c19 boolean) ccsid unicode")
+	_, err := db.Exec("create table arr (c1 int, c2 SMALLINT, c3 BIGINT, c4 INTEGER, c5 DECIMAL(4,2), c6 NUMERIC, c7 float, c8 double, c9 decfloat, c10 char(10), c11 varchar(10), c12 char for bit data, c13 clob(10),c14 dbclob(100), c15 date, c16 time, c17 timestamp, c18 blob(10), c19 boolean)" + CCSIDUnicodeClause())
 	if err != nil {
 		fmt.Println("Exec error: ", err)
 		return err

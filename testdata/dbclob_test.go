@@ -6,8 +6,12 @@ import (
 )
 
 func TestDBClobDoubleByteChars(t *testing.T) {
-	if DBClobDoubleByteChars() != nil {
-		t.Error("Error at DBClobDoubleByteChars")
+	// GRAPHIC/VARGRAPHIC on Db2 for i (AS400) is strictly double-byte (DBCS);
+	// mixing single-byte ASCII with double-byte chars in a G'...' literal is
+	// not well-defined there and corrupts the SBCS portion on round-trip.
+	SkipOnPlatform(t, PlatformAS400)
+	if err := DBClobDoubleByteChars(); err != nil {
+		t.Error("Error at DBClobDoubleByteChars:", err)
 	}
 }
 
@@ -19,7 +23,7 @@ func DBClobDoubleByteChars() error {
 	defer db.Close()
 
 	db.Exec("DROP TABLE dbclob_test")
-	_, err := db.Exec("CREATE TABLE dbclob_test (id INTEGER, vargraphic_col VARGRAPHIC(100), dbclob_col DBCLOB)")
+	_, err := db.Exec("CREATE TABLE dbclob_test (id INTEGER, vargraphic_col VARGRAPHIC(100), dbclob_col DBCLOB)" + CCSIDUnicodeClause())
 	if err != nil {
 		fmt.Println("Exec error: ", err)
 		return err

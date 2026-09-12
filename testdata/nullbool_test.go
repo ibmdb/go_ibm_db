@@ -9,6 +9,8 @@ import (
 )
 
 func TestNullValueBool(t *testing.T) {
+	// BOOLEAN is not a valid column data type on Db2 for z/OS.
+	SkipOnPlatform(t, PlatformZOS)
 	if NullValueBool() != nil {
 		t.Error("Error at NullValueBool")
 	}

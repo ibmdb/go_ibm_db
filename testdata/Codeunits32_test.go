@@ -8,6 +8,8 @@ import (
 )
 
 func TestCodeunits32(t *testing.T) {
+	// CODEUNITS32 length units are not accepted by Db2 for z/OS or Db2 for i.
+	SkipOnPlatform(t, PlatformZOS, PlatformAS400)
 	if ChineseCharCodeunits32_1() != nil {
 		t.Error("Error at ChineseCodeunits32")
 	}
@@ -19,7 +21,7 @@ func ChineseCharCodeunits32_1() error {
 	db.Exec("Drop table TT")
 	_, err := db.Exec("create table TT(C1 INTEGER NOT NULL, C2 VARCHAR(30 CODEUNITS32))")
 	if err != nil {
-		fmt.Println("ERROR: CREATE TABLE ")
+		fmt.Println("ERROR: CREATE TABLE: ", err)
 		return err
 	}
 	st, err := db.Prepare("Insert into TT(C1, C2) values(1,'▒~@▒~L▒~I▒~[~[▒~T')")
