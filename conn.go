@@ -85,6 +85,38 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	return &Conn{h: h, fetchSize: fetchSize}, nil
 }
 
+// GetInfo reports a string-valued piece of DBMS/driver information via
+// SQLGetInfo, for infoType values such as api.SQL_DBMS_NAME, SQL_DBMS_VER,
+// SQL_DRIVER_NAME, SQL_DRIVER_VER, SQL_ODBC_VER, SQL_SERVER_NAME,
+// SQL_DATABASE_NAME or SQL_USER_NAME. Callers can reach this through
+// database/sql's Conn.Raw, since *Conn implements driver.Conn:
+//
+//	err := db.Conn(ctx).Raw(func(dc interface{}) error {
+//	    name, err := dc.(*go_ibm_db.Conn).GetInfo(api.SQL_DBMS_NAME)
+//	    ...
+//	})
+func (c *Conn) GetInfo(infoType api.SQLUSMALLINT) (string, error) {
+	trc.Trace1("conn.go: GetInfo() - ENTRY")
+
+	buf := make([]uint16, 128)
+	var outLen api.SQLSMALLINT
+	var ret api.SQLRETURN
+	if runtime.GOOS == "zos" {
+		// odbc api on zos doesn't handle null terminated strings, the exact size is passed
+		ret = api.SQLGetInfo(c.h, infoType,
+			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(2*len(buf)), &outLen)
+	} else {
+		ret = api.SQLGetInfo(c.h, infoType,
+			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(len(buf)), &outLen)
+	}
+	if IsError(ret) {
+		return "", NewError("SQLGetInfo", c.h)
+	}
+
+	trc.Trace1("conn.go: GetInfo() - EXIT")
+	return api.UTF16ToString(buf), nil
+}
+
 func (c *Conn) Close() error {
 	trc.Trace1("conn.go: Close() - ENTRY")
 

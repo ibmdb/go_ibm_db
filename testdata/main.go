@@ -11,6 +11,7 @@ import (
 	"time"
 
 	a "github.com/ibmdb/go_ibm_db"
+	"github.com/ibmdb/go_ibm_db/api"
 )
 
 var ctx = context.Background()
@@ -405,6 +406,34 @@ func Close() error {
 	}
 
 	return nil
+}
+
+// GetInfo connects to the database and returns the DBMS/driver information
+// for the given SQLGetInfo info type (e.g. api.SQL_DBMS_NAME), obtained
+// through database/sql's Conn.Raw since *go_ibm_db.Conn implements driver.Conn.
+func GetInfo(infoType api.SQLUSMALLINT) (string, error) {
+	db := Createconnection()
+	defer db.Close()
+
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	var name string
+	err = conn.Raw(func(driverConn interface{}) error {
+		c, ok := driverConn.(*a.Conn)
+		if !ok {
+			return fmt.Errorf("unexpected driver.Conn type %T", driverConn)
+		}
+		name, err = c.GetInfo(infoType)
+		return err
+	})
+	if err != nil {
+		return "", err
+	}
+	return name, nil
 }
 
 // PoolOpen creates a pool and makes a connection.

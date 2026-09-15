@@ -83,6 +83,17 @@ const (
 	SQL_DECFLOAT                     = -360
 	SQL_XML                          = -370
 
+	// SQLGetInfo info types. Passed as the infoType argument to SQLGetInfo /
+	// Conn.GetInfo to query DBMS/driver information from the connection.
+	SQL_DRIVER_NAME   = 6
+	SQL_DRIVER_VER    = 7
+	SQL_ODBC_VER      = 10
+	SQL_SERVER_NAME   = 13
+	SQL_DATABASE_NAME = 16
+	SQL_DBMS_NAME     = 17
+	SQL_DBMS_VER      = 18
+	SQL_USER_NAME     = 47
+
 	SQL_C_CHAR                  = SQL_CHAR
 	SQL_C_LONG                  = SQL_INTEGER
 	SQL_C_SHORT                 = SQL_SMALLINT

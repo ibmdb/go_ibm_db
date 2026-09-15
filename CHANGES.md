@@ -1,5 +1,11 @@
 # Unreleased
 
+- Added `Conn.GetInfo(infoType)`, exposing the ODBC `SQLGetInfo` API so
+  applications can query DBMS/driver information such as `SQL_DBMS_NAME`,
+  `SQL_DBMS_VER`, `SQL_DRIVER_NAME`, `SQL_DRIVER_VER`, `SQL_ODBC_VER`,
+  `SQL_SERVER_NAME`, `SQL_DATABASE_NAME` and `SQL_USER_NAME`. Reachable via
+  `database/sql`'s `Conn.Raw` since `*Conn` implements `driver.Conn`.
+
 - `Result.LastInsertId()` now accepts `int64`/`float64`/`string`/`nil` in
   addition to `[]byte`. A `nil` value (non-identity insert) now returns
   `(0, nil)` instead of an error — update callers that relied on an error

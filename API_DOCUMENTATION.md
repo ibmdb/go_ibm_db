@@ -24,6 +24,7 @@
 13.	[.Init(N,connStr)](#InitApi)
 14.	[.SetConnMaxLifetime(N)](#SetConnMaxLifetimeApi)
 15.	[.LastInsertId()](#LastInsertIdApi)
+16.	[.GetInfo(infoType)](#GetInfoApi)
 
 ### <a name="OpenApi"></a> 1) .Open(drivername,ConnectionString)
 
@@ -536,3 +537,66 @@ func main() {
 }
 
 ```
+
+### <a name="GetInfoApi"></a> 16) .GetInfo(infoType)
+
+Reports a string-valued piece of DBMS/driver information for the connected
+server via the ODBC `SQLGetInfo` API. `infoType` is one of the `SQL_*`
+info-type constants exported by the `github.com/ibmdb/go_ibm_db/api` package,
+such as:
+
+* `api.SQL_DBMS_NAME` - DBMS product name, e.g. `DB2/LINUXX8664` for LUW, `DB2` for z/OS, or `DB2/AS400` for IBM i.
+* `api.SQL_DBMS_VER` - DBMS version string.
+* `api.SQL_DRIVER_NAME` - ODBC driver file name.
+* `api.SQL_DRIVER_VER` - ODBC driver version string.
+* `api.SQL_ODBC_VER` - ODBC version implemented by the driver manager.
+* `api.SQL_SERVER_NAME` - Server name used to connect.
+* `api.SQL_DATABASE_NAME` - Current database name.
+* `api.SQL_USER_NAME` - User name used to connect, as recognized by the DBMS.
+
+`GetInfo` is a method on the driver's `*Conn` type (which implements
+`database/sql/driver.Conn`), so it is reached through `database/sql`'s
+`Conn.Raw`:
+
+```go
+package main
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+
+	go_ibm_db "github.com/ibmdb/go_ibm_db"
+	"github.com/ibmdb/go_ibm_db/api"
+)
+
+func main() {
+	var conStr = "HOSTNAME=hostname;PORT=port;PROTOCOL=TCPIP;UID=username;PWD=password;DATABASE=dbname"
+	db, err := sql.Open("go_ibm_db", conStr)
+	if err != nil {
+		fmt.Println("Database connection failed:", err)
+		return
+	}
+	defer db.Close()
+
+	conn, err := db.Conn(context.Background())
+	if err != nil {
+		fmt.Println("Conn error:", err)
+		return
+	}
+	defer conn.Close()
+
+	var name string
+	err = conn.Raw(func(driverConn interface{}) error {
+		var rawErr error
+		name, rawErr = driverConn.(*go_ibm_db.Conn).GetInfo(api.SQL_DBMS_NAME)
+		return rawErr
+	})
+	if err != nil {
+		fmt.Println("GetInfo error:", err)
+		return
+	}
+	fmt.Println("DBMS name:", name)
+}
+```
+

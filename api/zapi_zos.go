@@ -155,6 +155,15 @@ func SQLGetDiagRec(handleType SQLSMALLINT, handle SQLHANDLE, recNumber SQLSMALLI
 	return SQLRETURN(r)
 }
 
+func SQLGetInfo(connectionHandle SQLHDBC, infoType SQLUSMALLINT, infoValuePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT) SQLRETURN {
+	trc.Trace1("api/zapi_zos.go SQLGetInfo() - ENTRY")
+
+	r := utils.CfuncEbcdic(getFunc(&dll, "SQLGetInfoW"), uintptr(connectionHandle), uintptr(infoType), uintptr(infoValuePtr), uintptr(bufferLength), uintptr(unsafe.Pointer(stringLengthPtr)))
+
+	trc.Trace1("api/zapi_zos.go SQLGetInfo() - EXIT")
+	return SQLRETURN(r)
+}
+
 func SQLNumParams(statementHandle SQLHSTMT, parameterCountPtr *SQLSMALLINT) SQLRETURN {
 	trc.Trace1("api/zapi_zos.go SQLNumParams() - ENTRY")
 

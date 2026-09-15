@@ -138,6 +138,17 @@ const (
 	MAX_FIELD_SIZE = 1024
 	SQL_BOOLEAN    = 16
 
+	// SQLGetInfo info types. Passed as the infoType argument to SQLGetInfo /
+	// Conn.GetInfo to query DBMS/driver information from the connection.
+	SQL_DRIVER_NAME   = 6
+	SQL_DRIVER_VER    = 7
+	SQL_ODBC_VER      = 10
+	SQL_SERVER_NAME   = 13
+	SQL_DATABASE_NAME = 16
+	SQL_DBMS_NAME     = 17
+	SQL_DBMS_VER      = 18
+	SQL_USER_NAME     = 47
+
 	SQL_ATTR_ROW_ARRAY_SIZE   = 27
 	SQL_ATTR_ROW_STATUS_PTR   = 25
 	SQL_ATTR_ROWS_FETCHED_PTR = 26

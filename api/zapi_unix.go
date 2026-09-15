@@ -13,8 +13,9 @@ package api
 
 import (
 	"fmt"
-	trc "github.com/ibmdb/go_ibm_db/log2"
 	"unsafe"
+
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 // #cgo aix LDFLAGS: -ldb2
@@ -170,6 +171,17 @@ func SQLGetDiagRec(handleType SQLSMALLINT, handle SQLHANDLE, recNumber SQLSMALLI
 
 	trc.Trace1(fmt.Sprintf("r = %d", r))
 	trc.Trace1("api/zapi_unix.go SQLGetDiagRec() - EXIT")
+	return SQLRETURN(r)
+}
+
+func SQLGetInfo(connectionHandle SQLHDBC, infoType SQLUSMALLINT, infoValuePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT) (ret SQLRETURN) {
+	trc.Trace1("api/zapi_unix.go SQLGetInfo() - ENTRY")
+	trc.Trace1(fmt.Sprintf("infoType=%d, bufferLength=%d", infoType, bufferLength))
+
+	r := C.SQLGetInfo(C.SQLHDBC(connectionHandle), C.SQLUSMALLINT(infoType), C.SQLPOINTER(infoValuePtr), C.SQLSMALLINT(bufferLength), (*C.SQLSMALLINT)(stringLengthPtr))
+
+	trc.Trace1(fmt.Sprintf("r = %d", r))
+	trc.Trace1("api/zapi_unix.go SQLGetInfo() - EXIT")
 	return SQLRETURN(r)
 }
 
