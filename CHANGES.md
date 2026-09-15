@@ -4,6 +4,12 @@
   addition to `[]byte`. A `nil` value (non-identity insert) now returns
   `(0, nil)` instead of an error — update callers that relied on an error
   for non-identity inserts.
+- Added `Conn.DBMSName()`, a new method returning the ODBC `SQL_DBMS_NAME`
+  info string for a connection. It's purely additive (no changes to any
+  existing method) and used by `db2dialect` (Bun ORM integration, separate
+  module) to auto-detect the DB2 platform flavor via a single `SQLGetInfo`
+  call instead of catalog queries; it has no effect on plain `database/sql`
+  usage.
 
 # 2025-10-16, Version 0.5.4
 

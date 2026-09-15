@@ -98,6 +98,35 @@ func (c *Conn) Close() error {
 	return releaseHandle(h)
 }
 
+// DBMSName returns the ODBC SQL_DBMS_NAME info string for this connection
+// (e.g. via SQLGetInfo), used by db2dialect to detect the target DB2 platform.
+func (c *Conn) DBMSName() (string, error) {
+	return c.InfoString(api.SQL_DBMS_NAME)
+}
+
+// InfoString returns an arbitrary ODBC SQLGetInfo string-valued attribute
+// (e.g. SQL_DBMS_NAME=17, SQL_DBMS_VER=18, SQL_SERVER_NAME=13) for this connection.
+func (c *Conn) InfoString(infoType uint16) (string, error) {
+	trc.Trace1("conn.go: InfoString() - ENTRY")
+
+	buf := make([]uint16, 256)
+	var outLen api.SQLSMALLINT
+	var ret api.SQLRETURN
+	if runtime.GOOS == "zos" {
+		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
+			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(2*len(buf)), &outLen)
+	} else {
+		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
+			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(len(buf)), &outLen)
+	}
+	if IsError(ret) {
+		trc.Trace1("conn.go: InfoString() - EXIT (error)")
+		return "", NewError("SQLGetInfo", c.h)
+	}
+	trc.Trace1("conn.go: InfoString() - EXIT")
+	return api.UTF16ToString(buf), nil
+}
+
 // Query method executes the statement with out prepare if no args provided, and a driver.ErrSkip otherwise (handled by sql.go to execute usual preparedStmt)
 func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 	trc.Trace1("conn.go: Query() - ENTRY")

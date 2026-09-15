@@ -192,6 +192,32 @@ func TestExplicitConstructors(t *testing.T) {
 	}
 }
 
+// TestClassifyDBMSName verifies SQL_DBMS_NAME string classification used by
+// Init(), matching values confirmed against real servers / python-ibmdb.
+func TestClassifyDBMSName(t *testing.T) {
+	tests := []struct {
+		name string
+		dbms string
+		want TargetPlatform
+	}{
+		{"LUW", "DB2/LINUXX8664", TargetLUW},
+		{"z/OS via exact DB2", "DB2", TargetZOS},
+		{"z/OS via DSN prefix", "DSN11015", TargetZOS},
+		{"IBM i via AS prefix", "AS/400", TargetIBMi},
+		{"Informix defaults to LUW", "IDS", TargetLUW},
+		{"unrecognized defaults to LUW", "SOMETHING_ELSE", TargetLUW},
+		{"empty defaults to LUW", "", TargetLUW},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := classifyDBMSName(test.dbms); got != test.want {
+				t.Fatalf("classifyDBMSName(%q) = %v, want %v", test.dbms, got, test.want)
+			}
+		})
+	}
+}
+
 // TestAppendOffsetLimit verifies pagination SQL generation
 func TestAppendOffsetLimit(t *testing.T) {
 	tests := []struct {

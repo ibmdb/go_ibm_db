@@ -186,6 +186,11 @@ const (
 	SQL_DESC_NULLABLE           = 1008
 	SQL_NULLABLE                = 1
 	SQL_NO_NULLS                = 0
+
+	// SQLGetInfo InfoType used by db2dialect (Bun ORM) to detect the DB2 platform flavor.
+	SQL_DBMS_NAME   = 17
+	SQL_SERVER_NAME = 13
+	SQL_DBMS_VER    = 18
 )
 
 type (
