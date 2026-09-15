@@ -166,6 +166,11 @@ const (
 	SQL_CP_DEFAULT              = SQL_CP_OFF
 	SQL_CP_STRICT_MATCH         = uintptr(C.SQL_CP_STRICT_MATCH)
 	SQL_CP_RELAXED_MATCH        = uintptr(C.SQL_CP_RELAXED_MATCH)
+
+	// SQLGetInfo InfoType used by db2dialect (Bun ORM) to detect the DB2 platform flavor.
+	SQL_DBMS_NAME   = 17
+	SQL_SERVER_NAME = 13
+	SQL_DBMS_VER    = 18
 )
 
 type (

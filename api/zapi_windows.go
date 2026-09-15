@@ -5,10 +5,11 @@ package api
 
 import (
 	"fmt"
-	trc "github.com/ibmdb/go_ibm_db/log2"
 	"os"
 	"syscall"
 	"unsafe"
+
+	trc "github.com/ibmdb/go_ibm_db/log2"
 )
 
 var (
@@ -29,6 +30,7 @@ var (
 	procSQLFreeHandle      = mododbc32.NewProc("SQLFreeHandle")
 	procSQLGetData         = mododbc32.NewProc("SQLGetData")
 	procSQLGetDiagRecW     = mododbc32.NewProc("SQLGetDiagRecW")
+	procSQLGetInfoW        = mododbc32.NewProc("SQLGetInfoW")
 	procSQLNumParams       = mododbc32.NewProc("SQLNumParams")
 	procSQLNumResultCols   = mododbc32.NewProc("SQLNumResultCols")
 	procSQLPrepareW        = mododbc32.NewProc("SQLPrepareW")
@@ -231,6 +233,18 @@ func SQLGetDiagRec(handleType SQLSMALLINT, handle SQLHANDLE, recNumber SQLSMALLI
 
 	trc.Trace1(fmt.Sprintf("ret = %d", ret))
 	trc.Trace1("api/zapi_windows.go SQLGetDiagRec()- EXIT")
+	return
+}
+
+func SQLGetInfo(connectionHandle SQLHDBC, infoType SQLUSMALLINT, infoValuePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT) (ret SQLRETURN) {
+	trc.Trace1("api/zapi_windows.go SQLGetInfo() - ENTRY")
+	trc.Trace1(fmt.Sprintf("infoType=%d, bufferLength=%d", infoType, bufferLength))
+
+	r0, _, _ := syscall.Syscall6(procSQLGetInfoW.Addr(), 5, uintptr(connectionHandle), uintptr(infoType), uintptr(infoValuePtr), uintptr(bufferLength), uintptr(unsafe.Pointer(stringLengthPtr)), 0)
+	ret = SQLRETURN(r0)
+
+	trc.Trace1(fmt.Sprintf("ret = %d", ret))
+	trc.Trace1("api/zapi_windows.go SQLGetInfo()- EXIT")
 	return
 }
 

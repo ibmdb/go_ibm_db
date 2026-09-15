@@ -122,10 +122,14 @@ db := bun.NewDB(sqldb, db2dialect.NewZOS())
 ```
 
 These constructors mark the target as explicit. The dialect therefore skips
-the automatic catalog checks against `SYSCAT`, `SYSIBM`, and `QSYS2` during
-initialization, avoiding additional database queries and connection setup
-latency. Use `db2dialect.New()` only when the target platform is unknown and
-automatic detection is desired. The equivalent option form is:
+automatic platform detection during initialization, avoiding the extra
+connection setup latency of a detection call. Use `db2dialect.New()` only
+when the target platform is unknown and automatic detection is desired: it
+issues a single `SQLGetInfo(SQL_DBMS_NAME)` call right after connect and
+classifies the result. If detection fails for any reason (unsupported driver
+connection, an ODBC error, or an unrecognized `DBMS_NAME` value), it logs a
+warning and defaults to LUW rather than failing. The equivalent option form
+is:
 
 ```go
 db := bun.NewDB(sqldb,

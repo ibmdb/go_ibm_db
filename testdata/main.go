@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,14 +30,72 @@ const (
 	PlatformAS400 = "AS400"
 )
 
-// TargetPlatform returns the normalized DB2_TARGET_PLATFORM env var,
-// defaulting to LUW when unset.
+// TargetPlatform returns the normalized DB2_TARGET_PLATFORM env var if set
+// (explicit override), otherwise auto-detects the connected server's
+// platform via SQLGetInfo(SQL_DBMS_NAME), caching the result for the life of
+// the test binary. Falls back to LUW if no env var is set and detection
+// fails (e.g. no live DB2 connection available).
 func TargetPlatform() string {
-	platform, found := os.LookupEnv("DB2_TARGET_PLATFORM")
-	if !found || len(strings.TrimSpace(platform)) == 0 {
+	if platform, found := os.LookupEnv("DB2_TARGET_PLATFORM"); found && len(strings.TrimSpace(platform)) > 0 {
+		return strings.ToUpper(strings.TrimSpace(platform))
+	}
+	detectedPlatformOnce.Do(func() {
+		detectedPlatform = detectPlatform()
+	})
+	return detectedPlatform
+}
+
+var (
+	detectedPlatform     string
+	detectedPlatformOnce sync.Once
+)
+
+// detectPlatform opens a live connection and classifies its SQL_DBMS_NAME,
+// defaulting to PlatformLUW if a connection can't be established or
+// SQLGetInfo detection otherwise fails.
+func detectPlatform() string {
+	db := Createconnection()
+	if db == nil {
 		return PlatformLUW
 	}
-	return strings.ToUpper(strings.TrimSpace(platform))
+	defer db.Close()
+
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return PlatformLUW
+	}
+	defer conn.Close()
+
+	var name string
+	rawErr := conn.Raw(func(driverConn any) error {
+		c, ok := driverConn.(*a.Conn)
+		if !ok {
+			return fmt.Errorf("unexpected driver connection type %T", driverConn)
+		}
+		var callErr error
+		name, callErr = c.DBMSName()
+		return callErr
+	})
+	if rawErr != nil {
+		return PlatformLUW
+	}
+	return classifyPlatform(name)
+}
+
+// classifyPlatform maps an ODBC SQL_DBMS_NAME string to a testdata platform
+// constant, matching the heuristic used by IBM's own python-ibmdb test
+// suite: z/OS reports the exact string "DB2" (no platform suffix) or a name
+// prefixed with "DSN"; IBM i is prefixed "AS"; LUW is prefixed "DB2/".
+func classifyPlatform(name string) string {
+	upper := strings.ToUpper(name)
+	switch {
+	case upper == "DB2" || strings.HasPrefix(upper, "DSN"):
+		return PlatformZOS
+	case strings.HasPrefix(upper, "AS"):
+		return PlatformAS400
+	default:
+		return PlatformLUW
+	}
 }
 
 // SkipOnPlatform skips the current test if DB2_TARGET_PLATFORM matches
