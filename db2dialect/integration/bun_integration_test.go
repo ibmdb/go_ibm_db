@@ -54,7 +54,7 @@ type Product struct {
 func getBunDB(t *testing.T) *bun.DB {
 	sqldb := OpenTestDB(t)
 
-	db := bun.NewDB(sqldb, GetDialect())
+	db := bun.NewDB(sqldb, GetDialect(sqldb))
 	return db
 }
 

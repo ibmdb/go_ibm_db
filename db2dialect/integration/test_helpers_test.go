@@ -45,17 +45,20 @@ func Createconnection() *sql.DB {
 	return db
 }
 
-func GetDialect() *db2dialect.Dialect {
+func GetDialect(db *sql.DB) *db2dialect.Dialect {
+	var dialect *db2dialect.Dialect
 	switch strings.ToUpper(strings.TrimSpace(os.Getenv("DB2_TARGET_PLATFORM"))) {
 	case "ZOS", "Z/OS", "MAINFRAME":
-		return db2dialect.NewZOS()
+		dialect = db2dialect.NewZOS()
 	case "IBMI", "AS400", "ISERIES":
-		return db2dialect.NewIBMi()
+		dialect = db2dialect.NewIBMi()
 	case "LUW":
-		return db2dialect.NewLUW()
+		dialect = db2dialect.NewLUW()
 	default:
-		return db2dialect.New()
+		dialect = db2dialect.New()
 	}
+	dialect.Init(db)
+	return dialect
 }
 
 func OpenTestDB(t *testing.T) *sql.DB {

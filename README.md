@@ -583,7 +583,7 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	// Explicit selection avoids automatic SYSCAT/SYSIBM/QSYS2 catalog checks.
+	// Explicit selection avoids the automatic SQLGetInfo platform lookup.
 	db := bun.NewDB(sqlDB, db2dialect.NewLUW())
 	defer db.Close()
 
@@ -594,7 +594,7 @@ func main() {
 }
 ```
 
-Use `db2dialect.NewZOS()` for DB2 for z/OS or `db2dialect.NewIBMi()` for DB2 for IBM i. Use `db2dialect.New()` only when the server platform is unknown and automatic target detection is desired.
+Use `db2dialect.NewZOS()` for DB2 for z/OS or `db2dialect.NewIBMi()` for DB2 for IBM i. When the server platform is unknown, call `Init` on `db2dialect.New()` after opening the SQL connection and before passing the dialect to Bun; this detects the target with `SQLGetInfo(SQL_DBMS_NAME)`.
 
 For the complete Bun integration guide, including type mappings and pagination, see [BUN_INTEGRATION.md](BUN_INTEGRATION.md).
 

@@ -30,7 +30,7 @@ func TestBun_PR1429_Example(t *testing.T) {
 	sqldb := OpenTestDB(t)
 	defer sqldb.Close()
 
-	db := bun.NewDB(sqldb, GetDialect())
+	db := bun.NewDB(sqldb, GetDialect(sqldb))
 	defer db.Close()
 
 	tableName := fmt.Sprintf("bun_db2_demo_users_%d", time.Now().Unix())
