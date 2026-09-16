@@ -109,7 +109,7 @@ func SQLCloseCursor(statementHandle SQLHSTMT) (ret SQLRETURN) {
 
 func SQLDescribeCol(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, columnName *SQLWCHAR, bufferLength SQLSMALLINT, nameLengthPtr *SQLSMALLINT, dataTypePtr *SQLSMALLINT, columnSizePtr *SQLULEN, decimalDigitsPtr *SQLSMALLINT, nullablePtr *SQLSMALLINT) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLDescribeCol() - ENTRY")
-	trc.Trace1(fmt.Sprintf("columnNumber=%d, columnName=%s, bufferLength=%d, nameLengthPtr=0x%x, dataTypePtr=0x%x, columnSizePtr=0x%x, decimalDigitsPtr=%x, nullablePtr=0x%x", columnNumber, *columnName, bufferLength, nameLengthPtr, dataTypePtr, columnSizePtr, decimalDigitsPtr, nullablePtr))
+	trc.Trace1(fmt.Sprintf("columnNumber=%d, columnName=%v, bufferLength=%d, nameLengthPtr=0x%x, dataTypePtr=0x%x, columnSizePtr=0x%x, decimalDigitsPtr=%x, nullablePtr=0x%x", columnNumber, *columnName, bufferLength, nameLengthPtr, dataTypePtr, columnSizePtr, decimalDigitsPtr, nullablePtr))
 
 	r0, _, _ := syscall.Syscall9(procSQLDescribeColW.Addr(), 9, uintptr(statementHandle), uintptr(columnNumber), uintptr(unsafe.Pointer(columnName)), uintptr(bufferLength), uintptr(unsafe.Pointer(nameLengthPtr)), uintptr(unsafe.Pointer(dataTypePtr)), uintptr(unsafe.Pointer(columnSizePtr)), uintptr(unsafe.Pointer(decimalDigitsPtr)), uintptr(unsafe.Pointer(nullablePtr)))
 	ret = SQLRETURN(r0)
@@ -144,7 +144,7 @@ func SQLDisconnect(connectionHandle SQLHDBC) (ret SQLRETURN) {
 
 func SQLDriverConnect(connectionHandle SQLHDBC, windowHandle SQLHWND, inConnectionString *SQLWCHAR, stringLength1 SQLSMALLINT, outConnectionString *SQLWCHAR, bufferLength SQLSMALLINT, stringLength2Ptr *SQLSMALLINT, driverCompletion SQLUSMALLINT) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLDriverConnect()- ENTRY")
-	trc.Trace1(fmt.Sprintf("inConnectionString=%s, stringLength1=%d, outConnectionString=%s, bufferLength=%d, stringLength2Ptr=%x, driverCompletion=%d", inConnectionString, stringLength1, outConnectionString, bufferLength, stringLength2Ptr, driverCompletion))
+	trc.Trace1(fmt.Sprintf("inConnectionString=%v, stringLength1=%d, outConnectionString=%v, bufferLength=%d, stringLength2Ptr=%x, driverCompletion=%d", inConnectionString, stringLength1, outConnectionString, bufferLength, stringLength2Ptr, driverCompletion))
 
 	r0, _, _ := syscall.Syscall9(procSQLDriverConnectW.Addr(), 8, uintptr(connectionHandle), uintptr(windowHandle), uintptr(unsafe.Pointer(inConnectionString)), uintptr(stringLength1), uintptr(unsafe.Pointer(outConnectionString)), uintptr(bufferLength), uintptr(unsafe.Pointer(stringLength2Ptr)), uintptr(driverCompletion), 0)
 	ret = SQLRETURN(r0)
@@ -226,7 +226,7 @@ func SQLGetData(statementHandle SQLHSTMT, colOrParamNum SQLUSMALLINT, targetType
 
 func SQLGetDiagRec(handleType SQLSMALLINT, handle SQLHANDLE, recNumber SQLSMALLINT, sqlState *SQLWCHAR, nativeErrorPtr *SQLINTEGER, messageText *SQLWCHAR, bufferLength SQLSMALLINT, textLengthPtr *SQLSMALLINT) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLGetDiagRec() - ENTRY")
-	trc.Trace1(fmt.Sprintf("handleType=%d, recNumber=%d, sqlState=%s, nativeErrorPtr=%x, messageText=%s, bufferLength=%d, textLengthPtr=%x", handleType, recNumber, sqlState, nativeErrorPtr, messageText, bufferLength, textLengthPtr))
+	trc.Trace1(fmt.Sprintf("handleType=%d, recNumber=%d, sqlState=%v, nativeErrorPtr=%x, messageText=%v, bufferLength=%d, textLengthPtr=%x", handleType, recNumber, sqlState, nativeErrorPtr, messageText, bufferLength, textLengthPtr))
 
 	r0, _, _ := syscall.Syscall9(procSQLGetDiagRecW.Addr(), 8, uintptr(handleType), uintptr(handle), uintptr(recNumber), uintptr(unsafe.Pointer(sqlState)), uintptr(unsafe.Pointer(nativeErrorPtr)), uintptr(unsafe.Pointer(messageText)), uintptr(bufferLength), uintptr(unsafe.Pointer(textLengthPtr)), 0)
 	ret = SQLRETURN(r0)
@@ -274,7 +274,7 @@ func SQLNumResultCols(statementHandle SQLHSTMT, columnCountPtr *SQLSMALLINT) (re
 
 func SQLPrepare(statementHandle SQLHSTMT, statementText *SQLWCHAR, textLength SQLINTEGER) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLPrepare() - ENTRY")
-	trc.Trace1(fmt.Sprintf("statementText=%s, textLength=%d", statementText, textLength))
+	trc.Trace1(fmt.Sprintf("statementText=%v, textLength=%d", statementText, textLength))
 
 	r0, _, _ := syscall.Syscall(procSQLPrepareW.Addr(), 3, uintptr(statementHandle), uintptr(unsafe.Pointer(statementText)), uintptr(textLength))
 	ret = SQLRETURN(r0)
@@ -417,7 +417,7 @@ func SQLDropDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEG
 
 func SQLExecDirect(statementHandle SQLHSTMT, statementText *SQLWCHAR, textLength SQLINTEGER) (ret SQLRETURN) {
 	trc.Trace1("api/zapi_windows.go SQLExecDirect() - ENTRY")
-	trc.Trace1(fmt.Sprintf("statementText=%s, textLength=%d", statementText, textLength))
+	trc.Trace1(fmt.Sprintf("statementText=%v, textLength=%d", statementText, textLength))
 
 	r0, _, _ := syscall.Syscall(procSQLExecDirectW.Addr(), 3, uintptr(statementHandle), uintptr(unsafe.Pointer(statementText)), uintptr(textLength))
 	ret = SQLRETURN(r0)
