@@ -486,7 +486,7 @@ func GetInfo(infoType api.SQLUSMALLINT) (string, error) {
 		if !ok {
 			return fmt.Errorf("unexpected driver.Conn type %T", driverConn)
 		}
-		name, err = c.GetInfo(infoType)
+		name, err = c.GetInfo(uint16(infoType))
 		return err
 	})
 	if err != nil {

@@ -10,6 +10,10 @@
   `SQLGetInfo(SQL_DBMS_NAME)` when `DB2_TARGET_PLATFORM` is not set, and
   report the detected platform before running.
 
+- The optional `db2dialect` Bun module now detects the target platform through
+  one `SQLGetInfo(SQL_DBMS_NAME)` call after connecting, instead of querying
+  platform-specific catalog tables.
+
 - `Result.LastInsertId()` now accepts `int64`/`float64`/`string`/`nil` in
   addition to `[]byte`. A `nil` value (non-identity insert) now returns
   `(0, nil)` instead of an error — update callers that relied on an error

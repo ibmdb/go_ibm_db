@@ -122,10 +122,18 @@ db := bun.NewDB(sqldb, db2dialect.NewZOS())
 ```
 
 These constructors mark the target as explicit. The dialect therefore skips
-the automatic catalog checks against `SYSCAT`, `SYSIBM`, and `QSYS2` during
-initialization, avoiding additional database queries and connection setup
-latency. Use `db2dialect.New()` only when the target platform is unknown and
-automatic detection is desired. The equivalent option form is:
+the automatic `SQLGetInfo(SQL_DBMS_NAME)` lookup during initialization.
+Use `db2dialect.New()` only when the target platform is unknown and automatic
+detection is desired. Call `Init` after opening the SQL connection and before
+wrapping it with Bun:
+
+```go
+dialect := db2dialect.New()
+dialect.Init(sqldb)
+db := bun.NewDB(sqldb, dialect)
+```
+
+The equivalent option form is:
 
 ```go
 db := bun.NewDB(sqldb,
