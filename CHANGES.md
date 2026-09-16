@@ -6,6 +6,10 @@
   `SQL_SERVER_NAME`, `SQL_DATABASE_NAME` and `SQL_USER_NAME`. Reachable via
   `database/sql`'s `Conn.Raw` since `*Conn` implements `driver.Conn`.
 
+- Testdata tests now automatically detect the DB2 platform through
+  `SQLGetInfo(SQL_DBMS_NAME)` when `DB2_TARGET_PLATFORM` is not set, and
+  report the detected platform before running.
+
 - `Result.LastInsertId()` now accepts `int64`/`float64`/`string`/`nil` in
   addition to `[]byte`. A `nil` value (non-identity insert) now returns
   `(0, nil)` instead of an error — update callers that relied on an error

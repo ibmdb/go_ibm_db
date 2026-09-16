@@ -189,4 +189,7 @@ func (d *Dialect) Init(db *sql.DB) {
 		d.autoDetected = true
 		return
 	}
+
+	// Keep the default LUW target and avoid retrying failed catalog probes.
+	d.autoDetected = true
 }
