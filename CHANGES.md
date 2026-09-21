@@ -1,24 +1,3 @@
-# Unreleased
-
-- Added `Conn.GetInfo(infoType)`, exposing the ODBC `SQLGetInfo` API so
-  applications can query DBMS/driver information such as `SQL_DBMS_NAME`,
-  `SQL_DBMS_VER`, `SQL_DRIVER_NAME`, `SQL_DRIVER_VER`, `SQL_ODBC_VER`,
-  `SQL_SERVER_NAME`, `SQL_DATABASE_NAME` and `SQL_USER_NAME`. Reachable via
-  `database/sql`'s `Conn.Raw` since `*Conn` implements `driver.Conn`.
-
-- Testdata tests now automatically detect the DB2 platform through
-  `SQLGetInfo(SQL_DBMS_NAME)` when `DB2_TARGET_PLATFORM` is not set, and
-  report the detected platform before running.
-
-- The optional `db2dialect` Bun module now detects the target platform through
-  one `SQLGetInfo(SQL_DBMS_NAME)` call after connecting, instead of querying
-  platform-specific catalog tables.
-
-- `Result.LastInsertId()` now accepts `int64`/`float64`/`string`/`nil` in
-  addition to `[]byte`. A `nil` value (non-identity insert) now returns
-  `(0, nil)` instead of an error — update callers that relied on an error
-  for non-identity inserts.
-
 # 2025-10-16, Version 0.5.4
 
 
