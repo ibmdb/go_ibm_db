@@ -192,6 +192,28 @@ func TestExplicitConstructors(t *testing.T) {
 	}
 }
 
+func TestClassifyDBMSName(t *testing.T) {
+	tests := []struct {
+		name string
+		dbms string
+		want TargetPlatform
+	}{
+		{"LUW", "DB2/LINUXX8664", TargetLUW},
+		{"z/OS DB2", "DB2", TargetZOS},
+		{"z/OS DSN", "DSN11015", TargetZOS},
+		{"IBM i", "AS/400", TargetIBMi},
+		{"unknown defaults to LUW", "OTHER", TargetLUW},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := classifyDBMSName(test.dbms); got != test.want {
+				t.Fatalf("classifyDBMSName(%q) = %v, want %v", test.dbms, got, test.want)
+			}
+		})
+	}
+}
+
 // TestAppendOffsetLimit verifies pagination SQL generation
 func TestAppendOffsetLimit(t *testing.T) {
 	tests := []struct {

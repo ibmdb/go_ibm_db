@@ -95,7 +95,7 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 //	    name, err := dc.(*go_ibm_db.Conn).GetInfo(api.SQL_DBMS_NAME)
 //	    ...
 //	})
-func (c *Conn) GetInfo(infoType api.SQLUSMALLINT) (string, error) {
+func (c *Conn) GetInfo(infoType uint16) (string, error) {
 	trc.Trace1("conn.go: GetInfo() - ENTRY")
 
 	buf := make([]uint16, 128)
@@ -103,10 +103,10 @@ func (c *Conn) GetInfo(infoType api.SQLUSMALLINT) (string, error) {
 	var ret api.SQLRETURN
 	if runtime.GOOS == "zos" {
 		// odbc api on zos doesn't handle null terminated strings, the exact size is passed
-		ret = api.SQLGetInfo(c.h, infoType,
+		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
 			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(2*len(buf)), &outLen)
 	} else {
-		ret = api.SQLGetInfo(c.h, infoType,
+		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
 			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(len(buf)), &outLen)
 	}
 	if IsError(ret) {
