@@ -218,6 +218,18 @@ query = db2dialect.AppendOffsetLimit(query, 20, 10)
 
 ### Troubleshooting
 
+#### Bun dependency download fails on z/OS
+If `go test` fails before compilation with a reset from `proxy.golang.org`, the Go module proxy connection failed while downloading Bun. Fetch modules directly, or configure your site-local Go proxy:
+
+```bash
+cd db2dialect/integration
+go env -w GOPROXY=direct
+go mod download
+go test -v -run "TestBun"
+```
+
+For systems without outbound access, run `go mod vendor` for the integration module on a connected host, copy the workspace to z/OS, and run `go test -mod=vendor -v -run "TestBun"`.
+
 #### "dialect.Name type mismatch"
 This is expected during integration - ensure you're using Bun v1.2.x or later.
 
