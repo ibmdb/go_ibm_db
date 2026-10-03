@@ -134,6 +134,31 @@ go install github.com/ibmdb/go_ibm_db/installer@latest
 go install github.com/ibmdb/go_ibm_db/installer@latest
 ```
 
+### Configure IBM Open Enterprise SDK for Go on z/OS
+
+If Go was installed from the IBM PAX archive, initialize its z/OS runtime environment before building or testing. Use the installation root supplied by your system administrator:
+
+```sh
+export GOROOT=/rsusr/go/latest
+export PATH=$GOROOT/bin:$PATH
+eval "$($GOROOT/go/etc/goz-env)"
+```
+
+If `goz-env` is installed in a different directory, use the path returned by:
+
+```sh
+find /rsusr/go/latest -name goz-env -type f -print
+```
+
+When cgo is enabled, set `COMPILER_PATH` to the directory containing `clang` or `xlclang` before evaluating `goz-env`. It is not required when `CGO_ENABLED=0`.
+
+Verify the installation before continuing:
+
+```sh
+go version
+go env GOOS GOARCH CGO_ENABLED
+```
+
 ### Configure ODBC driver on z/OS
 
 > **Note**
@@ -226,6 +251,18 @@ EOF
 ```
 
     Reference Chapter 3 in the [ODBC Guide and References](https://www.ibm.com/support/knowledgecenter/SSEPEK/pdf/db2z_12_odbcbook.pdf) for more instructions.
+
+For a data source defined in `DSNAOINI`, use the data source name in the Go connection string. For example, if the file contains a `[RS25QDS2]` stanza:
+
+```sh
+export IBM_DB_HOME=DSN.VC10
+export STEPLIB=LC1A.SDSNEXIT:DSN.VC10.SDSNLOD2:DSN.VC10.SDSNLOAD
+export DSNAOINI=/u/ts4875/odbc.ini
+export DB2_TARGET_PLATFORM=ZOS
+export DB2_CONNSTR='DSN=RS25QDS2'
+```
+
+Use `DSN=...` rather than `DATABASE=...` when selecting an ODBC data source. On z/OS, `DATABASE=...` may be interpreted as a Db2 location name and result in SQLCODE `-950` if that location is not defined.
 
 ## <a name="Licenserequirements"></a>For z/OS and iSeries Connectivity and SQL1598N error
 
@@ -610,6 +647,17 @@ $env:DB2_CONNSTR = "DATABASE=...;HOSTNAME=...;PORT=...;UID=...;PWD=..."
 cd db2dialect/integration
 go test -v -run "TestBun"
 ```
+
+On z/OS, if dependency download fails with a reset from `proxy.golang.org`, fetch modules directly from their source repository or use your site-local Go proxy before running the tests:
+
+```bash
+cd db2dialect/integration
+go env -w GOPROXY=direct
+go mod download
+go test -v -run "TestBun"
+```
+
+If the z/OS host has restricted outbound network access, run `go mod vendor` for this module on a connected host and copy the workspace to z/OS, then run `go test -mod=vendor -v -run "TestBun"`.
 
 # For Secure Database Connection using SSL/TSL
 

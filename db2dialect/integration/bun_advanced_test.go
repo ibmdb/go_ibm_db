@@ -172,7 +172,7 @@ func TestBun_ComplexWhereConditions(t *testing.T) {
 		{Name: "Item E", Category: "Clothing", Amount: 75.00, IsActive: db2dialect.SmallIntBool(0)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Complex WHERE with AND/OR using Bun query builder
 	var result []ComplexQuery
@@ -213,7 +213,7 @@ func TestBun_GroupByAggregation(t *testing.T) {
 		{Name: "Item D", Category: "Books", Amount: 30.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Group By with aggregation
 	type CategoryTotal struct {
@@ -258,7 +258,7 @@ func TestBun_StringOperations(t *testing.T) {
 		{Name: "Samsung Galaxy", Category: "Electronics", Amount: 799.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// LIKE query
 	var result []ComplexQuery
@@ -296,7 +296,7 @@ func TestBun_InOperator(t *testing.T) {
 		{Name: "Item 4", Category: "D", Amount: 400.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// IN query
 	categories := []string{"A", "C"}
@@ -335,7 +335,7 @@ func TestBun_BetweenOperator(t *testing.T) {
 		{Name: "Item 4", Category: "Test", Amount: 350.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// BETWEEN query
 	var result []ComplexQuery
@@ -374,7 +374,7 @@ func TestBun_Distinct(t *testing.T) {
 		{Name: "Item E", Category: "Electronics", Amount: 150.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// DISTINCT query
 	type CategoryOnly struct {
@@ -414,7 +414,7 @@ func TestBun_UpdateConditional(t *testing.T) {
 		{Name: "Expensive Item", Category: "Test", Amount: 500.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Update records based on condition
 	res, err := db.NewUpdate().
@@ -452,7 +452,7 @@ func TestBun_Aggregations(t *testing.T) {
 		{Name: "Item 3", Category: "Test", Amount: 300.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Query aggregations
 	type AggResult struct {
@@ -514,7 +514,7 @@ func TestBun_OffsetPagination(t *testing.T) {
 		{Name: "Item 5", Category: "Test", Amount: 50.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Pagination: Page 1 (limit 2, offset 0)
 	var page1 []ComplexQuery
@@ -569,7 +569,7 @@ func TestBun_RawSQL(t *testing.T) {
 		{Name: "Item 2", Category: "Test", Amount: 200.00, IsActive: 1},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Raw SQL query
 	var result []ComplexQuery
@@ -607,7 +607,9 @@ func TestBun_PreparedStatements(t *testing.T) {
 			Amount:   float64(i * 100),
 			IsActive: 1,
 		}
-		db.NewInsert().Model(record).Exec(ctx)
+		if _, err := db.NewInsert().Model(record).Exec(ctx); err != nil {
+			t.Fatalf("Failed to insert prepared statement row %d: %v", i, err)
+		}
 	}
 
 	// Use prepared query multiple times
@@ -645,7 +647,7 @@ func TestBun_CaseHandling(t *testing.T) {
 		{Name: "test", Category: "Books", Amount: 70.00, IsActive: db2dialect.SmallIntBool(1)},
 	}
 
-	db.NewInsert().Model(&records).Exec(ctx)
+	insertTestRows(t, ctx, db, records)
 
 	// Query case-sensitive
 	var result []ComplexQuery
