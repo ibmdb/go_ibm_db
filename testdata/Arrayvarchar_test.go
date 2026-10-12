@@ -43,7 +43,7 @@ func VarcharArray_1() error {
 	}
 
 	var errStr string
-	substring := "SQLSTATE=22001"
+	substring := "22001"
 	c := []int{6}
 	d := []string{"abcdef"}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")

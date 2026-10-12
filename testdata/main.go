@@ -301,11 +301,12 @@ func Query() error {
 		return errPrepare
 	}
 
-	_, errQuery := st.Query()
+	rows, errQuery := st.Query()
 	if errQuery != nil {
 		fmt.Println("Query error: ", errQuery)
 		return errQuery
 	}
+	rows.Close()
 	return nil
 }
 
@@ -324,6 +325,7 @@ func Scan() error {
 		fmt.Println("Query error:  ", errQuery)
 		return errQuery
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var a string
 		errScan := rows.Scan(&a)
@@ -350,6 +352,7 @@ func Next() error {
 		fmt.Println("Query error: ", errQuery)
 		return errQuery
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var a string
@@ -378,6 +381,7 @@ func Columns() error {
 		fmt.Println("Query errir: ", errQuery)
 		return errQuery
 	}
+	defer rows.Close()
 
 	_, err := rows.Columns()
 	if err != nil {
@@ -417,11 +421,12 @@ func Begin() error {
 	db := Createconnection()
 	defer db.Close()
 
-	_, err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return err
 	}
+	tx.Rollback()
 
 	return nil
 }
@@ -431,13 +436,14 @@ func Commit() error {
 	db := Createconnection()
 	defer db.Close()
 
+	db.Exec("DROP table u")
+
 	bg, err := db.Begin()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return err
 	}
 
-	db.Exec("DROP table u")
 	_, errExec := bg.Exec("create table u(id int)")
 	if errExec != nil {
 		fmt.Println("Exec error: ", errExec)
@@ -688,6 +694,7 @@ func ConnectionPool() int {
 	if !ret {
 		return 0
 	}
+	defer pool.Release()
 
 	for i := 0; i < 20; i++ {
 		db := pool.Open(connStr, "SetConnMaxLifetime=10")
@@ -735,6 +742,7 @@ func ConnectionPoolWithTimeout() int {
 	if !ret {
 		return 0
 	}
+	defer pool.Release()
 
 	for i := 0; i < 20; i++ {
 		db := pool.Open(connStr, "SetConnMaxLifetime=10")
@@ -983,18 +991,21 @@ func BadConnectionString() int {
 	UpdateConnectionVariables()
 	badConnStr := "HOSTNAME=hostname1;PORT1234=;DATABASE=sample;UID=uid;PWD=pwd"
 	db, _ := sql.Open("go_ibm_db", badConnStr)
+	defer db.Close()
 	_, err := db.Prepare("select * from arr")
 	if err != nil {
 		errStr = fmt.Sprintf("%s", err)
 	}
 
-	substring1 := "SQLSTATE=08001"
-	substring2 := "SQLSTATE=08004"
-	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) {
+	substring1 := "08001"
+	substring2 := "08004"
+	// 42505 is z/OS's authorization failure for an unknown user.
+	substring3 := "42505"
+	if strings.Contains(errStr, substring1) || strings.Contains(errStr, substring2) || strings.Contains(errStr, substring3) {
 		return 1
-	} else {
-		return 0
 	}
+	fmt.Println("Unexpected error: ", errStr)
+	return 0
 }
 
 // Creating a table.

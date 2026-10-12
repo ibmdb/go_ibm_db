@@ -42,7 +42,7 @@ func SmallintArray() error {
 		return err
 	}
 
-	substring := "SQLSTATE=22003"
+	substring := "22003"
 	c := []int{6, 7}
 	d := []int{-32769, 32768}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")

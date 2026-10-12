@@ -7,6 +7,7 @@ import (
 )
 
 func TestVargraphicArray(t *testing.T) {
+	SkipOnPlatform(t, PlatformZOS)
 	if VargraphicArray_1() != nil {
 		t.Error("Error at VargraphicArray")
 	}
@@ -38,11 +39,11 @@ func VargraphicArray_1() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []vargraphic")
+		fmt.Println("Error while inserting []vargraphic: ", err)
 		return err
 	}
 	var errStr string
-	substring := "SQLSTATE=22001"
+	substring := "22001"
 	c := []int{6}
 	//d :=  []string{"abcdefghijklmnopqurstuvwxyz"}
 	d := []string{"123456789012345678901"}

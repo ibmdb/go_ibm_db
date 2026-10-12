@@ -60,19 +60,21 @@ func MultipleQuery() error {
 		fmt.Println("Update statement successful")
 	}
 
-	_, err = db.Query("SELECT count(*) from arr where PID = 7")
+	rows, err := db.Query("SELECT count(*) from arr where PID = 7")
 	if err != nil {
 		fmt.Println("Query error: ", err)
 		return err
 	} else {
+		rows.Close()
 		fmt.Println("Select statement successful")
 	}
 
-	_, err = db.Query("SELECT * from arr where C3 = 'QA Intern'")
+	rows, err = db.Query("SELECT * from arr where C3 = 'QA Intern'")
 	if err != nil {
 		fmt.Println("Query error: ", err)
 		return err
 	} else {
+		rows.Close()
 		fmt.Println("Select statement successful")
 	}
 

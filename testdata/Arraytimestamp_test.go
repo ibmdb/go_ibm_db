@@ -15,6 +15,13 @@ func TestTimeStampArray(t *testing.T) {
 
 // TimeStampArray function performs inserting float32,float64 datatypes.
 func TimeStampArray() error {
+	// Build the values first so the connection isn't idle for ~5s (z/OS drops it).
+	a := []time.Time{}
+	for i := 0; i < 5; i++ {
+		a = append(a, time.Now())
+		time.Sleep(1 * time.Second)
+	}
+
 	db := Createconnection()
 	defer db.Close()
 
@@ -23,11 +30,6 @@ func TimeStampArray() error {
 	if err != nil {
 		fmt.Println("Exec error: ", err)
 		return err
-	}
-	a := []time.Time{}
-	for i := 0; i < 5; i++ {
-		a = append(a, time.Now())
-		time.Sleep(1 * time.Second)
 	}
 	st, err := db.Prepare("Insert into arr values(?,?,?)")
 	if err != nil {

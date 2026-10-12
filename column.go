@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"runtime"
 	"time"
 	"unsafe"
 
@@ -18,6 +19,13 @@ import (
 )
 
 type BufferLen api.SQLLEN
+
+// DB2 CLI graphic types; z/OS reports these instead of SQL_WCHAR/SQL_WVARCHAR.
+const (
+	sqlGraphic        = -95
+	sqlVarGraphic     = -96
+	sqlLongVarGraphic = -97
+)
 
 func (l *BufferLen) IsNull() bool {
 	trc.Trace1("column.go: IsNull()")
@@ -125,9 +133,15 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WLONGVARCHAR, api.SQL_SS_XML:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
+	case sqlGraphic, sqlVarGraphic, sqlLongVarGraphic:
+		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
 	case api.SQL_LONGVARBINARY:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0), nil
 	case api.SQL_DBCLOB:
+		// z/OS has no target CCSID for SQL_C_DBCHAR (CUNLCNV 65534); WCHAR is UTF-16.
+		if runtime.GOOS == "zos" {
+			return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
+		}
 		return NewVariableWidthColumn(b, api.SQL_C_DBCHAR, size), nil
 	case api.SQL_XML:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 31457280), nil

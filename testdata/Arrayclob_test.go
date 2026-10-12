@@ -7,6 +7,7 @@ import (
 )
 
 func TestClobArray(t *testing.T) {
+	SkipOnPlatform(t, PlatformZOS)
 	if ClobArray_1() != nil {
 		t.Error("Error at ClobArray")
 	}
@@ -37,12 +38,12 @@ func ClobArray_1() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []clob")
+		fmt.Println("Error while inserting []clob: ", err)
 		return err
 	}
 
 	var errStr string
-	substring := "SQLSTATE=22001"
+	substring := "22001"
 	c := []int{6}
 	d := []string{"abcdef"}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")

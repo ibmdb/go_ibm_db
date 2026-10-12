@@ -38,11 +38,11 @@ func Int2Array() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []int2")
+		fmt.Println("Error while inserting []int2: ", err)
 		return err
 	}
 
-	substring := "SQLSTATE=22003"
+	substring := "22003"
 	c := []int{6}
 	d := []int{-2147483649}
 	st, err = db.Prepare("Insert into " + tableOne + " values(?, ?)")

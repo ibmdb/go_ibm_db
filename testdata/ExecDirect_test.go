@@ -16,10 +16,11 @@ func ExecDirect() error {
 	db := Createconnection()
 	defer db.Close()
 
-	_, err := db.Query("select * from rocket")
+	rows, err := db.Query("select * from rocket")
 	if err != nil {
 		fmt.Println("Query error: ", err)
 		return err
 	}
+	rows.Close()
 	return nil
 }

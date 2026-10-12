@@ -80,7 +80,10 @@ func NewError(apiName string, handle interface{}) error {
 		}
 		if IsError(ret) {
 			trc.Trace1(fmt.Sprintf("SQLGetDiagRec failed: ret=%d", ret))
-			panic(fmt.Errorf("SQLGetDiagRec failed: ret=%d", ret))
+			if len(err.Diag) == 0 {
+				err.Diag = append(err.Diag, DiagRecord{Message: fmt.Sprintf("SQLGetDiagRec failed: ret=%d", ret)})
+			}
+			break
 		}
 		r := DiagRecord{
 			State:       api.UTF16ToString(state),

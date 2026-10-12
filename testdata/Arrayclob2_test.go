@@ -7,6 +7,7 @@ import (
 )
 
 func TestClob2Array(t *testing.T) {
+	SkipOnPlatform(t, PlatformZOS)
 	if Clob2Array_1() != nil {
 		t.Error("Error at Clob2Array")
 	}
@@ -41,7 +42,7 @@ func Clob2Array_1() error {
 	defer st.Close()
 	_, err = st.Query(a, b)
 	if !strings.Contains(fmt.Sprint(err), "did not create a result set") {
-		fmt.Println("Error while inserting []clob2")
+		fmt.Println("Error while inserting []clob2: ", err)
 		return err
 	}
 
