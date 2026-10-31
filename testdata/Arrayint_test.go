@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestIntArray(t *testing.T) {
@@ -61,4 +63,56 @@ func IntArray() error {
 		return err
 	}
 	return nil
+}
+
+func TestIntArrayThenScalar(t *testing.T) {
+	db := Createconnection()
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	table := fmt.Sprintf("GIBM_PS_%d", time.Now().UnixNano())
+	if _, err := conn.ExecContext(ctx, "CREATE TABLE "+table+" (id INTEGER)"); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if _, err := conn.ExecContext(context.Background(), "DROP TABLE "+table); err != nil {
+			t.Errorf("drop table %s: %v", table, err)
+		}
+	}()
+
+	stmt, err := conn.PrepareContext(ctx, "INSERT INTO "+table+" (id) VALUES (?)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stmt.Close()
+
+	values := []interface{}{
+		int64(0),
+		[]int64{1, 2},
+		int64(3),
+		[]int64{4, 5, 6},
+		int64(7),
+		[]int64{8},
+		int64(9),
+	}
+	for _, value := range values {
+		if _, err := stmt.ExecContext(ctx, value); err != nil {
+			t.Fatalf("insert %v: %v", value, err)
+		}
+	}
+
+	var count, sum int
+	if err := conn.QueryRowContext(ctx, "SELECT COUNT(*), SUM(id) FROM "+table).Scan(&count, &sum); err != nil {
+		t.Fatal(err)
+	}
+	if count != 10 || sum != 45 {
+		t.Fatalf("got count=%d and sum=%d, want count=10 and sum=45", count, sum)
+	}
 }

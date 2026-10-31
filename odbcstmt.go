@@ -207,15 +207,17 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 		}
 	}
 
+	paramSetSize := 1
 	if ArrayCheck == 1 {
-		ret := api.SQLSetStmtAttr(s.h, api.SQL_ATTR_PARAMSET_SIZE,
-			(api.SQLPOINTER)(uintptr(ArrayLength)), api.SQL_IS_INTEGER)
-		if IsError(ret) {
-			return NewError("SQLSetStmtAttr", s.h)
-		}
+		paramSetSize = ArrayLength
+	}
+	ret := api.SQLSetStmtAttr(s.h, api.SQL_ATTR_PARAMSET_SIZE,
+		(api.SQLPOINTER)(uintptr(paramSetSize)), api.SQL_IS_INTEGER)
+	if IsError(ret) {
+		return NewError("SQLSetStmtAttr", s.h)
 	}
 
-	ret := api.SQLExecute(s.h)
+	ret = api.SQLExecute(s.h)
 	if ret == api.SQL_NO_DATA {
 		// success but no data to report
 		return nil
