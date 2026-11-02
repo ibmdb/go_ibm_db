@@ -167,6 +167,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		plen = o.plen
 		p.Outs = append(p.Outs, o)
 	case []int64:
+		if len(d) == 0 {
+			return fmt.Errorf("empty array parameter")
+		}
 		ctype = api.SQL_C_SBIGINT
 		b := make([]int64, len(d))
 		copy(b, d)
@@ -177,6 +180,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		size = api.SQLULEN(len(b))
 		sqltype = api.SQL_BIGINT
 	case []string:
+		if len(d) == 0 {
+			return fmt.Errorf("empty array parameter")
+		}
 		ctype = api.SQL_C_WCHAR
 		maxlen := len(d[0]) + 1
 		for i := 0; i < len(d); i++ {
@@ -213,6 +219,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 			sqltype = api.SQL_WCHAR
 		}
 	case []bool:
+		if len(d) == 0 {
+			return fmt.Errorf("empty array parameter")
+		}
 		b := make([]int64, len(d))
 		for i := 0; i < len(d); i++ {
 			if d[i] {
@@ -227,6 +236,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		buflen = api.SQLLEN(len(b))
 		plen = p.StoreStrLen_or_IndPtr(buflen)
 	case []float64:
+		if len(d) == 0 {
+			return fmt.Errorf("empty array parameter")
+		}
 		ctype = api.SQL_C_DOUBLE
 		b := make([]float64, len(d))
 		copy(b, d)
@@ -237,6 +249,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value) error {
 		size = 8
 		sqltype = api.SQL_DOUBLE
 	case []time.Time:
+		if len(d) == 0 {
+			return fmt.Errorf("empty array parameter")
+		}
 		switch p.SQLType {
 		case api.SQL_TYPE_DATE:
 			ctype = api.SQL_C_TYPE_DATE
