@@ -100,15 +100,10 @@ func (c *Conn) GetInfo(infoType uint16) (string, error) {
 
 	buf := make([]uint16, 128)
 	var outLen api.SQLSMALLINT
-	var ret api.SQLRETURN
-	if runtime.GOOS == "zos" {
-		// odbc api on zos doesn't handle null terminated strings, the exact size is passed
-		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
-			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(2*len(buf)), &outLen)
-	} else {
-		ret = api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
-			api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(len(buf)), &outLen)
-	}
+	// SQLGetInfo expects the buffer size in bytes, not UTF-16 code units,
+	// on all platforms, including z/OS.
+	ret := api.SQLGetInfo(c.h, api.SQLUSMALLINT(infoType),
+		api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLSMALLINT(2*len(buf)), &outLen)
 	if IsError(ret) {
 		return "", NewError("SQLGetInfo", c.h)
 	}
