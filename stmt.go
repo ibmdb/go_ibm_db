@@ -179,14 +179,20 @@ func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, er
 	if err != nil {
 		return nil, err
 	}
-	s.os.usedByRows = true // now both Stmt and Rows refer to it
-
+	// On cancellation no Rows object will be created to close the cursor.
+	// Close it here so the statement can be reused, and leave usedByRows unset
+	// so Stmt.Close can still release the handle.
 	select {
 	default:
 	case <-ctx.Done():
+		ret := api.SQLCloseCursor(s.os.h)
+		if IsError(ret) {
+			return nil, NewError("SQLCloseCursor", s.os.h)
+		}
 		return nil, ctx.Err()
 	}
 
+	s.os.usedByRows = true // now both Stmt and Rows refer to it
 	return newRows(s.os), nil
 }
 
