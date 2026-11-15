@@ -106,3 +106,47 @@ func TestPoolReleasePreventsNewConnections(t *testing.T) {
 		t.Fatal("expected Init to fail after Release")
 	}
 }
+
+func TestPoolReuseResetsIdleTimer(t *testing.T) {
+	const lifetime = time.Second
+
+	p := Pconnect("PoolSize=1")
+	p.maxLifetime = lifetime
+	if !p.Init(1, "dsn") {
+		t.Fatal("expected pool initialization to succeed")
+	}
+	t.Cleanup(p.Release)
+
+	dbp := p.Open("dsn")
+	if dbp == nil {
+		t.Fatal("expected Open to return a connection")
+	}
+	dbp.Close()
+
+	time.Sleep(800 * time.Millisecond)
+	reused := p.Open("dsn")
+	if reused != dbp {
+		t.Fatal("expected Open to reuse the available connection")
+	}
+	reused.Close()
+
+	time.Sleep(400 * time.Millisecond)
+	p.mu.Lock()
+	available := len(p.availablePool["dsn"])
+	p.mu.Unlock()
+	if available != 1 {
+		t.Fatalf("stale idle timer removed reused connection: got %d available, want 1", available)
+	}
+
+	deadline := time.Now().Add(lifetime)
+	for time.Now().Before(deadline) {
+		p.mu.Lock()
+		available = len(p.availablePool["dsn"])
+		p.mu.Unlock()
+		if available == 0 {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatal("connection did not expire after the reset idle lifetime")
+}

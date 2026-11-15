@@ -14,9 +14,11 @@ import (
 // DBP struct type contains the timeout, dbinstance pointer and connection string
 type DBP struct {
 	*sql.DB
-	con  string
-	n    time.Duration
-	pool *Pool // owning pool; avoids relying on the shared global pool pointer
+	con       string
+	n         time.Duration
+	pool      *Pool // owning pool; avoids relying on the shared global pool pointer
+	idleTimer *time.Timer
+	idleGen   uint64
 }
 
 // Pool struct contais the about the pool like size, used and available connections
@@ -92,7 +94,28 @@ func (p *Pool) takeAvailableLocked(connStr string, lifetime time.Duration) *DBP 
 	}
 	p.usedPool[connStr] = append(p.usedPool[connStr], dbpo)
 	dbpo.DB.SetConnMaxLifetime(lifetime)
+	dbpo.stopIdleTimerLocked()
 	return dbpo
+}
+
+// stopIdleTimerLocked invalidates any idle-expiry callback for d.
+// The caller must hold d.pool.mu.
+func (d *DBP) stopIdleTimerLocked() {
+	d.idleGen++
+	if d.idleTimer != nil {
+		d.idleTimer.Stop()
+		d.idleTimer = nil
+	}
+}
+
+// startIdleTimerLocked starts a new idle lifetime for d.
+// The caller must hold d.pool.mu.
+func (d *DBP) startIdleTimerLocked() {
+	d.stopIdleTimerLocked()
+	gen := d.idleGen
+	d.idleTimer = time.AfterFunc(d.n, func() {
+		d.expire(gen)
+	})
 }
 
 // Open will check for the connection in the pool
@@ -241,7 +264,7 @@ func (d *DBP) Close() {
 				p.availablePool[d.con] = append(p.availablePool[d.con], dbpc)
 				delete(p.usedPool, d.con)
 			}
-			go d.Timeout()
+			d.startIdleTimerLocked()
 		} else {
 			d.DB.Close()
 		}
@@ -250,6 +273,40 @@ func (d *DBP) Close() {
 	}
 	p.mu.Unlock()
 	trc.Trace1("pooling.go: Close() - EXIT")
+}
+
+func (d *DBP) expire(gen uint64) {
+	p := d.pool
+	if p == nil {
+		return
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed || d.idleGen != gen {
+		return
+	}
+
+	valt, ok := p.availablePool[d.con]
+	if !ok {
+		return
+	}
+	for i, dbp := range valt {
+		if dbp != d {
+			continue
+		}
+		copy(valt[i:], valt[i+1:])
+		valt[len(valt)-1] = nil
+		valt = valt[:len(valt)-1]
+		if len(valt) == 0 {
+			delete(p.availablePool, d.con)
+		} else {
+			p.availablePool[d.con] = valt
+		}
+		d.idleTimer = nil
+		d.DB.Close()
+		return
+	}
 }
 
 // Timeout for closing the connection in pool
@@ -302,6 +359,7 @@ func (p *Pool) Release() {
 	if p.availablePool != nil {
 		for _, vala := range p.availablePool {
 			for _, dbpr := range vala {
+				dbpr.stopIdleTimerLocked()
 				dbpr.DB.Close()
 			}
 		}
