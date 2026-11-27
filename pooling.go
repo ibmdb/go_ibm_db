@@ -17,6 +17,15 @@ type DBP struct {
 	con  string
 	n    time.Duration
 	pool *Pool // owning pool; avoids relying on the shared global pool pointer
+	// idleTimer and idleGen implement a generation guard, both protected by
+	// pool.mu: each idle timer is started with the current idleGen value, and
+	// stopping or restarting the timer bumps idleGen. A fired callback whose
+	// captured generation no longer matches is stale and does nothing, so a
+	// reused connection can never be closed by a timer from a previous idle
+	// period. idleTimer is non-nil only while a timer for the current
+	// generation is pending.
+	idleTimer *time.Timer
+	idleGen   uint64
 }
 
 // Pool struct contais the about the pool like size, used and available connections
@@ -76,6 +85,12 @@ func (p *Pool) size() int {
 	return total
 }
 
+// takeAvailableLocked moves a connection from availablePool to usedPool and
+// stops its idle timer. The caller must hold p.mu. Once returned, the
+// connection has no idle-timeout protection: the caller owns it and must
+// eventually return it via DBP.Close (which restarts the idle timer) or shut
+// the pool down with Release. The sole call site, Pool.Open, hands the
+// connection to the user, who is expected to Close it.
 func (p *Pool) takeAvailableLocked(connStr string, lifetime time.Duration) *DBP {
 	val, ok := p.availablePool[connStr]
 	if !ok || len(val) == 0 {
@@ -92,7 +107,30 @@ func (p *Pool) takeAvailableLocked(connStr string, lifetime time.Duration) *DBP 
 	}
 	p.usedPool[connStr] = append(p.usedPool[connStr], dbpo)
 	dbpo.DB.SetConnMaxLifetime(lifetime)
+	dbpo.stopIdleTimerLocked()
 	return dbpo
+}
+
+// stopIdleTimerLocked invalidates any idle-expiry callback for d and stops
+// the active timer. It does not acquire d.pool.mu itself; the caller must
+// already hold it. This makes it safe to call from contexts that already
+// hold the mutex, such as takeAvailableLocked and Release.
+func (d *DBP) stopIdleTimerLocked() {
+	d.idleGen++
+	if d.idleTimer != nil {
+		d.idleTimer.Stop()
+		d.idleTimer = nil
+	}
+}
+
+// startIdleTimerLocked starts a new idle lifetime for d.
+// The caller must hold d.pool.mu.
+func (d *DBP) startIdleTimerLocked() {
+	d.stopIdleTimerLocked()
+	gen := d.idleGen
+	d.idleTimer = time.AfterFunc(d.n, func() {
+		d.expire(gen)
+	})
 }
 
 // Open will check for the connection in the pool
@@ -241,7 +279,7 @@ func (d *DBP) Close() {
 				p.availablePool[d.con] = append(p.availablePool[d.con], dbpc)
 				delete(p.usedPool, d.con)
 			}
-			go d.Timeout()
+			d.startIdleTimerLocked()
 		} else {
 			d.DB.Close()
 		}
@@ -252,7 +290,51 @@ func (d *DBP) Close() {
 	trc.Trace1("pooling.go: Close() - EXIT")
 }
 
+func (d *DBP) expire(gen uint64) {
+	p := d.pool
+	if p == nil {
+		return
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if d.idleGen != gen {
+		// A newer generation owns d.idleTimer; leave that reference intact.
+		return
+	}
+	// This callback is for the current timer, which has already fired;
+	// drop the stale reference so idleTimer is non-nil only while pending.
+	d.idleTimer = nil
+	if p.closed {
+		return
+	}
+
+	valt, ok := p.availablePool[d.con]
+	if !ok {
+		return
+	}
+	for i, dbp := range valt {
+		if dbp != d {
+			continue
+		}
+		copy(valt[i:], valt[i+1:])
+		valt[len(valt)-1] = nil
+		valt = valt[:len(valt)-1]
+		if len(valt) == 0 {
+			delete(p.availablePool, d.con)
+		} else {
+			p.availablePool[d.con] = valt
+		}
+		d.DB.Close()
+		return
+	}
+}
+
 // Timeout for closing the connection in pool
+//
+// Deprecated: idle expiry is managed by startIdleTimerLocked and expire.
+// Timeout is kept for backwards compatibility, is no longer used by the
+// pool, and will be removed in a future release.
 func (d *DBP) Timeout() {
 	trc.Trace1("pooling.go: Timeout() - ENTRY")
 
@@ -302,6 +384,7 @@ func (p *Pool) Release() {
 	if p.availablePool != nil {
 		for _, vala := range p.availablePool {
 			for _, dbpr := range vala {
+				dbpr.stopIdleTimerLocked()
 				dbpr.DB.Close()
 			}
 		}
